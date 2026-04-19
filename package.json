@@ -1,0 +1,13 @@
+{
+  "name": "commandement-center",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w @family/backend",
+    "test": "npm run test -w @family/backend"
+  }
+}
