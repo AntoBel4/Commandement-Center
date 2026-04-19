@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Centre de Commandement Familial</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Centre de Commandement Familial</h1>
+        <p>Interface simple pour piloter les événements, les courses et les synchronisations.</p>
+      </header>
+
+      <section class="toolbar card">
+        <label for="apiBaseUrl">Backend URL</label>
+        <input id="apiBaseUrl" type="url" value="http://localhost:3000" />
+        <button id="saveApiBase" type="button">Sauvegarder</button>
+        <span id="statusText" class="status"></span>
+      </section>
+
+      <section class="grid two-cols">
+        <article class="card">
+          <h2>Ajouter un événement</h2>
+          <form id="eventForm" class="form-grid">
+            <input name="title" placeholder="Titre" required />
+            <input name="person" placeholder="Personne" />
+            <input name="date" type="date" required />
+            <input name="time" type="time" />
+            <input name="location" placeholder="Lieu" />
+            <button type="submit">Créer événement</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <h2>Ajouter une course</h2>
+          <form id="groceryForm" class="form-grid">
+            <input name="name" placeholder="Article" required />
+            <input name="quantity" type="number" min="0" step="0.1" placeholder="Quantité" />
+            <input name="unit" placeholder="Unité" />
+            <input name="category" placeholder="Catégorie" />
+            <button type="submit">Ajouter course</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="grid two-cols">
+        <article class="card">
+          <h2>Événements</h2>
+          <button id="refreshEvents" type="button">Rafraîchir</button>
+          <ul id="eventsList"></ul>
+        </article>
+
+        <article class="card">
+          <h2>Courses</h2>
+          <button id="refreshGroceries" type="button">Rafraîchir</button>
+          <ul id="groceryList"></ul>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Actions de synchronisation</h2>
+        <div class="sync-actions">
+          <button data-sync="google" type="button">Sync Google</button>
+          <button data-sync="telegram" type="button">Sync Telegram</button>
+          <button data-sync="notion" type="button">Sync Notion</button>
+          <button data-sync="daily-report" type="button">Rapport quotidien</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
