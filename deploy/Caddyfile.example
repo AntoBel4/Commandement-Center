@@ -1,0 +1,17 @@
+commandement.example.com {
+    encode gzip
+
+    @api path /api/* /health
+    handle @api {
+        reverse_proxy api:3000
+    }
+
+    handle {
+        reverse_proxy web:80
+    }
+}
+
+auth.commandement.example.com {
+    encode gzip
+    reverse_proxy keycloak:8080
+}

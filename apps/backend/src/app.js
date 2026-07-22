@@ -4,9 +4,10 @@ import eventRoutes from './routes/events.js';
 import groceryRoutes from './routes/grocery.js';
 import syncRoutes from './routes/sync.js';
 import webhookRoutes from './routes/webhooks.js';
-import { store } from './services/store.js';
+import { createStore } from './services/store.js';
+import { registerAuth } from './utils/auth.js';
 
-export async function buildApp() {
+export async function buildApp({ store = createStore() } = {}) {
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
@@ -16,12 +17,21 @@ export async function buildApp() {
     }
   });
 
+  const corsOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   await app.register(cors, {
-    origin: true,
+    origin: corsOrigins.length > 0 ? corsOrigins : false,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   });
 
   app.decorate('store', store);
+  registerAuth(app);
+  app.addHook('onClose', async () => {
+    if (typeof store.close === 'function') await store.close();
+  });
 
   app.get('/health', async () => ({ status: 'ok' }));
   app.register(eventRoutes);

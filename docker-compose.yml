@@ -1,0 +1,124 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-commandement}
+      POSTGRES_USER: ${POSTGRES_USER:-commandement}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - commandement_internal
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-commandement}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-commandement}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173}
+      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      AUTH_ISSUER_URL: ${AUTH_ISSUER_URL:-}
+      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-commandement-center}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:-http://keycloak:8080/realms/commandement/protocol/openid-connect/certs}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - commandement_internal
+      - commandement_edge
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+    networks:
+      - commandement_edge
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+    command: ["node", "apps/backend/src/worker.js"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-commandement}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-commandement}
+      SYNC_POLL_INTERVAL_MS: ${SYNC_POLL_INTERVAL_MS:-5000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - commandement_internal
+
+  keycloak-db:
+    profiles: ["auth"]
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-change-this-keycloak-password}
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - commandement_internal
+
+  keycloak:
+    profiles: ["auth"]
+    image: quay.io/keycloak/keycloak:26.7.0
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-change-this-keycloak-password}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-change-this-keycloak-admin-password}
+      KC_HTTP_PORT: 8080
+    volumes:
+      - ./deploy/keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    expose:
+      - "8080"
+    networks:
+      - commandement_internal
+      - commandement_edge
+
+volumes:
+  postgres_data:
+  keycloak_db_data:
+
+networks:
+  commandement_internal:
+    internal: true
+  commandement_edge:
+    name: commandement_edge

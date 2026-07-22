@@ -10,7 +10,7 @@ export default async function groceryRoutes(app) {
       return reply.code(400).send(buildError('VALIDATION_ERROR', 'Données invalides', parsed.error.flatten(), requestId));
     }
 
-    const items = app.store.addGroceryBatch(parsed.data.items);
+    const items = await app.store.addGroceryBatch(parsed.data.items, request.familyId);
     app.log.info({ action: 'grocery.batch_created', count: items.length }, 'Grocery batch created');
     return reply.code(201).send(buildSuccess({ count: items.length, items }, requestId));
   });
@@ -22,9 +22,10 @@ export default async function groceryRoutes(app) {
       return reply.code(400).send(buildError('VALIDATION_ERROR', 'Filtres invalides', parsed.error.flatten(), requestId));
     }
 
-    const groceries = app.store.listGroceries({
+    const groceries = await app.store.listGroceries({
       purchased: parsed.data.purchased === undefined ? undefined : parsed.data.purchased === 'true',
-      category: parsed.data.category
+      category: parsed.data.category,
+      familyId: request.familyId
     });
 
     return reply.send(buildSuccess(groceries, requestId));
@@ -37,7 +38,7 @@ export default async function groceryRoutes(app) {
       return reply.code(400).send(buildError('VALIDATION_ERROR', 'Données invalides', parsed.error.flatten(), requestId));
     }
 
-    const item = app.store.updateGrocery(request.params.id, parsed.data);
+    const item = await app.store.updateGrocery(request.params.id, parsed.data, request.familyId);
     if (!item) {
       return reply.code(404).send(buildError('NOT_FOUND', 'Article introuvable', null, requestId));
     }
@@ -47,7 +48,7 @@ export default async function groceryRoutes(app) {
 
   app.delete('/api/v1/grocery/:id', async (request, reply) => {
     const requestId = getRequestId(request);
-    const deleted = app.store.deleteGrocery(request.params.id);
+    const deleted = await app.store.deleteGrocery(request.params.id, request.familyId);
     if (!deleted) {
       return reply.code(404).send(buildError('NOT_FOUND', 'Article introuvable', null, requestId));
     }

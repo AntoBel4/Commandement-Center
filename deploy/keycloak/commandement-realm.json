@@ -1,0 +1,29 @@
+{
+  "realm": "commandement",
+  "enabled": true,
+  "displayName": "Commandement Center",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "clients": [
+    {
+      "clientId": "commandement-center",
+      "name": "Commandement Center Web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:4173/*",
+        "https://commandement.example.com/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4173",
+        "https://commandement.example.com"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      }
+    }
+  ]
+}

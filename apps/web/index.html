@@ -15,9 +15,18 @@
 
       <section class="toolbar card">
         <label for="apiBaseUrl">Backend URL</label>
-        <input id="apiBaseUrl" type="url" value="http://localhost:3000" />
+        <input id="apiBaseUrl" type="url" value="http://localhost:3100" />
         <button id="saveApiBase" type="button">Sauvegarder</button>
         <span id="statusText" class="status"></span>
+      </section>
+
+      <section class="toolbar card auth-panel">
+        <label for="authBaseUrl">Keycloak URL</label>
+        <input id="authBaseUrl" type="url" value="http://localhost:8081" />
+        <label for="familyId">Family ID</label>
+        <input id="familyId" type="text" value="576fadf8-f7b4-40b9-bf70-90945c2f0dd4" />
+        <button id="authButton" type="button">Se connecter</button>
+        <span id="authStatus" class="status"></span>
       </section>
 
       <section class="grid two-cols">
@@ -67,6 +76,11 @@
           <button data-sync="notion" type="button">Sync Notion</button>
           <button data-sync="daily-report" type="button">Rapport quotidien</button>
         </div>
+        <div class="sync-log-toolbar">
+          <h3>Historique</h3>
+          <button id="refreshSyncLogs" type="button">Rafraîchir</button>
+        </div>
+        <ul id="syncLogsList"></ul>
       </section>
     </main>
 

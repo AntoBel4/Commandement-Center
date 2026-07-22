@@ -1,0 +1,9 @@
+{
+  "name": "@family/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "keycloak-js": "^26.2.3"
+  }
+}
