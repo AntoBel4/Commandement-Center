@@ -8,6 +8,24 @@ Les décisions personnelles, les horaires réels, les identifiants de comptes et
 
 Une application familiale auto-hébergée sous Docker, utilisable sur Android, avec courses partagées, agenda et capture Alexa. Telegram assure les récapitulatifs et actions rapides. Les futurs modules menus, recettes et domotique utilisent les mêmes identifiants et contrats d'API.
 
+## Portail web — livrable V1
+
+Le site web privé est une interface centrale du produit, en complément de Telegram et Alexa.
+Il est hébergé dans la stack Docker derrière Traefik. Le domaine réel est configuré au déploiement.
+
+Pages à livrer :
+- Accueil : aperçu de la journée, prochains rendez-vous, courses ouvertes, urgences et ajout rapide.
+- Courses : liste commune, quantités, ajout/modification, achat, report et urgence.
+- Agenda : jour/semaine, création et lecture des événements du fournisseur, indication des demandes en attente.
+- Réglages : préférences utilisateur et notifications ; configuration technique réservée à l'administrateur.
+
+Préparer une maquette navigable avec données fictives, puis raccorder les fonctions réelles.
+Direction visuelle proposée : claire, chaleureuse, lisible et adaptée au tactile.
+Livrer des mises en page téléphone, ordinateur et tablette, ainsi qu'un raccourci Android.
+Les modules futurs pourront enrichir la navigation ; aucun bouton de module inachevé présenté comme opérationnel.
+
+Critères de livraison : revue visuelle, parcours complets sur deux téléphones, absence de débordement horizontal, états de chargement/erreur explicites, accès HTTPS extérieur et refus des données aux visiteurs non connectés.
+
 ## Architecture proposée
 
 Conserver Fastify et PostgreSQL ; améliorer progressivement le code existant.
@@ -98,7 +116,7 @@ Secrets hors Git, logs sans contenu familial complet, accès des intégrations l
 3. Telegram : capture et boutons ; limites de coupure, fuseau, redémarrage et échec d'envoi testés avec horloge contrôlée.
 4. Agenda : création, modification externe, annulation, récurrence et rappel vérifiés.
 5. Alexa : preuve précoce sur un Echo, puis ajout course/événement depuis les deux appareils et rejet des requêtes non autorisées.
-6. Livraison : Traefik, authentification, sauvegarde/restauration, alerte réelle et retour arrière validés.
+6. Portail : maquette examinée, quatre pages raccordées et essais sur téléphone/ordinateur ; mise en ligne HTTPS via Traefik, authentification, sauvegarde/restauration, alerte réelle et retour arrière validés.
 7. Pilote : une semaine d'usage réel, incidents corrigés et guide d'exploitation remis.
 
 ## Évolutions
