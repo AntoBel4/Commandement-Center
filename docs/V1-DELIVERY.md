@@ -19,9 +19,9 @@ Aucun fonctionnement hors ligne ni infrastructure de plugins dynamique n'est né
 
 ### Responsabilité des données
 
-- Proposition à confirmer : PostgreSQL est la référence pour les courses et les actions.
+- PostgreSQL est la référence pour les courses et les actions. L'application et Telegram sont les interfaces retenues.
 - Google Calendar est la référence pour les événements confirmés. Les demandes en attente sont identifiées séparément.
-- Le rôle opérationnel de Notion reste à décider : suivi du projet uniquement, vue en lecture seule, ou édition directe. Aucun connecteur bidirectionnel implicite.
+- Notion sert au suivi du projet. Aucune synchronisation des courses vers Notion dans la V1.
 - Telegram et Alexa sont des canaux de capture et d'action, pas des bases indépendantes.
 - Une interface CalendarProvider isole Google ; un adaptateur CalDAV permettra une migration Nextcloud contrôlée ultérieure.
 
@@ -48,11 +48,11 @@ Une action Urgent explicite déclenche une notification immédiate aux destinata
 
 ### Agenda
 
-Utiliser un agenda partagé explicitement sélectionné.
+Créer un agenda Google familial partagé, puis le sélectionner explicitement.
 Les créations par le Centre sont envoyées au fournisseur ; un échec est présenté comme attente ou erreur, jamais comme événement synchronisé.
 Lire les modifications faites depuis Google, les annulations et les occurrences récurrentes.
 Gérer dates sans heure, fuseaux, heure d'été/hiver et identifiants fournisseur.
-Les rappels du jour J ont leur propre calendrier, indépendant de la coupure courses.
+Un récapitulatif le jour J et un rappel avant chaque rendez-vous sont requis. Le délai du second rappel est à confirmer. Ils ont leur propre calendrier, indépendant de la coupure courses.
 Une resynchronisation doit remplacer le cache du fournisseur, sans effacer les demandes locales non encore confirmées.
 Tester le renouvellement des autorisations et le mode de publication OAuth adapté avant de déclarer la connexion durable.
 
