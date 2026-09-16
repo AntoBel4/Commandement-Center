@@ -52,7 +52,7 @@ Créer un agenda Google familial partagé, puis le sélectionner explicitement.
 Les créations par le Centre sont envoyées au fournisseur ; un échec est présenté comme attente ou erreur, jamais comme événement synchronisé.
 Lire les modifications faites depuis Google, les annulations et les occurrences récurrentes.
 Gérer dates sans heure, fuseaux, heure d'été/hiver et identifiants fournisseur.
-Un récapitulatif le jour J et un rappel avant chaque rendez-vous sont requis. Le délai du second rappel est à confirmer. Ils ont leur propre calendrier, indépendant de la coupure courses.
+Un récapitulatif le jour J et un rappel avant chaque rendez-vous sont requis. Le second rappel est prévu une heure avant le rendez-vous. Ils ont leur propre calendrier, indépendant de la coupure courses.
 Une resynchronisation doit remplacer le cache du fournisseur, sans effacer les demandes locales non encore confirmées.
 Tester le renouvellement des autorisations et le mode de publication OAuth adapté avant de déclarer la connexion durable.
 
@@ -71,20 +71,20 @@ Le mode développement/pilote et la distribution durable sont des étapes distin
 ### Authentification
 
 Accès web HTTPS sans VPN obligatoire pour les usages quotidiens ; administration restreinte.
-Réutiliser un fournisseur d'identité existant si disponible. Choix final en attente de l'inventaire.
+Aucun fournisseur d'identité n'a été identifié dans l'inventaire des conteneurs actifs. Recommandation : conserver l'intégration Keycloak existante, après vérification de la capacité de l'hôte et préparation d'une configuration de production.
 Deux utilisateurs autorisés, inscriptions publiques désactivées, sessions révocables.
 Aucune exposition de production avec AUTH_ENABLED=false.
 Contrôles côté API sur chaque ressource et chaque action ; identifiants de famille imposés par l'identité autorisée.
 Pour les sessions par cookies : Secure, HttpOnly, SameSite adapté et protection CSRF.
 Pour Telegram : vérifier expéditeur, conversation autorisée et validité des callbacks. Authentifier aussi les appels n8n.
-Ne pas remplacer le webhook existant de Léo : un seul point d'entrée reçoit les mises à jour et les distribue.
+Utiliser deux bots distincts : le bot familial pour la capture et les actions, le bot technique existant exclusivement pour les alertes de l'administrateur. Ne pas modifier le webhook du bot technique. Le bot familial possède son propre point d'entrée.
 Secrets hors Git, logs sans contenu familial complet, accès des intégrations limité au strict nécessaire.
 
 ## Exploitation
 
 - Sonde de vie du processus et sonde de disponibilité incluant la base.
 - Surveillance métier : récapitulatifs attendus, envois acceptés, file bloquée, fraîcheur agenda, validité des autorisations, fraîcheur sauvegarde.
-- Sonde hors serveur pour détecter panne hôte, DNS ou HTTPS ; alerte Telegram sans dépendance à n8n hébergé sur l'hôte surveillé.
+- Les alertes de panne et de rétablissement de l'hôte existent déjà selon l'administrateur. Les conserver et documenter leur couverture ; compléter uniquement la surveillance propre à l'application. Le contrôle d'une panne totale doit rester indépendant de l'hôte surveillé.
 - Une alerte initiale, rappels espacés si nécessaire et notification de rétablissement ; séparer alertes techniques et messages familiaux.
 - Export PostgreSQL cohérent avant sauvegarde chiffrée hors machine. Restaurer dans un environnement séparé et vérifier les données.
 - Versionner les migrations ; les scripts d'initialisation Docker ne suffisent pas pour une base déjà créée.
