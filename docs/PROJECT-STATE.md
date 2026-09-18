@@ -2,12 +2,23 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication DNS suspendue à la demande explicite d’Antoine le 18 septembre. Aucun enregistrement DNS familial créé. Destination de sauvegarde hors serveur toujours à choisir plus tard.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Premières connexions personnelles et essai Android sans USB encore attendus. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
-## Arrêt demandé le 18 septembre — publication suspendue
+## Reprise autorisée le 18 septembre — domaine familial publié
 
-Antoine demande « STOP » et interdit tout rattachement au sous-domaine Nextcloud existant. Ne reprendre aucune installation ni publication sans sa demande de reprise. Le portail familial doit avoir son propre enregistrement sous le domaine principal ; abandonner la proposition d’alias vers Nextcloud. À la reprise, confirmer l’orthographe finale du nom demandé avant tout changement DNS.
+Après l’arrêt, Antoine confirme le périmètre exclusif `famille.estarellas.online`, puis demande « très bien execute alors ». Aucune modification des autres noms, de leurs règles ou des réglages globaux du domaine n’est autorisée.
+
+- Création d’un enregistrement A propre au nom familial, directement vers l’adresse publique de Nexus, proxy Cloudflare activé et TTL automatique. Aucun alias vers Nextcloud, aucun autre enregistrement changé.
+- Nouvelle règle « Famille - HTTPS strict », active, filtre exact `http.host eq "famille.estarellas.online"`, mode Strict. Aucun joker ni changement global ; aucune règle des autres sous-domaines modifiée.
+- Contrôles publics réussis : résolution DNS, certificat HTTPS validé, accueil 200 via Cloudflare, redirection HTTP vers HTTPS 301. Accueil servi avec `Cache-Control: no-store` et `CF-Cache-Status: DYNAMIC`.
+- Courses anonymes refusées (401), administration/master/santé identité et intégrations fermées (404), découverte OIDC avec origine HTTPS familiale. L’écran réel de connexion s’ouvre sur ce même domaine.
+- Premiers accès des deux comptes déposés dans un fichier privé sur le PC, exclu de Git ; aucun mot de passe publié dans GitHub/Notion ou affiché dans la conversation. Antoine est invité à effectuer lui-même sa première connexion et son changement de mot de passe. Résultat non reçu à ce stade.
+- Essai Android sans USB, partage avec le second compte, administration nominative, sauvegarde hors serveur, restauration complète et alertes restent à vérifier. Ne pas déclarer T08 terminé.
+
+## Historique — arrêt demandé le 18 septembre
+
+Antoine avait demandé « STOP » et interdit tout rattachement au sous-domaine Nextcloud existant. Cette pause a été levée par sa reprise explicite consignée ci-dessus, avec confirmation du nom famille.estarellas.online. L’interdiction de modifier les autres sous-domaines et leurs règles reste applicable. Les faits suivants décrivent l’état au moment de l’arrêt.
 
 - Installation réalisée avant l’arrêt : version `4926337fb9e46cf0cc3f43875710d6c1c65c3845`, deux bases, identité, API et portail dans un projet Docker dédié. Code inchangé. Premiers accès générés dans la configuration privée ; mots de passe personnels non définis par les utilisateurs et non transmis.
 - Premier démarrage corrigé : droits du code trop restrictifs lors du clonage ; permissions de lecture rétablies pour les fichiers applicatifs, répertoire des secrets maintenu privé, images reconstruites. Migrations et rattachement des deux membres réussis ; un foyer, deux membres, aucune course.
@@ -51,14 +62,14 @@ Antoine confirme les 13 essais guidés PC, le correctif de déconnexion (« Ca f
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
 - Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leurs deux essais sont déclarés réussis par Antoine : 14 essais validés au total et T04a = Terminé.
 - « Je m’en occupe » réalisé, validé par Antoine et intégré via la PR 5. Les propositions de créneaux avec validation des deux personnes restent à préparer avec T06. Détails et autres choix dans Notion.
-- Services comptes/courses désormais installés sur Nexus ; publication DNS suspendue (voir l’arrêt ci-dessus). Aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
+- Services comptes/courses installés sur Nexus ; domaine familial et HTTPS désormais publiés dans le périmètre strict autorisé (voir la reprise ci-dessus). Aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
 - Base de code examinée au commit 03cf35c05a16714bf49958d191dc092980124b00 : connecteurs de synchronisation incomplets, déploiement initial Caddy, authentification désactivable. La proposition V1 précise les corrections nécessaires.
 
 ## Travail sauvegardé et PR
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
-| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Services installés ; publication suspendue après STOP. Accès réel et mots de passe personnels non validés. |
+| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Services et domaine familial publiés ; première connexion personnelle et essai Android encore attendus. |
 | [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 983643f0f8020d0542881cb93cbe490a935ceabe | Fusionnée le 18 septembre, commit 1959ace33eddc4fc67f778694afac13782be5ada | Comptes/courses validés PC et Android ; intégrations et déploiement à préparer. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
@@ -78,9 +89,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Attendre une demande explicite de reprise. Ne pas modifier Nextcloud ni créer d’alias vers son sous-domaine. À la reprise seulement, clarifier le nom final et préparer un enregistrement propre au portail vers Nexus.
-2. Après validation de cette configuration précise, terminer DNS/HTTPS, accès personnels et essai Android sans USB. Ne pas réinstaller les services ni régénérer les identités déjà créées.
-3. Laisser la destination de sauvegarde hors serveur différée ; reprendre ultérieurement contrôle de restauration, administration et alertes avant de terminer T08. Les intégrations suivent ; PR 2 reste en brouillon.
+1. Recueillir le résultat de la première connexion personnelle et du changement de mot de passe, puis vérifier Android sans USB sur l’adresse HTTPS définitive. Finaliser le second compte et le partage des courses.
+2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
+3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
 ## Socle T02 — preuves du 18 septembre
 
