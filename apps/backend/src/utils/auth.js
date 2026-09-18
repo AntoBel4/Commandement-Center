@@ -45,6 +45,11 @@ export function registerAuth(app, config = authConfiguration()) {
     } catch {
       return error(reply, 401, 'UNAUTHORIZED', 'Jeton invalide');
     }
+    // The linked Alexa client may add groceries only, even if its token is used directly.
+    if (payload.azp === 'commandement-alexa' &&
+        (request.method !== 'POST' || path !== '/api/v1/grocery/batch')) {
+      return error(reply, 403, 'CLIENT_FORBIDDEN', 'Action non autorisée pour Alexa');
+    }
     const familyHeader = request.headers['x-family-id'];
     const familyId = typeof familyHeader === 'string' ? familyHeader.toLowerCase() : familyHeader;
     if (typeof familyId !== 'string' || !UUID_PATTERN.test(familyId)) {

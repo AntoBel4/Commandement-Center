@@ -1,0 +1,17 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "courses maison",
+      "intents": [
+        {"name": "AjouterCourse", "slots": [{"name": "article", "type": "AMAZON.SearchQuery"}], "samples": ["ajoute {article}", "ajouter {article}", "mets {article}", "il faut {article}", "nous avons besoin de {article}"]},
+        {"name": "AMAZON.HelpIntent", "samples": []},
+        {"name": "AMAZON.CancelIntent", "samples": []},
+        {"name": "AMAZON.StopIntent", "samples": []},
+        {"name": "AMAZON.NoIntent", "samples": []},
+        {"name": "AMAZON.FallbackIntent", "samples": []},
+        {"name": "AMAZON.NavigateHomeIntent", "samples": []}
+      ],
+      "types": []
+    }
+  }
+}

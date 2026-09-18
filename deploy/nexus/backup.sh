@@ -6,7 +6,9 @@ destination=$1
 mkdir -m 700 -- "$destination" # Refuse existing directories (including symlinks).
 running=()
 containers=()
-for service in web api keycloak; do
+services=(web api keycloak)
+if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then services+=(alexa); fi
+for service in "${services[@]}"; do
   container=$(dc ps --status running -q "$service")
   if [[ -n "$container" ]]; then running+=("$service"); containers+=("$container"); fi
 done
@@ -43,5 +45,11 @@ cp -- "$NEXUS_ROOT/.private/nexus/portal-config.json" "$destination/portal-confi
 cp -- "$NEXUS_ROOT/.private/nexus/commandement-realm.json" "$destination/commandement-realm.json"
 git -C "$NEXUS_ROOT" rev-parse HEAD > "$destination/source-commit.txt"
 dc images --format json > "$destination/images.json"
-(cd -- "$destination" && sha256sum courses.dump identity.dump courses.counts identity.counts production.env portal-config.json commandement-realm.json source-commit.txt images.json > SHA256SUMS)
+extra=()
+if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then
+  cp -- "$NEXUS_ROOT/.private/nexus/alexa.env" "$destination/alexa.env"
+  extra+=(alexa.env)
+fi
+# The identity dump contains the linked client's secret; no plaintext client export is needed.
+(cd -- "$destination" && sha256sum courses.dump identity.dump courses.counts identity.counts production.env portal-config.json commandement-realm.json source-commit.txt images.json "${extra[@]}" > SHA256SUMS)
 printf 'Complete local backup. Copy encrypted off-server before declaring protection: %s\n' "$destination"
