@@ -1,7 +1,7 @@
 # État courant — Centre familial
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
-Bilan du parcours de tests guidés et des deux ajouts à la maquette. Aucun travail différé ni surveillance programmée.
+Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. Aucun travail différé ni surveillance programmée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
 ## Où nous en sommes
@@ -10,7 +10,7 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 - Notion a été réorganisé : tableau de bord, sept pages thématiques, onze actions V1 et cinq évolutions.
 - Maquette interactive « Maison » livrée : Aujourd’hui, Courses, Agenda, Réglages. Elle est indépendante de l’application, avec données fictives uniquement.
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
-- Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leur validation utilisateur reste à faire : T04a = À vérifier pour ces ajouts.
+- Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leurs deux essais sont déclarés réussis par Antoine : 14 essais validés au total et T04a = Terminé.
 - Retenus pour la suite, non implémentés : « Je m’en occupe » et propositions de créneaux avec validation des deux personnes avant création du rendez-vous. Détails et autres choix dans Notion.
 - Aucun déploiement de cette version sur le serveur ; aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
 - Base de code examinée au commit 03cf35c05a16714bf49958d191dc092980124b00 : connecteurs de synchronisation incomplets, déploiement initial Caddy, authentification désactivable. La proposition V1 précise les corrections nécessaires.
@@ -20,9 +20,9 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 611fa997343966cb8d6d35476a8dab78abac12b6 | Ouverte, brouillon, non fusionnée | L’agent relit et aligne avec les décisions courantes, puis gère la fusion lorsque prête. |
-| [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 8fdacfd14734bf0767d4e453c29c6bc76b6da183 | Ouverte, brouillon, non fusionnée | 12 tests initiaux réussis selon l’utilisateur ; vérifier les deux ajouts avant intégration. |
+| [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
 
-La maquette est dans prototype/index.html sur la branche de la PR 3, pas encore dans main. Son README décrit les parcours et limites. Le plan est dans docs/V1-DELIVERY.md sur la branche de la PR 2. Les fichiers de continuité sont publiés séparément sur main afin d’être trouvables immédiatement.
+La maquette est désormais dans prototype/index.html sur main après fusion de la PR 3. Elle reste autonome, sans raccordement à l’application. Son README décrit les parcours et limites. Le plan est dans docs/V1-DELIVERY.md sur la branche de la PR 2. Les fichiers de continuité sont publiés séparément sur main afin d’être trouvables immédiatement.
 
 ## Vérifications déjà faites
 
@@ -30,14 +30,14 @@ La maquette est dans prototype/index.html sur la branche de la PR 3, pas encore 
 - Maquette dans Edge : quatre pages aux largeurs 320/390/768/1440 px, aucun débordement horizontal observé.
 - Parcours courses : ajout, achat, report, retour, urgence simulée, suppression, annulation ; agenda : ajout, détail, suppression, navigation ; profils, rappels, Échap.
 - Aucun appel externe ni erreur JavaScript observé ; sélection de date après changement d’heure vérifiée en Europe/Paris.
-- 18 septembre : 12 tests initiaux réussis selon le retour utilisateur. Appareil et navigateur non précisés ; essai sur les deux Android et revue par l’autre membre du foyer non confirmés.
+- 18 septembre : 12 tests initiaux et 2 essais des ajouts réussis selon le retour utilisateur. Appareil et navigateur non précisés ; essai sur les deux Android et revue par l’autre membre du foyer non confirmés.
 - Nouveaux ajouts vérifiés dans le navigateur Codex : indication par profil sur courses/agenda puis disparition à la visite suivante, pause personnelle et reprise anticipée, conservation des préférences, urgence pendant la pause. Agenda avec nouveauté à 320/390/768/1440 px sans débordement, réglages inspectés à 390 px, aucune erreur console observée.
 - Échéance de la pause vérifiée isolément à 7 h Europe/Paris, y compris changement d’heure d’hiver et d’année. Aucune ordonnance réelle de rappels ni notification envoyée.
 
 ## Prochaines actions
 
-1. Faire essayer les deux ajouts dans la maquette mise à jour sur Notion : ajouter depuis un profil puis vérifier l’indication dans l’autre ; activer Journée tranquille, vérifier la portée personnelle et reprendre les rappels. Ne pas faire refaire les 12 tests initiaux déjà déclarés réussis.
-2. Après validation des ajouts, préparer l’intégration T04b et aligner le plan V1 ; terminer les prérequis T01 nécessaires. Les essais sur appareils réels restent à confirmer.
+1. Préparer l’intégration T04b à partir de la maquette validée et aligner le plan V1 (PR 2) avec les choix retenus. Les 14 essais de maquette sont terminés ; ne pas les redemander.
+2. Compléter les prérequis T01 et l’identité nécessaires aux parcours réels ; vérifier les accès sans redemander les informations déjà consignées. Les essais de production sur les deux Android restent à faire.
 3. Préparer « Je m’en occupe » et les créneaux avec double validation, puis les connexions, la sécurisation, les sauvegardes et la recette de production. Aucun déploiement implicite à partir de la maquette.
 
 ## Références privées et décisions
@@ -72,7 +72,9 @@ Un fichier publié peut être relu ; une conversation antérieure ou un aperçu 
 ## Bilan du 18 septembre
 
 - Consignation des 12 résultats déclarés par l’utilisateur et de ses choix dans T04a/T04b ; aucune déduction sur les appareils utilisés.
-- Deux ajouts sauvegardés dans la PR 3, aperçu Notion actualisé. PR 2 et PR 3 restent en brouillon, non fusionnées.
+- Deux ajouts sauvegardés puis validés par Antoine (« 2 tests des nouveautés effectuées ok »). Revue de la maquette terminée, T04a Terminé.
+- PR 3 relue, contrôle GitGuardian réussi sur le commit 4366576a63b399a6b921f2dec62a3861fdcbe93e, aucun retour GitHub en attente. Diff limité à prototype/index.html et prototype/README.md ; aucun workflow GitHub Actions présent dans l’arbre main. Fusion avec SHA attendu : 16a635c89f10190daaa447a51bcf2af69ebe86da. PR 2 reste en brouillon.
+- La fusion intègre la maquette autonome au dépôt ; elle ne réalise ni le portail connecté ni son déploiement.
 - « Les 3 choses à retenir » reporté ; saisie automatique et rappel « On part dans 15 minutes » écartés ; mode « En magasin » sans décision.
 - Tableau de bord, prochaine action et journal Notion actualisés. Aucun service réel connecté, déploiement ou message familial.
 - Clone local ancien préservé (main au commit 03cf35c, dossiers prototype/ et .npm-cache/ non suivis). Copie de travail de cette itération dans maison-review-2026-09-18/, hors du clone et des références synchronisées.
