@@ -7,7 +7,7 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 ## Où nous en sommes
 
 - Cadrage V1 établi : portail web privé, courses partagées, agenda et capture vocale, socle Docker prévu derrière Traefik.
-- T01 redevient la prochaine action : confirmer la cible d’hébergement. Une offre web classique externe est envisagée par l’utilisateur ; compatibilité avec Node.js, PostgreSQL et les traitements permanents non confirmée. Nexus reste la cible précédemment prévue, sans décision de remplacement. Le sous-domaine prévu reste famille.estarellas.online. Détails privés et choix d’offre dans Notion ; aucun DNS modifié.
+- Hébergement décidé par Antoine le 18 septembre : tout le Centre familial sur Nexus avec Docker, y compris le portail, les données et les traitements. Le site existant reste chez Amen ; DNS gérés par Cloudflare et sous-domaine prévu famille.estarellas.online. T01 reste en cours : vérifier l’accès externe et le routage existants avant configuration. Aucun DNS modifié.
 - Notion a été réorganisé : tableau de bord, sept pages thématiques, onze actions V1 et cinq évolutions.
 - Maquette interactive « Maison » livrée : Aujourd’hui, Courses, Agenda, Réglages. Elle est indépendante de l’application, avec données fictives uniquement.
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
@@ -37,7 +37,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T01 : choisir et vérifier la cible d’hébergement avant toute configuration DNS. Comparer l’offre existante aux besoins du socle ; conserver Nexus comme option précédente. Ne pas déplacer l’hébergement ni créer de cible DNS supposée.
+1. T01 : vérifier l’accès HTTPS d’un service Nexus existant depuis le réseau mobile, sans Wi-Fi ni VPN, puis identifier son routage et les paramètres Traefik. L’accès externe est supposé possible par Antoine, pas encore confirmé par cet essai. Préparer ensuite famille.estarellas.online dans Cloudflare avec une cible vérifiée.
 2. Compléter T01 et les prérequis d’identité, puis préparer T02/T04b et aligner le plan V1 (PR 2). Les 14 essais de maquette sont terminés ; ne pas les redemander. Les essais de production sur les deux Android restent à faire.
 3. Préparer « Je m’en occupe » et les créneaux avec double validation, puis les connexions, la sécurisation, les sauvegardes et la recette de production. Aucun déploiement implicite à partir de la maquette.
 
