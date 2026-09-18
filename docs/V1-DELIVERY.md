@@ -1,6 +1,8 @@
 # V1 — Contrat d'architecture et de livraison
 
-Statut : proposition d'implémentation, pas une description des fonctions déjà opérationnelles.
+Statut : contrat V1 et état partiel de livraison ; ce document ne décrit pas un service déjà déployé.
+
+Point au 18 septembre 2026 : T01 inventorié, maquette Maison validée (14 essais) et fusionnée en PR 3. Hébergement intégral Docker confirmé, nouvelle base vide. Le socle API T02 est préparé et testé localement en [PR 4](https://github.com/AntoBel4/Commandement-Center/pull/4) : courses persistantes, historique, concurrence et comptes autorisés. La connexion de production, le raccordement du portail et les intégrations restent à réaliser.
 Point de départ audité : commit 03cf35c05a16714bf49958d191dc092980124b00.
 Les décisions personnelles, les horaires réels, les identifiants de comptes et les détails d'infrastructure restent hors de ce dépôt public.
 
@@ -19,7 +21,7 @@ Pages à livrer :
 - Agenda : jour/semaine, création et lecture des événements du fournisseur, indication des demandes en attente.
 - Réglages : préférences utilisateur et notifications ; configuration technique réservée à l'administrateur.
 
-Préparer une maquette navigable avec données fictives, puis raccorder les fonctions réelles.
+La maquette navigable avec données fictives est validée et conservée dans prototype/index.html. Raccorder maintenant les fonctions réelles sans présenter les données fictives comme connectées.
 Direction visuelle proposée : claire, chaleureuse, lisible et adaptée au tactile.
 Livrer des mises en page téléphone, ordinateur et tablette, ainsi qu'un raccourci Android.
 Les modules futurs pourront enrichir la navigation ; aucun bouton de module inachevé présenté comme opérationnel.
@@ -51,7 +53,8 @@ Une demande non traitée reste ouverte. Consultation d'un résumé et achat sont
 L'action Acheter est explicite et idempotente. Un ancien bouton Telegram relit l'état courant avant de modifier.
 Les regroupements respectent article, unité et quantité ; ne pas additionner des unités incompatibles.
 Le dédoublonnage des requêtes utilise l'identifiant du message ou de la requête source, pas uniquement le nom de l'article.
-Les modifications concurrentes des deux utilisateurs doivent être couvertes.
+Les modifications concurrentes des deux utilisateurs doivent être couvertes. Le socle T02 utilise une version d’article pour refuser une écriture obsolète, une clé de reprise par envoi et un historique transactionnel. L’auteur est déduit de l’identité autorisée. La suppression visible annule la demande sans effacer son historique.
+Le bouton « Je m’en occupe » reste à raccorder dans le portail ; les champs d’attribution API ne prouvent pas que ce parcours utilisateur est livré.
 
 ### Récapitulatifs
 
@@ -67,6 +70,7 @@ Une action Urgent explicite déclenche une notification immédiate aux destinata
 ### Agenda
 
 Créer un agenda Google familial partagé, puis le sélectionner explicitement.
+Les suggestions de créneaux communs, retenues pour le portail, nécessitent la validation des deux personnes avant création du rendez-vous.
 Les créations par le Centre sont envoyées au fournisseur ; un échec est présenté comme attente ou erreur, jamais comme événement synchronisé.
 Lire les modifications faites depuis Google, les annulations et les occurrences récurrentes.
 Gérer dates sans heure, fuseaux, heure d'été/hiver et identifiants fournisseur.
@@ -91,7 +95,7 @@ Le mode développement/pilote et la distribution durable sont des étapes distin
 Accès web HTTPS sans VPN obligatoire pour les usages quotidiens ; administration restreinte.
 Aucun fournisseur d'identité n'a été identifié dans l'inventaire des conteneurs actifs. Recommandation : conserver l'intégration Keycloak existante, après vérification de la capacité de l'hôte et préparation d'une configuration de production.
 Deux utilisateurs autorisés, inscriptions publiques désactivées, sessions révocables.
-Aucune exposition de production avec AUTH_ENABLED=false.
+Aucune exposition de production avec AUTH_ENABLED=false. Le socle T02 refuse ce démarrage ; le client navigateur et l’API ont des audiences distinctes et PKCE S256 est requis. Les tests Keycloak locaux utilisent des comptes fictifs ; ils ne remplacent pas la configuration et la recette des comptes réels.
 Contrôles côté API sur chaque ressource et chaque action ; identifiants de famille imposés par l'identité autorisée.
 Pour les sessions par cookies : Secure, HttpOnly, SameSite adapté et protection CSRF.
 Pour Telegram : vérifier expéditeur, conversation autorisée et validité des callbacks. Authentifier aussi les appels n8n.
