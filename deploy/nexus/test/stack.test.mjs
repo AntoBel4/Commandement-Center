@@ -50,7 +50,9 @@ test('production gateway, real identity, two household members and outsider', {s
       }
       return response;
     };
-    const verifier=randomBytes(32).toString('base64url'),state=randomUUID();
+    // Alexa sends a large opaque state; preserve it through login and callback.
+    const verifier=randomBytes(32).toString('base64url'),state=clientId==='commandement-alexa'
+      ? randomBytes(3000).toString('base64url') : randomUUID();
     const query=new URLSearchParams({client_id:clientId,redirect_uri:redirectUri,response_type:'code',scope,
       state,nonce:randomUUID(),code_challenge_method:'S256',code_challenge:createHash('sha256').update(verifier).digest('base64url')});
     const response=await request(base+'/auth/realms/commandement/protocol/openid-connect/auth?'+query);
@@ -133,14 +135,15 @@ test('production gateway, real identity, two household members and outsider', {s
       assert.equal(linkedClaims.sub,users[1].id,'Alexa access token identifies the linked member');
       assert.equal((await call(1,'/grocery',{},linkedToken)).status,403,'Alexa cannot read the private list');
       const skillId='amzn1.ask.skill.local-test';
+      const articleName='Alexa local demo '+randomUUID();
       const skill=createSkill({skillId,familyId:env.FAMILY_ID,apiBaseUrl:base});
       const envelope={version:'1.0',context:{System:{application:{applicationId:skillId},user:{accessToken:linkedToken}}},
         request:{type:'IntentRequest',requestId:randomUUID(),timestamp:new Date().toISOString(),locale:'fr-FR',
-          intent:{name:'AjouterCourse',slots:{article:{name:'article',value:'Alexa local demo'}}}}};
+          intent:{name:'AjouterCourse',slots:{article:{name:'article',value:articleName}}}}};
       for(let attempt=0;attempt<2;attempt++) {
         assert.match((await skill.invoke(envelope)).response.outputSpeech.ssml,/J’ai ajouté/);
       }
-      const list=(await (await call(0,'/grocery')).json()).data.filter(i=>i.name==='Alexa local demo');
+      const list=(await (await call(0,'/grocery')).json()).data.filter(i=>i.name===articleName);
       assert.equal(list.length,1,'Real identity and PostgreSQL keep a single Alexa addition');
       assert.equal(list[0].source,'alexa');
       assert.equal((await fetch(base+'/integrations/alexa',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(envelope)})).status,400,'Public gateway refuses unsigned Alexa calls');
