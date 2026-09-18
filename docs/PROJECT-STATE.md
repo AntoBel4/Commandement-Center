@@ -1,13 +1,13 @@
 # État courant — Centre familial
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
-Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. Aucun travail différé ni surveillance programmée.
+T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. Aucun travail différé ni surveillance programmée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
 ## Où nous en sommes
 
 - Cadrage V1 établi : portail web privé, courses partagées, agenda et capture vocale, socle Docker prévu derrière Traefik.
-- Hébergement décidé par Antoine le 18 septembre : tout le Centre familial sur Nexus avec Docker, y compris le portail, les données et les traitements. Le site existant reste chez Amen ; DNS gérés par Cloudflare et sous-domaine prévu famille.estarellas.online. T01 reste en cours : vérifier l’accès externe et le routage existants avant configuration. Aucun DNS modifié.
+- Hébergement décidé par Antoine le 18 septembre : tout le Centre familial sur Nexus avec Docker, y compris le portail, les données et les traitements. Le site existant reste chez Amen ; DNS gérés par Cloudflare et sous-domaine prévu famille.estarellas.online. T01 est terminé pour l’inventaire : accès extérieur existant confirmé, paramètres de publication et ressources relevés, comptes personnels disponibles et nouvelle base vide décidée. Les autorisations applicatives et le routage du futur portail restent à configurer et tester. Aucun DNS modifié.
 - Notion a été réorganisé : tableau de bord, sept pages thématiques, onze actions V1 et cinq évolutions.
 - Maquette interactive « Maison » livrée : Aujourd’hui, Courses, Agenda, Réglages. Elle est indépendante de l’application, avec données fictives uniquement.
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
@@ -37,9 +37,20 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T01 : vérifier l’accès HTTPS d’un service Nexus existant depuis le réseau mobile, sans Wi-Fi ni VPN, puis identifier son routage et les paramètres Traefik. L’accès externe est supposé possible par Antoine, pas encore confirmé par cet essai. Préparer ensuite famille.estarellas.online dans Cloudflare avec une cible vérifiée.
-2. Compléter T01 et les prérequis d’identité, puis préparer T02/T04b et aligner le plan V1 (PR 2). Les 14 essais de maquette sont terminés ; ne pas les redemander. Les essais de production sur les deux Android restent à faire.
-3. Préparer « Je m’en occupe » et les créneaux avec double validation, puis les connexions, la sécurisation, les sauvegardes et la recette de production. Aucun déploiement implicite à partir de la maquette.
+1. Préparer T02 — Fiabiliser les courses et les comptes : nouvelle base vide, stockage persistant et deux comptes autorisés. Expliquer la proposition d’identité avant installation ; tests attendus : deux sessions sur la même liste, redémarrage sans perte et refus d’un utilisateur non autorisé. Aligner le plan V1 (PR 2).
+2. Réaliser T04b à partir de la maquette validée ; intégrer les améliorations retenues (« Je m’en occupe », créneaux avec validation des deux personnes). Les 14 essais de maquette sont terminés ; la recette de production sur les deux Android reste à faire.
+3. Préparer les autorisations Google, le bot familial et ses appairages, le compte développeur Amazon, puis la configuration du sous-domaine, les contrôles HTTPS, les sauvegardes et la mise en service. Les accès personnels confirmés ne prouvent pas que ces intégrations fonctionnent. Aucun déploiement implicite.
+
+
+## Inventaire T01 — clôture du 18 septembre
+
+- Résultats détaillés dans la carte T01 Notion : commandes exécutées par Antoine, publication web existante, ressources et stockage Docker, accès personnels et décisions. Les informations réseau et chemins privés restent dans Notion.
+- Hébergement intégral Nexus/Docker confirmé, avec nouvelle base vide. Aucune migration prévue pour le Centre familial et aucune suppression de données existantes effectuée.
+- Accès extérieur existant confirmé par Antoine ; paramètres Traefik et enregistrement Cloudflare relevés. La chaîne réseau complète, le mode SSL/TLS et la gestion d’un changement d’adresse restent à vérifier avant la mise en ligne du futur portail.
+- Comptes Google et Telegram disponibles pour les deux utilisateurs ; accès Alexa confirmé. Agenda partagé, autorisations applicatives, bot familial/appairages et compte développeur Amazon restent à préparer.
+- Identité centralisée non identifiée dans l’inventaire antérieur ; proposition Keycloak à expliquer/configurer. Léo/n8n et les alertes Nexus existantes restent à préserver ; origine et couverture à documenter lors de la préparation de l’exploitation.
+- T01 est un inventaire terminé, pas une validation de production. Aucun DNS modifié, conteneur installé ou redémarré, secret collecté, notification envoyée ou déploiement réalisé pendant ce parcours.
+- Carte T01, entrées T02, tableau de bord, prochaine action, architecture, arbitrages et journal Notion actualisés. T02 et T04b restent à réaliser.
 
 ## Références privées et décisions
 
