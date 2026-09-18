@@ -18,7 +18,8 @@ Phase Alexa demandée après validation des tests T1 à T8. Google Agenda vient 
 - Aucune modification DNS/Cloudflare, autre sous-domaine ou service tiers. Seuls API/web Maison et le nouveau service Alexa sont concernés ; configurations précédentes conservées pour retour arrière.
 - « Vos skills » retrouvé par Antoine ; association interrompue par Bad Gateway. Erreur Nginx « upstream sent too big header » reproduite avec un état OAuth fictif long. Correctif 702a125 : limites bornées adaptées aux cookies de liaison, uniquement dans le serveur Maison et la route de connexion. Recette complète locale réelle réussie avec état de 4 000 caractères ; CI/GitGuardian réussis. Seul web recréé sur Nexus ; six services sains et même contrôle public passé de 502 à 200 avec formulaire présent.
 - Déclaration du type de certificat public corrigée en wildcard dans la skill après contrôle TLS public valide. Le premier retest manuel Amazon affiche encore le refus ; ne pas déclarer le transport signé validé. Aucun changement Cloudflare/DNS.
-- **Encore à vérifier :** nouvelle association personnelle du compte, demande réellement signée reçue depuis Amazon et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
+- Après correction, association personnelle confirmée par Antoine (« Compte associé ») ; échanges de jetons 200 observés sur Maison. Premier ajout réel sur Echo demandé, résultat attendu.
+- **Encore à vérifier :** demande réellement signée reçue depuis Amazon et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
 
@@ -107,7 +108,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Relancer l’association personnelle depuis Courses Maison après correction du Bad Gateway, vérifier une demande Amazon signée puis valider les deux Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
+1. Association personnelle réussie après correction du Bad Gateway. Valider le premier ajout vocal dans Maison, vérifier les appels signés puis essayer le second Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
