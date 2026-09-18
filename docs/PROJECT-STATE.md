@@ -2,7 +2,7 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Premières connexions personnelles et essai Android sans USB encore attendus. Destination hors serveur toujours différée.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
@@ -13,8 +13,9 @@ Après l’arrêt, Antoine confirme le périmètre exclusif `famille.estarellas.
 - Nouvelle règle « Famille - HTTPS strict », active, filtre exact `http.host eq "famille.estarellas.online"`, mode Strict. Aucun joker ni changement global ; aucune règle des autres sous-domaines modifiée.
 - Contrôles publics réussis : résolution DNS, certificat HTTPS validé, accueil 200 via Cloudflare, redirection HTTP vers HTTPS 301. Accueil servi avec `Cache-Control: no-store` et `CF-Cache-Status: DYNAMIC`.
 - Courses anonymes refusées (401), administration/master/santé identité et intégrations fermées (404), découverte OIDC avec origine HTTPS familiale. L’écran réel de connexion s’ouvre sur ce même domaine.
-- Premiers accès des deux comptes déposés dans un fichier privé sur le PC, exclu de Git ; aucun mot de passe publié dans GitHub/Notion ou affiché dans la conversation. Antoine est invité à effectuer lui-même sa première connexion et son changement de mot de passe. Résultat non reçu à ce stade.
-- Essai Android sans USB, partage avec le second compte, administration nominative, sauvegarde hors serveur, restauration complète et alertes restent à vérifier. Ne pas déclarer T08 terminé.
+- Premiers accès des deux comptes déposés dans un fichier privé sur le PC, exclu de Git ; aucun mot de passe publié dans GitHub/Notion ou affiché dans la conversation. Le 18 septembre, Antoine confirme que les deux mots de passe et les informations des deux comptes ont été modifiés et que les deux espaces sont accessibles.
+- Essai Android réel confirmé par Antoine le 18 septembre sur l’adresse HTTPS définitive, Wi-Fi désactivé, en 4G/5G sans câble USB : connexion, ajout d’une course, rechargement puis déconnexion réussis.
+- Le partage d’une même course entre les deux comptes en production reste à confirmer séparément. Administration nominative, sauvegarde hors serveur, restauration complète et alertes restent à finaliser. Ne pas déclarer T08 terminé.
 
 ## Historique — arrêt demandé le 18 septembre
 
@@ -69,7 +70,7 @@ Antoine confirme les 13 essais guidés PC, le correctif de déconnexion (« Ca f
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
-| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Services et domaine familial publiés ; première connexion personnelle et essai Android encore attendus. |
+| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Services et domaine familial publiés ; deux comptes personnels et essai Android en 4G/5G sans USB validés par Antoine. |
 | [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 983643f0f8020d0542881cb93cbe490a935ceabe | Fusionnée le 18 septembre, commit 1959ace33eddc4fc67f778694afac13782be5ada | Comptes/courses validés PC et Android ; intégrations et déploiement à préparer. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
@@ -89,7 +90,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Recueillir le résultat de la première connexion personnelle et du changement de mot de passe, puis vérifier Android sans USB sur l’adresse HTTPS définitive. Finaliser le second compte et le partage des courses.
+1. Comptes personnels et essai Android en 4G/5G sans USB validés par Antoine le 18 septembre. Prochain contrôle d’usage : confirmer le partage d’une même course entre les deux comptes en production ; ne pas refaire les essais déjà validés.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
