@@ -9,7 +9,7 @@ L’état vérifié et la prochaine action figurent dans [docs/PROJECT-STATE.md]
 ## Structure
 
 - apps/backend : API Fastify, stockage PostgreSQL, migrations et tests.
-- apps/web : portail Maison, connexion personnelle et courses persistantes (T04b, recette utilisateur ouverte).
+- apps/web : portail Maison, connexion personnelle et courses persistantes (T04b, recette ordinateur et Android validée ; intégrations et déploiement à préparer).
 - apps/alexa : code de départ de la future intégration, pas une preuve de service connecté.
 - supabase/migrations : migrations PostgreSQL standard.
 - deploy/keycloak : realm de préparation locale, inscriptions fermées et PKCE.

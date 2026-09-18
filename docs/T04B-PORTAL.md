@@ -90,7 +90,9 @@ Références : [outils Android officiels](https://developer.android.com/tools/re
 - Coupure réelle de l’API de test pendant un ajout : envoi conservé, rechargement du navigateur, relance de l’API puis reprise réussie. La course et son attribution précédentes restent présentes après cette relance. Formulaire inspecté à 320 px ; aucune erreur JavaScript relevée lors du contrôle final.
 - Image Docker du portail construite ; dépendances installées sans avis de vulnérabilité connu remonté par npm à cette date.
 
-## Recette utilisateur encore ouverte
+## Recette utilisateur validée
+
+Antoine confirme « M1 à m7 ok » le 18 septembre : connexion, ajout depuis le clavier du téléphone, achat/réouverture, urgence et changement de date, navigation portrait/paysage, ouverture depuis le raccourci d’accueil et changement de compte avec partage de la liste. Les sept essais mobiles sont déclarés réussis sur son Android via USB. Le deuxième téléphone a été retiré du périmètre à sa demande. La recette T04b du portail connecté aux comptes et aux courses est donc validée, sans valider un déploiement ni les intégrations encore à préparer.
 
 Périmètre révisé par Antoine après les essais ordinateur : la recette mobile sera réalisée sur son téléphone Android uniquement. Il ne juge pas utile de tester le second téléphone ; celui-ci ne constitue donc plus un critère requis pour T04b. La déconnexion ajoutée dans l’en-tête est également confirmée fonctionnelle par Antoine. Les mentions antérieures de deux Android décrivent le périmètre initial.
 
@@ -100,7 +102,7 @@ Observation : déconnexion difficile à trouver dans Réglages. Un bouton textue
 
 1. Connexion et déconnexion avec les deux comptes de test ; vérifier l’accueil et l’ajout sur ordinateur.
 2. À deux : création, achat/réouverture, report, urgence, attribution, retrait et annulation. Vérifier la visibilité après actualisation depuis l’autre compte.
-3. Vérifier le confort des boutons, formulaires, filtres et récapitulatif sur le téléphone Android d’Antoine quand un accès de recette adapté aura été préparé.
-4. Avant mise en service : comptes réels, HTTPS, domaine et routage Nexus, raccourci Android réel, sauvegarde/restauration et contrôles d’exploitation.
+3. Recette mobile réalisée : sept essais M1 à M7 déclarés réussis sur le téléphone d’Antoine, y compris l’ouverture depuis le raccourci. L’accès utilisait la liaison USB temporaire.
+4. Avant mise en service : comptes réels, HTTPS, domaine et routage Nexus, raccourci vers l’adresse finale et accès sans PC/câble, sauvegarde/restauration et contrôles d’exploitation.
 
-La page Agenda et les réglages indiquent les intégrations à préparer. Aucun rendez-vous Google, créneau à double validation, rappel Telegram, journée tranquille opérationnelle ou capture Alexa n’est annoncé comme connecté. Ces fonctions relèvent des lots suivants. T04b reste à vérifier jusqu’à la recette sur le téléphone d’Antoine. Aucun déploiement Nexus ni changement DNS.
+La page Agenda et les réglages indiquent les intégrations à préparer. Aucun rendez-vous Google, créneau à double validation, rappel Telegram, journée tranquille opérationnelle ou capture Alexa n’est annoncé comme connecté. Ces fonctions relèvent des lots suivants. T04b est validé pour le raccordement aux comptes et aux courses dans l’environnement de recette. Aucun déploiement Nexus ni changement DNS.
