@@ -1,7 +1,8 @@
 # Alexa — courses du foyer
 
 Premier périmètre : skill française privée en développement, hébergée sur Nexus.
-Invocation proposée : « Alexa, ouvre courses maison », puis « ajoute du lait ».
+Nom de la skill : « Courses Maison ». Invocation : « Alexa, ouvre carnet familial », puis « ajoute du lait ».
+Le nom d'appel initial « courses maison » fonctionnait dans le simulateur, mais les essais sur Echo étaient interprétés comme des commandes d'appareil ou de vidéo. Le nom d'appel distinct doit encore être validé sur l'enceinte ; la liaison du compte reste inchangée.
 Un article par demande ; le libellé reconnu est conservé, y compris « sel et poivre ».
 Quantité, unité, dates, urgence et rendez-vous ne sont pas interprétés dans ce premier parcours.
 Le portail reste disponible pour les modifier. Google Agenda suit cette étape ; les commandes de rendez-vous suivent Google.

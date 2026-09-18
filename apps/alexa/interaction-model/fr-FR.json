@@ -1,7 +1,7 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "courses maison",
+      "invocationName": "carnet familial",
       "intents": [
         {"name": "AjouterCourse", "slots": [{"name": "article", "type": "AMAZON.SearchQuery"}], "samples": ["ajoute {article}", "ajouter {article}", "mets {article}", "il faut {article}", "nous avons besoin de {article}"]},
         {"name": "AMAZON.HelpIntent", "samples": []},
