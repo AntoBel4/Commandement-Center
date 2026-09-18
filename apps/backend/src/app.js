@@ -7,9 +7,12 @@ import webhookRoutes from './routes/webhooks.js';
 import { createStore } from './services/store.js';
 import { registerAuth } from './utils/auth.js';
 
-export async function buildApp({ store = createStore() } = {}) {
+export async function buildApp({ store = createStore(), auth, logger } = {}) {
+  if (process.env.NODE_ENV === 'production' && store.constructor.name === 'InMemoryStore') {
+    throw new Error('Production requires persistent storage');
+  }
   const app = Fastify({
-    logger: {
+    logger: logger ?? {
       level: process.env.LOG_LEVEL ?? 'info',
       transport: process.env.NODE_ENV === 'production' ? undefined : {
         target: 'pino-pretty'
@@ -28,12 +31,20 @@ export async function buildApp({ store = createStore() } = {}) {
   });
 
   app.decorate('store', store);
-  registerAuth(app);
+  registerAuth(app, auth);
   app.addHook('onClose', async () => {
     if (typeof store.close === 'function') await store.close();
   });
 
   app.get('/health', async () => ({ status: 'ok' }));
+  app.get('/ready', async (request, reply) => {
+    try {
+      await store.checkReady();
+      return { status: 'ok' };
+    } catch {
+      return reply.code(503).send({ status: 'unavailable' });
+    }
+  });
   app.register(eventRoutes);
   app.register(groceryRoutes);
   app.register(syncRoutes);

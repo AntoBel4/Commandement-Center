@@ -167,7 +167,7 @@ function renderGroceries(items) {
     purchaseButton.textContent = item.purchased ? 'Rouvrir' : 'Acheté';
     purchaseButton.addEventListener('click', async () => {
       try {
-        await request(`/api/v1/grocery/${item.id}`, { method: 'PUT', body: JSON.stringify({ purchased: !item.purchased, purchasedBy: 'dashboard' }) });
+        await request(`/api/v1/grocery/${item.id}`, { method: 'PUT', body: JSON.stringify({ purchased: !item.purchased, version: item.version }) });
         await loadGroceries();
         setStatus(item.purchased ? 'Article rouvert.' : 'Article marqué comme acheté.');
       } catch (error) { setStatus(error.message, true); }
@@ -178,7 +178,7 @@ function renderGroceries(items) {
     deleteButton.addEventListener('click', async () => {
       if (!window.confirm(`Supprimer « ${item.name} » ?`)) return;
       try {
-        await request(`/api/v1/grocery/${item.id}`, { method: 'DELETE' });
+        await request(`/api/v1/grocery/${item.id}?version=${item.version}`, { method: 'DELETE' });
         await loadGroceries();
         setStatus('Article supprimé.');
       } catch (error) { setStatus(error.message, true); }

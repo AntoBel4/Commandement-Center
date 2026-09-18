@@ -8,12 +8,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - commandement_internal
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    command: ["node", "apps/backend/scripts/migrate.js"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-commandement}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-commandement}
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - commandement_internal
 
@@ -29,13 +41,16 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DATABASE_URL: postgresql://${POSTGRES_USER:-commandement}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-commandement}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4173}
-      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      AUTH_ENABLED: "true"
+      FAMILY_TIMEZONE: ${FAMILY_TIMEZONE:-Europe/Paris}
       AUTH_ISSUER_URL: ${AUTH_ISSUER_URL:-}
-      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-commandement-center}
+      AUTH_AUDIENCE: ${AUTH_AUDIENCE:-commandement-api}
       AUTH_JWKS_URL: ${AUTH_JWKS_URL:-http://keycloak:8080/realms/commandement/protocol/openid-connect/certs}
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     expose:
       - "3000"
     networks:
@@ -67,6 +82,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - commandement_internal
 
@@ -77,7 +94,7 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-change-this-keycloak-password}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD must be set}
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -98,9 +115,9 @@ services:
       KC_DB_URL_HOST: keycloak-db
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-change-this-keycloak-password}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?KEYCLOAK_DB_PASSWORD must be set}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-change-this-keycloak-admin-password}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD must be set}
       KC_HTTP_PORT: 8080
     volumes:
       - ./deploy/keycloak:/opt/keycloak/data/import:ro

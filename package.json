@@ -9,5 +9,8 @@
   "scripts": {
     "dev:backend": "npm run dev -w @family/backend",
     "test": "npm run test -w @family/backend"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
+import { newGrocery, changeGrocery, batchHash, groceryAction, GroceryError } from './grocery-model.js';
 
 const { Pool } = pg;
 
@@ -12,6 +13,9 @@ export class InMemoryStore {
     this.events = [];
     this.groceryItems = [];
     this.syncLogs = [];
+    this.groceryHistory = [];
+    this.groceryRequests = new Map();
+    this.members = new Map();
   }
 
   createEvent(payload, familyId = null) {
@@ -33,6 +37,8 @@ export class InMemoryStore {
       created_at: nowIso(),
       updated_at: nowIso()
     };
+
+    record.family_id = familyId;
 
     this.events.push(record);
     return record;
@@ -71,82 +77,62 @@ export class InMemoryStore {
     return this.events.length !== initialLength;
   }
 
-  addGroceryBatch(items, familyId = null) {
-    const created = [];
-
-    for (const item of items) {
-      const existing = this.groceryItems.find((stored) => {
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        return (
-          stored.family_id === familyId &&
-          stored.name.toLowerCase() === item.name.toLowerCase() &&
-          Date.now() - Date.parse(stored.created_at) <= oneDayMs &&
-          stored.purchased === false
-        );
-      });
-
-      if (existing) {
-        existing.quantity = (existing.quantity ?? 0) + (item.quantity ?? 1);
-        existing.updated_at = nowIso();
-        created.push(existing);
-        continue;
-      }
-
-      const record = {
-        id: randomUUID(),
-        name: item.name,
-        quantity: item.quantity ?? null,
-        unit: item.unit ?? null,
-        category: item.category ?? null,
-        purchased: false,
-        purchased_at: null,
-        purchased_by: null,
-        source: item.source ?? 'alexa',
-        sync_status: 'pending',
-        last_sync_at: null,
-        created_at: nowIso(),
-        updated_at: nowIso(),
-        family_id: familyId
-      };
-      this.groceryItems.push(record);
-      created.push(record);
+  addGroceryBatch(items, familyId = null, { actorId = null, requestKey } = {}) {
+    const key = JSON.stringify([familyId, requestKey]);
+    const hash = batchHash(items, actorId);
+    const existing = requestKey && this.groceryRequests.get(key);
+    if (existing) {
+      if (existing.hash !== hash) throw new GroceryError('IDEMPOTENCY_CONFLICT', 409, 'Cette clé a déjà servi à une autre demande.');
+      return structuredClone(existing.items);
     }
-
-    return created;
+    const created = items.map((item) => newGrocery(item, familyId, actorId));
+    for (const record of created) {
+      this.groceryItems.push(record);
+      this.recordGroceryHistory(null, record, actorId);
+    }
+    if (requestKey) this.groceryRequests.set(key, { hash, items: structuredClone(created) });
+    return structuredClone(created);
   }
 
   listGroceries(filters = {}) {
-    return this.groceryItems.filter((item) => {
+    return structuredClone(this.groceryItems.filter((item) => {
       if (filters.familyId !== undefined && item.family_id !== filters.familyId) return false;
+      if (filters.status ? item.status !== filters.status : item.status === 'cancelled') return false;
       if (typeof filters.purchased === 'boolean' && item.purchased !== filters.purchased) return false;
       if (filters.category && item.category !== filters.category) return false;
+      if (filters.availableOn && item.available_on > filters.availableOn) return false;
       return true;
-    });
+    }));
   }
 
-  updateGrocery(id, patch, familyId) {
-    const index = this.groceryItems.findIndex((item) => item.id === id && (familyId === undefined || item.family_id === familyId));
-    if (index === -1) return null;
-
-    const { purchasedBy, ...storedPatch } = patch;
-    const purchasedAt = patch.purchased ? nowIso() : null;
-    const updated = {
-      ...this.groceryItems[index],
-      ...storedPatch,
-      purchased_at: patch.purchased !== undefined ? purchasedAt : this.groceryItems[index].purchased_at,
-      purchased_by: purchasedBy ?? this.groceryItems[index].purchased_by,
-      updated_at: nowIso(),
-      family_id: familyId
-    };
-
-    this.groceryItems[index] = updated;
-    return updated;
+  getGrocery(id, familyId) {
+    return structuredClone(this.groceryItems.find((item) => item.id === id &&
+      (familyId === undefined || item.family_id === familyId)) ?? null);
   }
 
-  deleteGrocery(id, familyId) {
-    const initialLength = this.groceryItems.length;
-    this.groceryItems = this.groceryItems.filter((item) => item.id !== id || (familyId !== undefined && item.family_id !== familyId));
-    return this.groceryItems.length !== initialLength;
+  updateGrocery(id, patch, familyId, actorId = null) {
+    const current = this.getGrocery(id, familyId);
+    if (!current) return null;
+    if (patch.assignedTo && !this.isFamilyMember(patch.assignedTo, familyId)) {
+      throw new GroceryError('ASSIGNEE_FORBIDDEN', 400, 'Cette personne ne fait pas partie du foyer.');
+    }
+    const next = changeGrocery(current, patch, actorId);
+    if (next !== current) {
+      this.groceryItems[this.groceryItems.findIndex((item) => item.id === id)] = next;
+      this.recordGroceryHistory(current, next, actorId);
+    }
+    return structuredClone(next);
+  }
+
+  recordGroceryHistory(before, after, actorId) {
+    this.groceryHistory.push({ id: randomUUID(), family_id: after.family_id, grocery_id: after.id,
+      actor_id: actorId, action: groceryAction(before, after), before_data: structuredClone(before),
+      after_data: structuredClone(after), created_at: nowIso() });
+  }
+
+  listGroceryHistory(id, familyId) {
+    return structuredClone(this.groceryHistory.filter((entry) =>
+      entry.grocery_id === id && entry.family_id === familyId));
   }
 
   createSyncLog(entry, familyId = null) {
@@ -161,12 +147,16 @@ export class InMemoryStore {
     return record;
   }
 
-  listSyncLogs() {
-    return [...this.syncLogs].reverse();
+  listSyncLogs(familyId) {
+    return this.syncLogs.filter((log) => familyId === undefined || log.family_id === familyId).reverse();
   }
 
-  isFamilyMember() {
-    return false;
+  isFamilyMember(userId, familyId) {
+    return this.members.get(familyId)?.has(userId) ?? false;
+  }
+
+  checkReady() {
+    return true;
   }
 }
 
@@ -184,7 +174,15 @@ function mapEvent(row) {
 
 function mapGrocery(row) {
   if (!row) return null;
-  return { ...row, family_id: row.family_id ?? null };
+  return { ...row, family_id: row.family_id ?? null,
+    quantity: row.quantity === null ? null : Number(row.quantity),
+    available_on: row.available_on instanceof Date
+      ? [row.available_on.getFullYear(), String(row.available_on.getMonth() + 1).padStart(2, '0'), String(row.available_on.getDate()).padStart(2, '0')].join('-')
+      : row.available_on,
+    created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    updated_at: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+    purchased_at: row.purchased_at instanceof Date ? row.purchased_at.toISOString() : row.purchased_at
+  };
 }
 
 export class PostgresStore {
@@ -195,6 +193,10 @@ export class PostgresStore {
 
   async close() {
     await this.pool.end();
+  }
+
+  async checkReady() {
+    await this.pool.query('select 1 from grocery_history limit 0');
   }
 
   async createEvent(payload, familyId = null) {
@@ -279,93 +281,123 @@ export class PostgresStore {
     return result.rowCount > 0;
   }
 
-  async addGroceryBatch(items, familyId = null) {
-    const created = [];
-    for (const item of items) {
-      const existing = await this.pool.query(
-        `select * from grocery_items
-         where lower(name) = lower($1)
-           and family_id is not distinct from $2
-           and purchased = false
-           and created_at >= now() - interval '1 day'
-         order by created_at desc limit 1`,
-        [item.name, familyId]
-      );
-      if (existing.rows[0]) {
-        const { rows } = await this.pool.query(
-          `update grocery_items
-           set quantity = coalesce(quantity, 0) + coalesce($1, 1), updated_at = now()
-           where id = $2 returning *`,
-          [item.quantity ?? 1, existing.rows[0].id]
-        );
-        created.push(mapGrocery(rows[0]));
-        continue;
-      }
-      const { rows } = await this.pool.query(
-        `insert into grocery_items (name, quantity, unit, category, source, family_id)
-         values ($1, $2, $3, $4, $5, $6) returning *`,
-        [item.name, item.quantity ?? null, item.unit ?? null, item.category ?? null, item.source ?? 'alexa', familyId]
-      );
-      created.push(mapGrocery(rows[0]));
+  async transaction(action) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('begin');
+      const result = await action(client);
+      await client.query('commit');
+      return result;
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
     }
-    return created;
+  }
+
+  async addGroceryBatch(items, familyId = null, { actorId = null, requestKey } = {}) {
+    return this.transaction(async (client) => {
+      const hash = batchHash(items, actorId);
+      if (requestKey) {
+        if (!familyId) throw new GroceryError('FAMILY_REQUIRED', 400, 'Un foyer est requis.');
+        // Serializes retries even before the request row exists.
+        await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [familyId + ':' + requestKey]);
+        const previous = await client.query(
+          'select request_hash, response_data from grocery_requests where family_id = $1 and request_key = $2',
+          [familyId, requestKey]);
+        if (previous.rows[0]) {
+          if (previous.rows[0].request_hash !== hash) {
+            throw new GroceryError('IDEMPOTENCY_CONFLICT', 409, 'Cette clé a déjà servi à une autre demande.');
+          }
+          return previous.rows[0].response_data;
+        }
+      }
+      const created = [];
+      for (const item of items) {
+        const record = newGrocery(item, familyId, actorId);
+        const { rows } = await client.query(
+          `insert into grocery_items
+            (id, family_id, name, quantity, unit, category, source, created_by, available_on, urgent)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning *`,
+          [record.id, familyId, record.name, record.quantity, record.unit, record.category,
+            record.source, actorId, record.available_on, record.urgent]);
+        const saved = mapGrocery(rows[0]);
+        await this.recordGroceryHistory(client, null, saved, actorId);
+        created.push(saved);
+      }
+      if (requestKey) await client.query(
+        'insert into grocery_requests (family_id, request_key, request_hash, response_data) values ($1,$2,$3,$4)',
+        [familyId, requestKey, hash, JSON.stringify(created)]);
+      return created;
+    });
   }
 
   async listGroceries(filters = {}) {
     const values = [filters.familyId ?? null];
     const conditions = ['family_id is not distinct from $1'];
-    if (typeof filters.purchased === 'boolean') {
-      values.push(filters.purchased);
-      conditions.push(`purchased = $${values.length}`);
+    if (filters.status) {
+      values.push(filters.status);
+      conditions.push(`status = $${values.length}`);
+    } else conditions.push("status <> 'cancelled'");
+    for (const [column, value, operator] of [
+      ['purchased', filters.purchased, '='], ['category', filters.category, '='],
+      ['available_on', filters.availableOn, '<=']
+    ]) {
+      if (value !== undefined) {
+        values.push(value);
+        conditions.push(`${column} ${operator} $${values.length}`);
+      }
     }
-    if (filters.category) {
-      values.push(filters.category);
-      conditions.push(`category = $${values.length}`);
-    }
-    const where = conditions.length ? `where ${conditions.join(' and ')}` : '';
     const { rows } = await this.pool.query(
-      `select * from grocery_items ${where} order by purchased asc, created_at asc`,
-      values
-    );
+      `select * from grocery_items where ${conditions.join(' and ')} order by created_at, id`, values);
     return rows.map(mapGrocery);
   }
 
-  async updateGrocery(id, patch, familyId) {
-    const { purchasedBy, ...rest } = patch;
-    const fields = { ...rest };
-    if (purchasedBy !== undefined) fields.purchased_by = purchasedBy;
-    const assignments = [];
-    const values = [];
-    for (const [column, value] of Object.entries(fields)) {
-      if (value !== undefined) {
-        values.push(value);
-        assignments.push(`${column} = $${values.length}`);
-      }
-    }
-    if (patch.purchased !== undefined) {
-      values.push(patch.purchased ? 'now()' : null);
-      const expression = patch.purchased ? 'now()' : 'null';
-      values.pop();
-      assignments.push(`purchased_at = ${expression}`);
-    }
-    if (assignments.length === 0) return this.getGrocery(id, familyId);
-    values.push(id, familyId ?? null);
-    const { rows } = await this.pool.query(
-      `update grocery_items set ${assignments.join(', ')}, updated_at = now()
-       where id = $${values.length - 1} and family_id is not distinct from $${values.length} returning *`,
-      values
-    );
-    return mapGrocery(rows[0]);
-  }
-
   async getGrocery(id, familyId) {
-    const { rows } = await this.pool.query('select * from grocery_items where id = $1 and family_id is not distinct from $2', [id, familyId ?? null]);
+    const { rows } = await this.pool.query(
+      'select * from grocery_items where id = $1 and family_id is not distinct from $2', [id, familyId ?? null]);
     return mapGrocery(rows[0]);
   }
 
-  async deleteGrocery(id, familyId) {
-    const result = await this.pool.query('delete from grocery_items where id = $1 and family_id is not distinct from $2', [id, familyId ?? null]);
-    return result.rowCount > 0;
+  async updateGrocery(id, patch, familyId, actorId = null) {
+    return this.transaction(async (client) => {
+      const { rows } = await client.query(
+        'select * from grocery_items where id = $1 and family_id is not distinct from $2 for update',
+        [id, familyId ?? null]);
+      const current = mapGrocery(rows[0]);
+      if (!current) return null;
+      if (patch.assignedTo) {
+        const member = await client.query('select 1 from family_members where family_id = $1 and user_id = $2 for share',
+          [familyId, patch.assignedTo]);
+        if (!member.rows.length) throw new GroceryError('ASSIGNEE_FORBIDDEN', 400, 'Cette personne ne fait pas partie du foyer.');
+      }
+      const next = changeGrocery(current, patch, actorId);
+      if (next === current) return current;
+      const result = await client.query(
+        `update grocery_items set name=$1, quantity=$2, unit=$3, category=$4, status=$5,
+          available_on=$6, urgent=$7, assigned_to=$8, purchased=$9, purchased_at=$10,
+          purchased_by=$11, version=$12 where id=$13 and family_id is not distinct from $14 returning *`,
+        [next.name, next.quantity, next.unit, next.category, next.status, next.available_on,
+          next.urgent, next.assigned_to, next.purchased, next.purchased_at, next.purchased_by, next.version, id, familyId ?? null]);
+      const saved = mapGrocery(result.rows[0]);
+      await this.recordGroceryHistory(client, current, saved, actorId);
+      return saved;
+    });
+  }
+
+  async recordGroceryHistory(client, before, after, actorId) {
+    await client.query(
+      `insert into grocery_history (family_id, grocery_id, actor_id, action, before_data, after_data)
+       values ($1,$2,$3,$4,$5,$6)`,
+      [after.family_id, after.id, actorId, groceryAction(before, after), before, after]);
+  }
+
+  async listGroceryHistory(id, familyId) {
+    const { rows } = await this.pool.query(
+      'select * from grocery_history where grocery_id = $1 and family_id is not distinct from $2 order by created_at, id',
+      [id, familyId ?? null]);
+    return rows;
   }
 
   async createSyncLog(entry, familyId = null) {
@@ -464,5 +496,7 @@ export class PostgresStore {
 }
 
 export function createStore() {
-  return process.env.DATABASE_URL ? new PostgresStore() : new InMemoryStore();
+  if (process.env.DATABASE_URL) return new PostgresStore();
+  if (['test', 'development'].includes(process.env.NODE_ENV)) return new InMemoryStore();
+  throw new Error('DATABASE_URL is required outside explicit development/test mode');
 }
