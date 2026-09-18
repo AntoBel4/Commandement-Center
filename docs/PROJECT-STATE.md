@@ -2,7 +2,7 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Destination hors serveur toujours différée.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Prochaine phase : Alexa pour les courses, puis Google Agenda. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
@@ -15,7 +15,9 @@ Après l’arrêt, Antoine confirme le périmètre exclusif `famille.estarellas.
 - Courses anonymes refusées (401), administration/master/santé identité et intégrations fermées (404), découverte OIDC avec origine HTTPS familiale. L’écran réel de connexion s’ouvre sur ce même domaine.
 - Premiers accès des deux comptes déposés dans un fichier privé sur le PC, exclu de Git ; aucun mot de passe publié dans GitHub/Notion ou affiché dans la conversation. Le 18 septembre, Antoine confirme que les deux mots de passe et les informations des deux comptes ont été modifiés et que les deux espaces sont accessibles.
 - Essai Android réel confirmé par Antoine le 18 septembre sur l’adresse HTTPS définitive, Wi-Fi désactivé, en 4G/5G sans câble USB : connexion, ajout d’une course, rechargement puis déconnexion réussis.
-- Le partage d’une même course entre les deux comptes en production reste à confirmer séparément. Administration nominative, sauvegarde hors serveur, restauration complète et alertes restent à finaliser. Ne pas déclarer T08 terminé.
+- 18 septembre 2026 — Antoine confirme « T1 à T8 parfaits ». Les huit tests d’usage du portail installé sont validés : T1 partage des courses dans les deux sens ; T2 attribution et libération entre les deux comptes ; T3 achat et réouverture ; T4 report et urgence ; T5 retrait et annulation ; T6 conservation après fermeture du navigateur ; T7 raccourci Android vers l’adresse HTTPS définitive et accès Wi-Fi ; T8 protection de la liste après déconnexion, retour et actualisation. Les comptes personnels et l’accès Android en 4G/5G sans USB étaient déjà validés. Aucun de ces essais n’est à refaire.
+- Prochaine phase convenue : Alexa d’abord pour ajouter des courses depuis les Echo dans la liste familiale, puis Google Agenda et les créneaux à double validation. Les commandes vocales concernant les rendez-vous suivront le raccordement Google. Les intégrations ne sont pas encore réalisées.
+- Administration nominative, sauvegarde hors serveur, restauration complète et alertes restent à finaliser. La destination hors serveur reste différée à la demande d’Antoine. T08 reste En cours pour ces contrôles d’exploitation ; la recette d’usage du portail comptes/courses installé est terminée.
 
 ## Historique — arrêt demandé le 18 septembre
 
@@ -90,7 +92,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Comptes personnels et essai Android en 4G/5G sans USB validés par Antoine le 18 septembre. Prochain contrôle d’usage : confirmer le partage d’une même course entre les deux comptes en production ; ne pas refaire les essais déjà validés.
+1. Recette d’usage en production terminée : Antoine confirme « T1 à T8 parfaits ». Préparer ensuite Alexa pour les courses (skill française, liaison au foyer, vérification des requêtes et essai sur Echo réel), puis Google Agenda et les créneaux à double validation. Ne pas refaire les essais validés.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
