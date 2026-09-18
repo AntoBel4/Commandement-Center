@@ -2,10 +2,23 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : préparation de production et sauvegarde/restauration intégrée en PR 6 ; aucun déploiement Nexus. Destination de sauvegarde hors serveur à choisir plus tard par Antoine.
+T08 : services comptes/courses installés sur Nexus ; publication DNS suspendue à la demande explicite d’Antoine le 18 septembre. Aucun enregistrement DNS familial créé. Destination de sauvegarde hors serveur toujours à choisir plus tard.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
-## T08 — préparation Nexus intégrée le 18 septembre
+## Arrêt demandé le 18 septembre — publication suspendue
+
+Antoine demande « STOP » et interdit tout rattachement au sous-domaine Nextcloud existant. Ne reprendre aucune installation ni publication sans sa demande de reprise. Le portail familial doit avoir son propre enregistrement sous le domaine principal ; abandonner la proposition d’alias vers Nextcloud. À la reprise, confirmer l’orthographe finale du nom demandé avant tout changement DNS.
+
+- Installation réalisée avant l’arrêt : version `4926337fb9e46cf0cc3f43875710d6c1c65c3845`, deux bases, identité, API et portail dans un projet Docker dédié. Code inchangé. Premiers accès générés dans la configuration privée ; mots de passe personnels non définis par les utilisateurs et non transmis.
+- Premier démarrage corrigé : droits du code trop restrictifs lors du clonage ; permissions de lecture rétablies pour les fichiers applicatifs, répertoire des secrets maintenu privé, images reconstruites. Migrations et rattachement des deux membres réussis ; un foyer, deux membres, aucune course.
+- Certificat Let’s Encrypt réel obtenu par Traefik pour le nom initialement prévu. Vérification directe à l’origine avec validation TLS : accueil 200, courses anonymes 401, administration/master/santé identité et intégrations 404, découverte OIDC 200. Cela ne valide pas un accès Internet ou Android.
+- Aucun enregistrement A/AAAA/CNAME familial créé ; aucun changement au DNS Nextcloud. Cloudflare lu après connexion personnelle d’Antoine : mode global Full automatique. Règle Strict limitée au portail préparée, activation refusée par le contrôle automatique puis formulaire abandonné sans enregistrement après le STOP. Ne pas considérer l’ancienne demande d’approbation comme encore applicable.
+- Refus initial de réutiliser un accès Cloudflare issu de Traefik : aucune lecture du secret exécutée ; Antoine préfère se connecter lui-même. Ne pas réutiliser cet accès.
+- Un jeu de sauvegarde locale initiale est présent après l’interruption. Le résultat final de sa restauration de contrôle n’a pas été reçu : ne pas la déclarer réussie. Aucune destination hors serveur choisie ou configurée.
+- Après interruption : les cinq services familiaux persistants sont sains ; migration/provisionnement sortis avec code 0. Nextcloud et Traefik affichent toujours 42 heures de fonctionnement, sans redémarrage provoqué par cette intervention. Aucun processus de sauvegarde/restauration encore actif constaté.
+- Restent non validés : publication DNS/Cloudflare, accès extérieur, changement initial des mots de passe, administration nominative, essai Android sans USB, restauration complète et alertes. T08 reste inachevé.
+
+## Historique T08 — préparation Nexus intégrée le 18 septembre
 
 Antoine approuve de préparer Nexus avant les intégrations (« ok commençons »), pour un premier périmètre comptes/courses. T08 reste en cours : préparation intégrée, installation et mise en service non réalisées.
 
@@ -38,14 +51,14 @@ Antoine confirme les 13 essais guidés PC, le correctif de déconnexion (« Ca f
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
 - Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leurs deux essais sont déclarés réussis par Antoine : 14 essais validés au total et T04a = Terminé.
 - « Je m’en occupe » réalisé, validé par Antoine et intégré via la PR 5. Les propositions de créneaux avec validation des deux personnes restent à préparer avec T06. Détails et autres choix dans Notion.
-- Aucun déploiement de cette version sur le serveur ; aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
+- Services comptes/courses désormais installés sur Nexus ; publication DNS suspendue (voir l’arrêt ci-dessus). Aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
 - Base de code examinée au commit 03cf35c05a16714bf49958d191dc092980124b00 : connecteurs de synchronisation incomplets, déploiement initial Caddy, authentification désactivable. La proposition V1 précise les corrections nécessaires.
 
 ## Travail sauvegardé et PR
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
-| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Préparation testée localement ; installer/configurer le périmètre comptes/courses et vérifier l'accès réel. |
+| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Services installés ; publication suspendue après STOP. Accès réel et mots de passe personnels non validés. |
 | [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 983643f0f8020d0542881cb93cbe490a935ceabe | Fusionnée le 18 septembre, commit 1959ace33eddc4fc67f778694afac13782be5ada | Comptes/courses validés PC et Android ; intégrations et déploiement à préparer. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
@@ -65,9 +78,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T08 : installer la préparation de production intégrée en PR 6 sur Nexus, avec configuration privée et deux comptes personnels ; vérifier le domaine HTTPS et l'accès Android sans USB. Aucun déploiement implicite ne découle de la fusion.
-2. Choisir ultérieurement la nouvelle destination chiffrée de sauvegarde hors Nexus, conformément au report demandé par Antoine. Définir les objectifs de reprise, tester une restauration du service complet et raccorder les alertes avant de terminer T08.
-3. Poursuivre ensuite T06 et les intégrations Google Agenda/créneaux à double validation, Telegram et Alexa. La V1 complète demeure distincte de la première mise en service comptes/courses. PR 2 reste en brouillon.
+1. Attendre une demande explicite de reprise. Ne pas modifier Nextcloud ni créer d’alias vers son sous-domaine. À la reprise seulement, clarifier le nom final et préparer un enregistrement propre au portail vers Nexus.
+2. Après validation de cette configuration précise, terminer DNS/HTTPS, accès personnels et essai Android sans USB. Ne pas réinstaller les services ni régénérer les identités déjà créées.
+3. Laisser la destination de sauvegarde hors serveur différée ; reprendre ultérieurement contrôle de restauration, administration et alertes avant de terminer T08. Les intégrations suivent ; PR 2 reste en brouillon.
 
 ## Socle T02 — preuves du 18 septembre
 
