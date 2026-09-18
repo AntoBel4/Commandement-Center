@@ -2,6 +2,9 @@ node_modules
 npm-debug.log*
 .git
 .env
+.env.*
+.private
+backups
 .codex
 .agents
 README.md
