@@ -2,7 +2,10 @@
   "name": "@family/alexa",
   "version": "0.1.0",
   "type": "module",
+  "scripts": {"start": "node src/server.js", "test": "node --test test/*.test.js"},
   "dependencies": {
-    "ask-sdk-core": "^2.14.0"
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-express-adapter": "2.14.0",
+    "fastify": "5.12.5"
   }
 }

@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev:backend": "npm run dev -w @family/backend",
-    "test": "npm run test -w @family/backend && npm run test -w @family/web",
+    "test": "npm run test -w @family/backend && npm run test -w @family/web && npm run test -w @family/alexa",
     "dev:web": "npm run dev -w @family/web"
   },
   "engines": {

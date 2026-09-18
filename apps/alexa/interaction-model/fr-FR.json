@@ -1,0 +1,393 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "carnet familial",
+      "intents": [
+        {
+          "name": "AjouterCourse",
+          "slots": [
+            {
+              "name": "article",
+              "type": "AMAZON.SearchQuery",
+              "samples": [
+                "{article}"
+              ]
+            },
+            {
+              "name": "quantite",
+              "type": "AMAZON.NUMBER",
+              "samples": [
+                "{quantite}",
+                "{quantite} {unite}",
+                "il en faut {quantite}"
+              ]
+            },
+            {
+              "name": "unite",
+              "type": "UniteCourse",
+              "samples": [
+                "{unite}",
+                "en {unite}",
+                "{quantite} {unite}"
+              ]
+            },
+            {
+              "name": "rayon",
+              "type": "RayonCourse",
+              "samples": [
+                "{rayon}",
+                "rayon {rayon}",
+                "au rayon {rayon}"
+              ]
+            }
+          ],
+          "samples": [
+            "ajoute {article}",
+            "ajouter {article}",
+            "mets {article}",
+            "il faut {article}",
+            "nous avons besoin de {article}",
+            "quantité {quantite}",
+            "{quantite} {unite}",
+            "unité {unite}",
+            "rayon {rayon}"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "PasserPrecision",
+          "samples": [
+            "passer",
+            "passe",
+            "je passe",
+            "sans précision",
+            "peu importe"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "UniteCourse",
+          "values": [
+            {
+              "name": {
+                "value": "pièce",
+                "synonyms": [
+                  "pièces",
+                  "piece",
+                  "pieces",
+                  "unité",
+                  "unités"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "paquet",
+                "synonyms": [
+                  "paquets"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "boîte",
+                "synonyms": [
+                  "boîtes",
+                  "boite",
+                  "boites"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "bouteille",
+                "synonyms": [
+                  "bouteilles"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "kg",
+                "synonyms": [
+                  "kilo",
+                  "kilos",
+                  "kilogramme",
+                  "kilogrammes"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "g",
+                "synonyms": [
+                  "gramme",
+                  "grammes"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "litre",
+                "synonyms": [
+                  "litres",
+                  "l"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "cl",
+                "synonyms": [
+                  "centilitre",
+                  "centilitres"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "ml",
+                "synonyms": [
+                  "millilitre",
+                  "millilitres"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "pot",
+                "synonyms": [
+                  "pots"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "sachet",
+                "synonyms": [
+                  "sachets"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "barquette",
+                "synonyms": [
+                  "barquettes"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "tranche",
+                "synonyms": [
+                  "tranches"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "lot",
+                "synonyms": [
+                  "lots"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "rouleau",
+                "synonyms": [
+                  "rouleaux"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "tablette",
+                "synonyms": [
+                  "tablettes"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "botte",
+                "synonyms": [
+                  "bottes"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "RayonCourse",
+          "values": [
+            {
+              "name": {
+                "value": "Fruits & légumes",
+                "synonyms": [
+                  "fruits et légumes",
+                  "fruits",
+                  "légumes"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "Frais",
+                "synonyms": [
+                  "produits frais",
+                  "produits laitiers",
+                  "laitages"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "Boulangerie",
+                "synonyms": [
+                  "pain"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "Épicerie",
+                "synonyms": [
+                  "épicerie salée",
+                  "épicerie sucrée"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "Maison",
+                "synonyms": [
+                  "entretien",
+                  "hygiène"
+                ]
+              }
+            },
+            {
+              "name": {
+                "value": "Autre",
+                "synonyms": [
+                  "autres"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "dialog": {
+      "delegationStrategy": "SKILL_RESPONSE",
+      "intents": [
+        {
+          "name": "AjouterCourse",
+          "confirmationRequired": false,
+          "slots": [
+            {
+              "name": "article",
+              "type": "AMAZON.SearchQuery",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.article"
+              }
+            },
+            {
+              "name": "quantite",
+              "type": "AMAZON.NUMBER",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.quantite"
+              }
+            },
+            {
+              "name": "unite",
+              "type": "UniteCourse",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.unite"
+              }
+            },
+            {
+              "name": "rayon",
+              "type": "RayonCourse",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.rayon"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prompts": [
+      {
+        "id": "Elicit.article",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Quel article souhaitez-vous ajouter ?"
+          }
+        ]
+      },
+      {
+        "id": "Elicit.quantite",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Quelle quantité ? Vous pouvez dire deux, ou passer."
+          }
+        ]
+      },
+      {
+        "id": "Elicit.unite",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Quelle unité ? Par exemple pièce, paquet, kilo ou litre. Vous pouvez dire passer."
+          }
+        ]
+      },
+      {
+        "id": "Elicit.rayon",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Quel rayon ? Fruits et légumes, frais, boulangerie, épicerie, maison ou autre. Vous pouvez dire passer."
+          }
+        ]
+      }
+    ]
+  }
+}

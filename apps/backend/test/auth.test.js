@@ -5,6 +5,17 @@ import { buildApp } from '../src/app.js';
 import { InMemoryStore } from '../src/services/store.js';
 import { execFileSync } from 'node:child_process';
 
+test('Alexa client is restricted to adding groceries and still requires membership', async t => {
+  const app=await fixture(); t.after(()=>app.close());
+  const h=await headers(alice,undefined,{azp:'commandement-alexa'});
+  for(const [method,url] of [['GET','/api/v1/grocery'],['POST','/api/v1/events'],['PUT','/api/v1/grocery/anything'],['DELETE','/api/v1/grocery/anything']]) {
+    assert.equal((await app.inject({method,url,headers:h})).statusCode,403);
+  }
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/grocery/batch',headers:h,payload:{items:[{name:'Pain',source:'alexa'}]}})).statusCode,201);
+  app.store.members.clear();
+  assert.equal((await app.inject({method:'POST',url:'/api/v1/grocery/batch',headers:h,payload:{items:[{name:'Pain'}]}})).statusCode,403);
+});
+
 test('JWT rejects absent, expired, wrong issuer, wrong audience and invalid subject', async(t)=>{
   const app=await fixture();t.after(()=>app.close());
   assert.equal((await app.inject('/api/v1/grocery')).statusCode,401);
