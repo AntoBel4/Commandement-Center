@@ -6,6 +6,8 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 
 ## T04b — version à vérifier du 18 septembre
 
+Premier essai utilisateur déclaré réussi : « Test effectué ok », en réponse à la consigne de connexion avec le compte fictif alice puis d’ajout d’une course. Ce retour valide ce parcours seulement. Prochain essai : se déconnecter d’alice, se connecter avec bob et retrouver la course ajoutée. Revue complète et deux Android encore ouverts.
+
 - [PR 5 — Portail Maison connecté](https://github.com/AntoBel4/Commandement-Center/pull/5), branche `feat/t04b-portal`, commit `9179d6450cd8811cca369d592f73b2eb10e831eb`. Sauvegardée en brouillon, non fusionnée ; retours utilisateur à recueillir. [Contrat et recette](https://github.com/AntoBel4/Commandement-Center/blob/feat/t04b-portal/docs/T04B-PORTAL.md).
 - Connexion personnelle, courses persistantes, attribution « Je m’en occupe », achat/réouverture, report par date, urgence dans la liste, retrait/annulation. Reprise des ajouts avec clé conservée et gestion explicite des conflits.
 - 7 tests web et 26 contrôles backend avec PostgreSQL réussis ; 2 scénarios backend optionnels non exécutés dans cette commande. Recette navigateur avec Keycloak/PostgreSQL réels et comptes fictifs : deux membres partagent la liste, visiteur refusé, cycle des courses vérifié. Coupure API puis rechargement/reprise d’un ajout vérifiés. Docker construit et Nginx contrôlé.
@@ -49,7 +51,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T04b : reprendre les essais utilisateur sur la version de la PR 5, puis corriger les retours. Commencer par l’accueil, l’ajout et le partage entre deux comptes de test sur ordinateur. Préparer ensuite un environnement accessible aux deux Android ; l’aperçu actuel est limité au PC. Garder la PR en brouillon tant que la revue requise n’est pas terminée.
+1. T04b : reprendre les essais utilisateur sur la version de la PR 5, puis corriger les retours. Connexion alice et ajout déclarés réussis ; poursuivre avec la lecture de cette course depuis bob, puis les autres actions. Préparer ensuite un environnement accessible aux deux Android ; l’aperçu actuel est limité au PC. Garder la PR en brouillon tant que la revue requise n’est pas terminée.
 2. Préparer T06 et les autres intégrations : agenda Google partagé/autorisations, créneaux avec double validation, bot familial/appairages et compte développeur Amazon. Ne pas présenter les routes de départ comme des intégrations opérationnelles.
 3. Préparer l’identité de production, le routage Traefik et le sous-domaine, puis les sauvegardes, la restauration et la mise en service. Le Compose auth actuel reste local en start-dev ; aucun déploiement implicite. PR 2 alignée, encore en brouillon.
 
