@@ -1,0 +1,9 @@
+# LOCAL DISPOSABLE TEST ONLY. Never add this file on Nexus.
+services:
+  web:
+    ports: ["127.0.0.1:18483:80"]
+    labels:
+      traefik.enable: "false"
+  keycloak:
+    networks: [internal, proxy]
+    ports: ["127.0.0.1:18481:8080"]

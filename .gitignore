@@ -7,3 +7,5 @@ npm-debug.log*
 *.log
 coverage/
 .npm-cache/
+.private/
+backups/

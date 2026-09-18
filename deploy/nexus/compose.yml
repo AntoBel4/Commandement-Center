@@ -1,0 +1,172 @@
+# Standalone file: never combine with the development Compose overrides.
+name: ${COMPOSE_PROJECT_NAME:?Generate the private configuration first}
+
+x-app: &app
+  image: commandement-api:${RELEASE:?Set an immutable release identifier}
+  build:
+    context: ../..
+    dockerfile: apps/backend/Dockerfile
+  networks: [internal]
+  security_opt: [no-new-privileges:true]
+  logging: &logs
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+
+x-db-env: &db-env
+  DATABASE_URL: ${DATABASE_URL:?Generate the private database URL first}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:?}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: commandement
+      POSTGRES_USER: commandement
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U commandement -d commandement"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logs
+
+  keycloak-db:
+    image: ${POSTGRES_IMAGE:?}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+    volumes: ["keycloak_data:/var/lib/postgresql/data"]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logs
+
+  keycloak:
+    image: ${KEYCLOAK_IMAGE:?}
+    command: [start, --import-realm]
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+      KC_BOOTSTRAP_ADMIN_USERNAME: bootstrap-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?}
+      KC_HOSTNAME: https://${PORTAL_HOST:?}/auth
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - type: bind
+        source: ../../.private/nexus/commandement-realm.json
+        target: /opt/keycloak/data/import/commandement-realm.json
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [internal]
+    depends_on:
+      keycloak-db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, bash, -ec, "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /auth/health/ready HTTP/1.0\r\n\r\n' >&3; grep -q '200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    logging: *logs
+
+  migrate:
+    <<: *app
+    command: [node, apps/backend/scripts/migrate.js]
+    environment: *db-env
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  provision:
+    <<: *app
+    command: [node, apps/backend/scripts/bootstrap-family.js]
+    environment:
+      <<: *db-env
+      FAMILY_ID: ${FAMILY_ID:?}
+      FAMILY_NAME: Foyer
+      KEYCLOAK_USER_IDS: ${KEYCLOAK_USER_IDS:?}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      keycloak: {condition: service_healthy}
+
+  api:
+    <<: *app
+    restart: unless-stopped
+    environment:
+      <<: *db-env
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      AUTH_ENABLED: "true"
+      AUTH_ISSUER_URL: https://${PORTAL_HOST:?}/auth/realms/commandement
+      AUTH_AUDIENCE: commandement-api
+      AUTH_JWKS_URL: http://keycloak:8080/auth/realms/commandement/protocol/openid-connect/certs
+      CORS_ORIGINS: https://${PORTAL_HOST:?}
+      FAMILY_TIMEZONE: Europe/Paris
+    depends_on:
+      provision: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: commandement-web:${RELEASE:?}
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../../.private/nexus/portal-config.json
+        target: /usr/share/nginx/html/config.json
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [internal, proxy]
+    depends_on:
+      api: {condition: service_healthy}
+      keycloak: {condition: service_healthy}
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${TRAEFIK_NETWORK:?}
+      traefik.http.routers.commandement.rule: Host(`${PORTAL_HOST:?}`)
+      traefik.http.routers.commandement.entrypoints: websecure
+      traefik.http.routers.commandement.tls: "true"
+      traefik.http.routers.commandement.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:?}
+      traefik.http.routers.commandement.service: commandement
+      traefik.http.services.commandement.loadbalancer.server.port: "80"
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1/health]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging: *logs
+
+volumes:
+  postgres_data:
+  keycloak_data:
+networks:
+  internal:
+    internal: true
+  proxy:
+    external: true
+    name: ${TRAEFIK_NETWORK:?}
