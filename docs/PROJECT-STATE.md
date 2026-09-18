@@ -1,30 +1,31 @@
 # État courant — Centre familial
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
-T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. Aucun travail différé ni surveillance programmée.
+T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
-## T04b — version à vérifier du 18 septembre
+## T04b — recette validée et intégration du 18 septembre
 
-Antoine déclare les 13 essais guidés réussis, après les deux premiers essais connexion/ajout et partage. Observation sur la déconnexion traitée : bouton textuel « Déconnexion » dans l’en-tête de chaque page connectée, vérifié à 320 px sans débordement et avec déconnexion Keycloak réelle. La recette sur les deux Android et le raccourci restent ouverts ; pas besoin de refaire les 13 essais pour ce correctif ciblé.
+Antoine confirme les 13 essais guidés PC, le correctif de déconnexion (« Ca fonctionne »), puis les 7 essais Android (« M1 à m7 ok »), raccourci inclus. Il a explicitement limité la recette mobile à son téléphone : le second appareil est dispensé.
 
-- [PR 5 — Portail Maison connecté](https://github.com/AntoBel4/Commandement-Center/pull/5), branche `feat/t04b-portal`, commit `07de678b54164fd98acb0a3b21c8c5cf04c381c9`. Sauvegardée en brouillon, non fusionnée ; 13 essais guidés déclarés réussis, recette Android restante. [Contrat et recette](https://github.com/AntoBel4/Commandement-Center/blob/feat/t04b-portal/docs/T04B-PORTAL.md).
-- Connexion personnelle, courses persistantes, attribution « Je m’en occupe », achat/réouverture, report par date, urgence dans la liste, retrait/annulation. Reprise des ajouts avec clé conservée et gestion explicite des conflits.
-- 7 tests web et 26 contrôles backend avec PostgreSQL réussis ; 2 scénarios backend optionnels non exécutés dans cette commande. Recette navigateur avec Keycloak/PostgreSQL réels et comptes fictifs : deux membres partagent la liste, visiteur refusé, cycle des courses vérifié. Coupure API puis rechargement/reprise d’un ajout vérifiés. Docker construit et Nginx contrôlé.
-- Page Courses à 320/390/768/1440 px sans débordement horizontal ; formulaire inspecté à 320 px. Les 13 essais guidés sont déclarés réussis par Antoine ; la recette sur les deux Android reste ouverte. Aucun raccourci Android installé ou testé sur appareil réel.
-- L’agenda Google, les créneaux à double validation, Telegram, la journée tranquille opérationnelle et Alexa restent à préparer dans leurs lots. Les nouveautés courses sont indiquées localement par compte et par onglet ; pas de synchronisation des lectures entre appareils.
-- Aucun déploiement Nexus ni DNS modifié. L’aperçu de cette session est local au PC et ne constitue pas une URL de production. Ne pas supposer qu’il tourne encore lors d’une nouvelle session.
+- [PR 5 — Portail Maison connecté](https://github.com/AntoBel4/Commandement-Center/pull/5) fusionnée dans main, commit de fusion `1959ace33eddc4fc67f778694afac13782be5ada`, tête vérifiée `983643f0f8020d0542881cb93cbe490a935ceabe`. CI et GitGuardian réussis ; aucun retour GitHub en attente. [Contrat et recette](https://github.com/AntoBel4/Commandement-Center/blob/main/docs/T04B-PORTAL.md).
+- Connexion personnelle, déconnexion visible, courses persistantes, attribution « Je m’en occupe », achat/réouverture, report par date, urgence, retrait/annulation. Reprise des ajouts avec clé conservée et gestion explicite des conflits.
+- 7 tests web et 26 contrôles backend PostgreSQL réussis ; 2 scénarios backend optionnels non exécutés dans cette commande. Recette navigateur Keycloak/PostgreSQL réels avec comptes fictifs, accès refusé au visiteur et reprise après coupure/rechargement vérifiés. Docker construit et Nginx contrôlé.
+- Courses à 320/390/768/1440 px sans débordement horizontal ; formulaire et déconnexion inspectés à 320 px. Recette utilisateur PC et Android terminée.
+- Essais Android via redirections USB locales temporaires, retirées après validation. Le raccourci utilise l’adresse locale de recette et ne constitue pas un accès permanent. L’aperçu PC peut ne plus tourner à la reprise.
+- T04b terminé pour les comptes et les courses. Agenda Google, créneaux à double validation, Telegram, journée tranquille opérationnelle et Alexa restent dans leurs lots. Indicateurs de nouveautés locaux par compte et onglet.
+- Aucun déploiement Nexus ni modification DNS. Comptes et identité de production, routage, sauvegardes et mise en service restent à préparer.
 
 ## Où nous en sommes
 
 - Cadrage V1 établi : portail web privé, courses partagées, agenda et capture vocale, socle Docker prévu derrière Traefik.
 - Hébergement décidé par Antoine le 18 septembre : tout le Centre familial sur Nexus avec Docker, y compris le portail, les données et les traitements. Le site existant reste chez Amen ; DNS gérés par Cloudflare et sous-domaine prévu famille.estarellas.online. T01 est terminé pour l’inventaire : accès extérieur existant confirmé, paramètres de publication et ressources relevés, comptes personnels disponibles et nouvelle base vide décidée. Les autorisations applicatives et le routage du futur portail restent à configurer et tester. Aucun DNS modifié.
-- T02 intégré le 18 septembre : cycle de vie des courses, historique transactionnel, versions contre les conflits, reprises d’envoi et contrôles d’accès. 28 contrôles locaux réussis, dont PostgreSQL et Keycloak réels avec comptes fictifs. Identité de production et portail connecté restent à préparer.
+- T02 intégré le 18 septembre : cycle de vie des courses, historique transactionnel, versions contre les conflits, reprises d’envoi et contrôles d’accès. 28 contrôles locaux réussis, dont PostgreSQL et Keycloak réels avec comptes fictifs. Portail connecté intégré depuis via T04b ; identité de production encore à préparer.
 - Notion a été réorganisé : tableau de bord, sept pages thématiques, onze actions V1 et cinq évolutions.
 - Maquette interactive « Maison » livrée : Aujourd’hui, Courses, Agenda, Réglages. Elle est indépendante de l’application, avec données fictives uniquement.
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
 - Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leurs deux essais sont déclarés réussis par Antoine : 14 essais validés au total et T04a = Terminé.
-- « Je m’en occupe » réalisé dans la PR 5, en attente de recette utilisateur. Les propositions de créneaux avec validation des deux personnes restent à préparer avec T06. Détails et autres choix dans Notion.
+- « Je m’en occupe » réalisé, validé par Antoine et intégré via la PR 5. Les propositions de créneaux avec validation des deux personnes restent à préparer avec T06. Détails et autres choix dans Notion.
 - Aucun déploiement de cette version sur le serveur ; aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
 - Base de code examinée au commit 03cf35c05a16714bf49958d191dc092980124b00 : connecteurs de synchronisation incomplets, déploiement initial Caddy, authentification désactivable. La proposition V1 précise les corrections nécessaires.
 
@@ -32,7 +33,7 @@ Antoine déclare les 13 essais guidés réussis, après les deux premiers essais
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
-| [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 07de678b54164fd98acb0a3b21c8c5cf04c381c9 | Ouverte, brouillon, non fusionnée | Recette utilisateur du portail connecté ; Android à vérifier. |
+| [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 983643f0f8020d0542881cb93cbe490a935ceabe | Fusionnée le 18 septembre, commit 1959ace33eddc4fc67f778694afac13782be5ada | Comptes/courses validés PC et Android ; intégrations et déploiement à préparer. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
 | [4 — Socle T02](https://github.com/AntoBel4/Commandement-Center/pull/4) | feat/t02-courses | 7e49ac0bd29b033f166dc15370aafaa6dfc04c91 | Fusionnée le 18 septembre, commit afaebca082e69b90eb5ef412a9a19f8f3b33f5ec | Raccorder le portail dans T04b ; aucun déploiement. |
@@ -51,7 +52,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T04b : préparer un environnement de recette accessible aux deux Android, puis vérifier les parcours et le raccourci. Les 13 essais guidés sont déclarés réussis ; la déconnexion a été rendue visible et testée. L’aperçu actuel reste limité au PC. Garder la PR 5 en brouillon tant que les vérifications requises sur appareils restent ouvertes.
+1. T04b terminé : 13 essais PC et 7 essais Android validés ; second téléphone dispensé par Antoine. PR 5 fusionnée, carte Notion et journal mis à jour. Ne pas redemander ces essais ni traiter l’adresse locale comme un accès de production.
 2. Préparer T06 et les autres intégrations : agenda Google partagé/autorisations, créneaux avec double validation, bot familial/appairages et compte développeur Amazon. Ne pas présenter les routes de départ comme des intégrations opérationnelles.
 3. Préparer l’identité de production, le routage Traefik et le sous-domaine, puis les sauvegardes, la restauration et la mise en service. Le Compose auth actuel reste local en start-dev ; aucun déploiement implicite. PR 2 alignée, encore en brouillon.
 
