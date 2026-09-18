@@ -137,15 +137,27 @@ test('production gateway, real identity, two household members and outsider', {s
       const skillId='amzn1.ask.skill.local-test';
       const articleName='Alexa local demo '+randomUUID();
       const skill=createSkill({skillId,familyId:env.FAMILY_ID,apiBaseUrl:base});
-      const envelope={version:'1.0',context:{System:{application:{applicationId:skillId},user:{accessToken:linkedToken}}},
+      const envelope={version:'1.0',session:{new:true,sessionId:randomUUID(),attributes:{},application:{applicationId:skillId}},context:{System:{application:{applicationId:skillId},user:{accessToken:linkedToken}}},
         request:{type:'IntentRequest',requestId:randomUUID(),timestamp:new Date().toISOString(),locale:'fr-FR',
           intent:{name:'AjouterCourse',slots:{article:{name:'article',value:articleName}}}}};
-      for(let attempt=0;attempt<2;attempt++) {
-        assert.match((await skill.invoke(envelope)).response.outputSpeech.ssml,/J’ai ajouté/);
-      }
+      const started=await skill.invoke(envelope);
+      assert.equal(started.response.directives[0].slotToElicit,'quantite');
+      assert.equal((await (await call(0,'/grocery')).json()).data.filter(i=>i.name===articleName).length,0);
+      const quantityTurn=structuredClone(envelope);
+      quantityTurn.session.new=false;quantityTurn.session.attributes=started.sessionAttributes;
+      quantityTurn.request.requestId=randomUUID();quantityTurn.request.intent=started.response.directives[0].updatedIntent;
+      quantityTurn.request.intent.slots.quantite.value='1.5';quantityTurn.request.intent.slots.unite.value='kilos';
+      const described=await skill.invoke(quantityTurn);
+      assert.equal(described.response.directives[0].slotToElicit,'rayon');
+      const finalTurn=structuredClone(quantityTurn);
+      finalTurn.session.attributes=described.sessionAttributes;
+      finalTurn.request.requestId=randomUUID();finalTurn.request.intent=described.response.directives[0].updatedIntent;
+      finalTurn.request.intent.slots.rayon.value='fruits et légumes';
+      for(let attempt=0;attempt<2;attempt++) assert.match((await skill.invoke(finalTurn)).response.outputSpeech.ssml,/J’ai ajouté/);
       const list=(await (await call(0,'/grocery')).json()).data.filter(i=>i.name===articleName);
       assert.equal(list.length,1,'Real identity and PostgreSQL keep a single Alexa addition');
       assert.equal(list[0].source,'alexa');
+      assert.equal(list[0].quantity,1.5);assert.equal(list[0].unit,'kg');assert.equal(list[0].category,'Fruits & légumes');
       assert.equal((await fetch(base+'/integrations/alexa',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(envelope)})).status,400,'Public gateway refuses unsigned Alexa calls');
     }
   } finally {

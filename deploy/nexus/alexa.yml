@@ -1,7 +1,7 @@
 # Optional overlay, enabled only by .private/nexus/alexa.env.
 services:
   alexa:
-    image: commandement-alexa:${RELEASE:?}
+    image: commandement-alexa:${ALEXA_RELEASE:-${RELEASE:?}}
     build:
       context: ../..
       dockerfile: apps/alexa/Dockerfile
