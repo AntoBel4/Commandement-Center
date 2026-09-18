@@ -247,7 +247,7 @@ async function start() {
     userId = auth.tokenParsed.sub.toLowerCase();
     person = auth.tokenParsed.given_name || auth.tokenParsed.preferred_username || 'vous';
     request = createClient({auth, familyId:config.familyId});
-    calendar = new CalendarView({request,storage:{getItem:k=>sessionStorage.getItem(k),setItem:(k,v)=>sessionStorage.setItem(k,v),removeItem:k=>sessionStorage.removeItem(k)},scope:`${config.familyId}:${userId}`,render,openModal,toast,
+    calendar = new CalendarView({request,userId,storage:{getItem:k=>sessionStorage.getItem(k),setItem:(k,v)=>sessionStorage.setItem(k,v),removeItem:k=>sessionStorage.removeItem(k)},scope:`${config.familyId}:${userId}`,render,openModal,toast,
       unauthorized:error=>lockOut(error.message,error.status===403)});
     seenKey = `maison:seen:${config.familyId}:${userId}`;
     try { pending = new PendingAddition(sessionStorage, `${config.familyId}:${userId}`); pending.read(); }

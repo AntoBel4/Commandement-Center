@@ -1,5 +1,7 @@
 # Enabled only by the private google-calendar.env file; no host ports.
 services:
+  migrate:
+    image: commandement-api:${GOOGLE_RELEASE:?}
   api:
     image: commandement-api:${GOOGLE_RELEASE:?}
     environment:

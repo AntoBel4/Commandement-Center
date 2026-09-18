@@ -36,6 +36,13 @@ export function createClient({ auth, familyId, fetcher = fetch, timeout = 12000 
       catch { throw new ApiError('Réponse du service illisible. Actualisez la liste pour vérifier.', response.ok ? 0 : response.status); }
       if (!response.ok || payload.success !== true) {
         const calendarMessages = {
+          PROPOSAL_VERSION:'La proposition a changé. Vérifiez les choix actuels avant de valider à nouveau.',
+          PROPOSAL_STATE:'Cette proposition ne peut plus être modifiée. Vérifiez son état actuel.',
+          PROPOSAL_MEMBERS:'Les deux membres du foyer doivent correspondre à ceux de la proposition.',
+          PROPOSAL_NOT_FOUND:'Cette proposition n’est plus disponible.',
+          PROPOSAL_PAST:'Un créneau est déjà commencé. Choisissez un horaire à venir.',
+          PROPOSAL_DUPLICATE:'Deux créneaux sont identiques. Gardez une seule fois chaque horaire.',
+          PROPOSAL_KEY_REUSED:'Cet envoi correspond à une autre proposition. Actualisez avant de recommencer.',
           CALENDAR_UNAVAILABLE:'Google Agenda est indisponible. L’enregistrement n’est pas confirmé ; reprenez le même envoi pour vérifier.',
           CALENDAR_LOCAL_TIME:'Cette heure est inexistante ou ambiguë lors du changement d’heure. Choisissez une autre heure.',
           CALENDAR_END:'La fin du rendez-vous doit être après le début.',

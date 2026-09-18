@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { buildError, buildSuccess } from '../schemas/common.js';
 import { CalendarError } from '../services/google-calendar.js';
+import { CalendarProposals, proposalSchema, actionSchema } from '../services/calendar-proposals.js';
 
 const day = z.string().date().min(10).refine(v => v >= '2000-01-01' && v <= '2099-12-31');
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
@@ -9,6 +10,7 @@ const eventSchema = z.object({ title:z.string().trim().min(1).max(255), date:day
   allDay:z.boolean(), time:time.optional(), endTime:time.optional(), location:z.string().trim().max(255).default(''),
   description:z.string().trim().max(5000).default('') }).strict().refine(v => v.allDay || (v.time && v.endTime));
 export default async function calendarRoutes(app) {
+  const proposals = new CalendarProposals(app.store, app.calendar);
   app.addHook('onRequest', async (request, reply) => {
     reply.header('cache-control','no-store');
     if (!app.calendar) return reply.code(503).send(buildError('CALENDAR_UNAVAILABLE','Agenda indisponible',null,request.id));
@@ -26,6 +28,23 @@ export default async function calendarRoutes(app) {
     if (!parsed.success) return reply.code(400).send(buildError('VALIDATION_ERROR','Période invalide',null,request.id));
     try { return buildSuccess(await app.calendar.list(parsed.data),request.id); }
     catch (error) { return failure(error,request,reply); }
+  });
+  app.get('/api/v1/calendar/proposals', async(request,reply)=>{
+    try { return buildSuccess(await proposals.list(request.familyId),request.id); }
+    catch(error) { return failure(error,request,reply); }
+  });
+  app.post('/api/v1/calendar/proposals', async(request,reply)=>{
+    const parsed=proposalSchema.safeParse(request.body);
+    const key=z.string().uuid().safeParse(request.headers['idempotency-key']);
+    if(!parsed.success||!key.success) return reply.code(400).send(buildError('VALIDATION_ERROR','Proposition invalide',null,request.id));
+    try { return buildSuccess({proposal:await proposals.create(parsed.data,request.familyId,request.user.sub,key.data)},request.id); }
+    catch(error) { return failure(error,request,reply); }
+  });
+  app.post('/api/v1/calendar/proposals/:id/actions', async(request,reply)=>{
+    const parsed=actionSchema.safeParse(request.body), id=z.string().uuid().safeParse(request.params.id);
+    if(!parsed.success||!id.success) return reply.code(400).send(buildError('VALIDATION_ERROR','Choix invalide',null,request.id));
+    try { return buildSuccess({proposal:await proposals.act(request.familyId,id.data,request.user.sub,parsed.data)},request.id); }
+    catch(error) { return failure(error,request,reply); }
   });
   app.post('/api/v1/calendar/events', async (request, reply) => {
     const parsed = eventSchema.safeParse(request.body);

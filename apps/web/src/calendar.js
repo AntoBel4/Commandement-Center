@@ -1,4 +1,5 @@
 import { civilDate } from './client.js';
+import { ProposalsView } from './proposals.js';
 const esc = s => String(s ?? '').replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function addDays(day, n) { const d = new Date(day + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
 export function eventWhen(event) {
@@ -18,18 +19,20 @@ export class PendingEvent {
   async send(request) { const v=this.read(); if (!v) throw Error('Aucun rendez-vous en attente.'); const r=await request('/calendar/events',{method:'POST',body:v.body,key:v.key}); this.clear(); return r; }
 }
 export class CalendarView {
-  constructor({ request, storage, scope, render, openModal, toast, unauthorized }) {
+  constructor({ request, storage, scope, userId, render, openModal, toast, unauthorized }) {
     Object.assign(this,{request,render,openModal,toast,unauthorized});
     this.pending=new PendingEvent(storage,scope); this.from=civilDate(); this.to=addDays(this.from,30);
+    this.proposals=new ProposalsView({request,storage,scope,userId,render,openModal,toast,unauthorized,refreshCalendar:()=>this.load()});
     this.events=[]; this.error=''; this.updated=null; this.busy=false; this.epoch=0; this.active=true;
     this.click=e=>this.onClick(e); this.submit=e=>this.onSubmit(e);
     document.addEventListener('click',this.click); document.addEventListener('submit',this.submit);
     document.addEventListener('change',e=> { if (this.active && e.target.name==='allDay' && e.target.closest('#calendar-form')) this.toggleTimes(e.target.checked); });
   }
-  destroy() { this.active=false; this.epoch++; this.events=[]; document.removeEventListener('click',this.click); document.removeEventListener('submit',this.submit); }
+  destroy() { this.active=false; this.epoch++; this.events=[]; this.proposals.destroy(); document.removeEventListener('click',this.click); document.removeEventListener('submit',this.submit); }
   saved() { try { return this.pending.read(); } catch { this.storageError=true; return null; } }
   async load() {
     if (!this.active || this.loading) return;
+    this.proposals.load();
     const epoch=this.epoch; this.loading=true;
     try { const result=await this.request(`/calendar/events?from=${this.from}&to=${this.to}`);
       if (!this.active || epoch!==this.epoch) return;
@@ -47,7 +50,7 @@ export class CalendarView {
       ${this.storageError?'<div class="banner notice-error">Le stockage de cet onglet est indisponible. Ajouts suspendus pour éviter les doublons.</div>':''}
       ${pending?`<div class="calendar-pending"><h3>Un rendez-vous reste à vérifier</h3><p>${esc(pending.body.title)}</p><p>Reprenez le même envoi pour vérifier son résultat sans doublon.</p><div class="row wrap"><button class="btn" data-calendar="retry" ${this.busy?'disabled':''}>Reprendre l’envoi</button><button class="btn text" data-calendar="discard" ${this.busy?'disabled':''}>Oublier cet envoi</button></div></div>`:''}
       ${!this.updated?'<p class="empty">'+(this.error?'Agenda indisponible.':'Chargement de l’agenda…')+'</p>':events.length?events.map(e=>`<div class="agenda-item"><div class="event-line"></div><div class="event-content"><button class="event-open" data-calendar="detail" data-id="${esc(e.id)}"><h3>${esc(e.title)}</h3><small>${esc(eventWhen(e))}</small>${e.location?`<small>${esc(e.location)}</small>`:''}${e.recurring?'<small>Rendez-vous récurrent</small>':''}${e.private?'<small>Détails privés masqués</small>':''}</button></div></div>`).join(''):'<div class="empty">Aucun rendez-vous sur cette période.</div>'}
-      <div class="row between wrap calendar-footer"><small>${this.updated?'Agenda lu à '+new Date(this.updated).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''}</small><button class="btn text" data-calendar="refresh" ${this.loading||this.busy?'disabled':''}>Actualiser l’agenda</button></div>${compact?'<button class="btn" data-view="agenda">Ouvrir l’agenda</button>':'<a class="btn" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">Modifier ou gérer les répétitions dans Google Agenda</a>'}</section>`;
+      <div class="row between wrap calendar-footer"><small>${this.updated?'Agenda lu à '+new Date(this.updated).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):''}</small><button class="btn text" data-calendar="refresh" ${this.loading||this.busy?'disabled':''}>Actualiser l’agenda</button></div>${compact?'<button class="btn" data-view="agenda">Ouvrir l’agenda</button>':'<a class="btn" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer">Modifier ou gérer les répétitions dans Google Agenda</a>'}</section>` + this.proposals.card(compact);
   }
   toggleTimes(allDay) { for (const input of document.querySelectorAll('#calendar-form input[type=time]')) { input.disabled=allDay; input.required=!allDay; } }
   add() {

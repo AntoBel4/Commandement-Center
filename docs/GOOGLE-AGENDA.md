@@ -11,7 +11,21 @@ Première tranche T06 : l’agenda Google dédié est la référence, sans copie
 - Les détails privés sont masqués aussi dans le résultat renvoyé au navigateur. Aucune gestion du partage ni autre calendrier accessible par ces routes. Le client Alexa reste limité aux courses.
 - En cas de panne Google, une ancienne lecture est signalée comme telle et aucun ajout n’est annoncé comme confirmé. Aucun jeton Google ou secret dans les réponses, journaux ou fichiers publics.
 
-Les modifications, annulations et règles de répétition se font dans Google Agenda, accessible depuis Maison. Les créneaux à double validation, rappels Telegram et capture vocale de rendez-vous ne font pas partie de cette tranche et restent à réaliser. T06 reste En cours jusqu’aux validations correspondantes.
+Les modifications, annulations et règles de répétition des événements confirmés se font dans Google Agenda, accessible depuis Maison. Les rappels Telegram et la capture vocale restent dans leurs lots. T06 reste En cours jusqu’aux validations correspondantes.
+
+## Proposer des créneaux et décider à deux
+
+Phase choisie le 19 septembre 2026 : saisie manuelle, sans recherche automatique de disponibilités.
+
+- « Proposer des créneaux » partage un titre, un lieu et des précisions facultatives, avec 1 à 5 horaires explicites en heure de Paris. Les doublons, fins invalides, heures ambiguës et créneaux déjà commencés sont refusés. Les conflits avec l’agenda ne sont pas recherchés.
+- La proposition seule ne vaut pas accord. Chaque membre valide un seul créneau depuis son compte. Les choix et la proposition persistent dans PostgreSQL ; un changement de choix remplace seulement celui de son auteur. Aucun compte ne peut valider pour l’autre.
+- Tant que les choix diffèrent, rien n’est envoyé à Google. Deux choix identiques figent la proposition et déclenchent la création du seul horaire retenu. En cas de lecture périmée, recharger puis valider à nouveau ; aucun accord obsolète n’est appliqué silencieusement.
+- Avant les deux accords, chacun peut retirer son accord ou annuler la proposition. Pour changer le titre, le lieu, les précisions ou les horaires, annuler et proposer de nouveau : les anciens accords ne sont pas réutilisés.
+- La phase de création est enregistrée durablement avant l’appel Google. Une réponse perdue, un redémarrage ou deux reprises simultanées conservent le même identifiant Google, même si l’autre membre reprend. « Vérifier la création » permet une reprise explicite ; aucun traitement automatique en arrière-plan. Pendant cette vérification, le choix reste figé et ne peut être annulé dans Maison.
+- « Création confirmée » n’apparaît qu’après réponse Google. L’historique décrit cette création ; les modifications et suppressions ultérieures restent reflétées par la lecture de l’agenda. Si Google a annulé un événement dont la réponse initiale avait été perdue, il n’est pas recréé ; vérifier directement dans Google.
+- La création directe existante reste un parcours distinct pour un rendez-vous déjà décidé. Le client Alexa ne peut accéder aux propositions. Une modification des membres du foyer bloque les validations des anciennes propositions.
+
+Recette guidée après installation : partager deux créneaux ; vérifier leur présence depuis l’autre compte et l’absence dans Google ; donner un seul accord ; choisir des horaires différents ; réunir les deux accords sur le même horaire ; vérifier un unique événement ; essayer ensuite retrait et annulation sur une autre proposition.
 
 ## Configuration privée Nexus
 
@@ -26,7 +40,11 @@ GOOGLE_CALENDAR_ID=<agenda dédié>
 
 `common.sh` active alors `google-calendar.yml`. Le foyer vient de la configuration privée existante. Seuls API et web changent d’image ; l’API reçoit un réseau de sortie dédié pour joindre Google, aucun port hôte supplémentaire. Le service Alexa conserve sa propre révision. Aucune modification DNS, Traefik, Nextcloud ou autre application.
 
-Sauvegarder avant installation. `backup.sh` conserve aussi la configuration Google et la clé dans le répertoire privé de sauvegarde. Ces copies sont sensibles ; la protection hors serveur reste à décider. Pour revenir en arrière, retirer l’overlay privé et recréer API/web avec leurs images précédentes ; aucune migration de base n’est nécessaire.
+Sauvegarder avant installation. `backup.sh` conserve aussi la configuration Google et la clé dans le répertoire privé de sauvegarde. Ces copies sont sensibles ; la protection hors serveur reste à décider.
+
+Cette phase ajoute la migration `005_calendar_proposals.sql`. Construire les images de la révision choisie, positionner `GOOGLE_RELEASE`, exécuter le service `migrate` avec cette même image (overlay Google), puis seulement recréer API/web. Le contrôle de disponibilité exige la nouvelle table. Vérifier aussi la configuration Nginx des routes propositions. Aucune nouvelle clé, permission Google ni ressource payante n’est nécessaire.
+
+Retour arrière vers la lecture/création déjà installée : conserver l’overlay Google, remettre `GOOGLE_RELEASE=6534c0c6368eca9d8b929dbfa3a5d3bd4899dd4f`, rétablir sa configuration Nginx et recréer API/web. Conserver la table et les propositions ; ne pas annuler la migration ni restaurer toute la base pour ce seul retour arrière. Les propositions attendront la réinstallation de cette phase ; les événements déjà créés restent dans Google. Un retour à une version antérieure à Google requiert le retrait de l’overlay privé.
 
 ## Vérifications
 
