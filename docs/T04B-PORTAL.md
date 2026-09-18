@@ -57,6 +57,30 @@ npm run dev:web
 
 Le serveur écoute exclusivement `127.0.0.1:4173` (port modifiable par `PORTAL_PORT`), sert le SDK installé et transmet les requêtes à une API locale. Adapter les URI de redirection et l’origine autorisée du client Keycloak si le port change. Ce serveur est un outil de développement ; Nginx reste la cible Docker.
 
+### Recette Android par USB
+
+Pour cette recette, Antoine a choisi une liaison USB temporaire, avec débogage USB autorisé sur son téléphone. Aucun port du portail n’est ouvert sur le Wi-Fi et aucun certificat n’est installé. Le portail de test est sur le port 4273 et Keycloak sur le port 8182 du PC. Après vérification qu’aucune redirection préexistante n’utilise ces ports, Android Platform-Tools permet de les relier au téléphone :
+
+```sh
+# Un seul téléphone USB connecté ; vérifier son état autorisé avant la suite.
+adb devices -l
+adb -d reverse --list
+adb -d reverse --no-rebind tcp:4273 tcp:4273
+adb -d reverse --no-rebind tcp:8182 tcp:8182
+adb -d reverse --list
+```
+
+Ouvrir `http://localhost:4273/` dans Chrome sur le téléphone et garder le câble branché. L’origine localhost reste identique à celle autorisée dans le client Keycloak ; les comptes et l’API ne changent pas. L’aperçu et son raccourci restent utilisables uniquement pendant la liaison et tant que les services de test tournent sur le PC. Cela ne valide pas encore un accès mobile de production indépendant du PC.
+
+Après les essais, supprimer uniquement les redirections créées pour cette recette, puis désactiver le débogage USB sur le téléphone :
+
+```sh
+adb -d reverse --remove tcp:4273
+adb -d reverse --remove tcp:8182
+```
+
+Références : [outils Android officiels](https://developer.android.com/tools/releases/platform-tools), [accès aux serveurs locaux depuis Android](https://developer.chrome.com/docs/devtools/remote-debugging/local-server).
+
 ## Vérifications du 18 septembre 2026
 
 - 7 tests web réussis : réponse POST perdue après enregistrement, reprise après recréation du client, absence de doublon et d’historique supplémentaire, séparation des envois par compte, conflit entre deux clients, session expirée, délai dépassé, réponse illisible et dates civiles.
@@ -68,13 +92,15 @@ Le serveur écoute exclusivement `127.0.0.1:4173` (port modifiable par `PORTAL_P
 
 ## Recette utilisateur encore ouverte
 
+Périmètre révisé par Antoine après les essais ordinateur : la recette mobile sera réalisée sur son téléphone Android uniquement. Il ne juge pas utile de tester le second téléphone ; celui-ci ne constitue donc plus un critère requis pour T04b. La déconnexion ajoutée dans l’en-tête est également confirmée fonctionnelle par Antoine. Les mentions antérieures de deux Android décrivent le périmètre initial.
+
 Retour du 18 septembre : Antoine déclare les 13 essais guidés réussis, après les deux premiers essais connexion/ajout et partage avec le second compte. La série couvre ajout détaillé, achat, réouverture, report, retour au jour courant, urgence, attribution, libération, retrait/annulation, rechargement, nouveautés, refus du visiteur et présentation générale. Ce retour ne valide pas les deux Android.
 
 Observation : déconnexion difficile à trouver dans Réglages. Un bouton textuel « Déconnexion » est désormais présent dans l’en-tête sur chaque page connectée. Vérification après correction : bouton visible à 320 px sans débordement, déconnexion Keycloak réelle et retour à l’écran de connexion. Les 13 essais ne sont pas à refaire pour ce changement ciblé.
 
 1. Connexion et déconnexion avec les deux comptes de test ; vérifier l’accueil et l’ajout sur ordinateur.
 2. À deux : création, achat/réouverture, report, urgence, attribution, retrait et annulation. Vérifier la visibilité après actualisation depuis l’autre compte.
-3. Retours sur les textes, les filtres et le récapitulatif ; vérifier le confort des boutons et des formulaires sur les deux Android quand un environnement accessible aux téléphones aura été préparé.
+3. Vérifier le confort des boutons, formulaires, filtres et récapitulatif sur le téléphone Android d’Antoine quand un accès de recette adapté aura été préparé.
 4. Avant mise en service : comptes réels, HTTPS, domaine et routage Nexus, raccourci Android réel, sauvegarde/restauration et contrôles d’exploitation.
 
-La page Agenda et les réglages indiquent les intégrations à préparer. Aucun rendez-vous Google, créneau à double validation, rappel Telegram, journée tranquille opérationnelle ou capture Alexa n’est annoncé comme connecté. Ces fonctions relèvent des lots suivants. T04b reste à vérifier jusqu’aux retours d’usage requis. Aucun déploiement Nexus ni changement DNS.
+La page Agenda et les réglages indiquent les intégrations à préparer. Aucun rendez-vous Google, créneau à double validation, rappel Telegram, journée tranquille opérationnelle ou capture Alexa n’est annoncé comme connecté. Ces fonctions relèvent des lots suivants. T04b reste à vérifier jusqu’à la recette sur le téléphone d’Antoine. Aucun déploiement Nexus ni changement DNS.
