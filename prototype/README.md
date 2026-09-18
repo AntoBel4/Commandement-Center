@@ -23,7 +23,7 @@ Cette maquette ne constitue pas un déploiement sur `famille.estarellas.online` 
 
 Contrôle visuel et exécution dans Edge via Playwright. Les quatre écrans ont été vérifiés à 320, 390, 768 et 1440 pixels, sans débordement horizontal. Parcours vérifiés : ajout, achat, report, retour, urgence, suppression et annulation de courses ; création, détail et suppression d’un rendez-vous ; navigation semaine/jour ; réglages ; changement de profil ; fermeture de fenêtre par Échap. Aucune erreur JavaScript ni requête externe observée.
 
-Le 18 septembre, les 12 parcours guidés de la version initiale ont été déclarés réussis par Antoine. L’appareil et le navigateur n’ont pas été précisés : cela ne prouve pas un essai sur les deux Android. Les ajouts ci-dessous restent à valider par l’utilisateur avant intégration dans l’application.
+Le 18 septembre, les 12 parcours guidés de la version initiale ont été déclarés réussis par Antoine. L’appareil et le navigateur n’ont pas été précisés : cela ne prouve pas un essai sur les deux Android. Les deux ajouts ci-dessous ont ensuite été déclarés réussis par Antoine : 14 essais sur 14 validés pour la maquette. La réalisation de l’application connectée et sa recette restent à faire.
 
 ## Ajouts du 18 septembre 2026
 
@@ -37,7 +37,7 @@ Le 18 septembre, les 12 parcours guidés de la version initiale ont été décla
 - Agenda avec nouveauté aux largeurs 320/390/768/1440 px : aucun débordement horizontal ; réglages à 390 px inspectés visuellement ; aucune erreur console observée.
 - Vérification isolée de l’échéance à 7 h Europe/Paris, y compris passage à l’heure d’hiver et changement d’année.
 
-### Deux essais utilisateur restants
+### Deux essais des ajouts — réussis selon l’utilisateur le 18 septembre
 
 1. Ajouter une course ou un rendez-vous sous un profil, basculer vers l’autre et le consulter : indication visible. Changer de profil puis revenir : l’indication du contenu consulté a disparu.
 2. Activer Journée tranquille : bandeau visible et rappels ordinaires en pause pour ce profil uniquement. Vérifier une urgence simulée, puis Reprendre mes rappels : préférences habituelles conservées.
