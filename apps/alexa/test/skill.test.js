@@ -64,6 +64,42 @@ function turn(previous, values = {}, options = {}) {
   for (const [name,value] of Object.entries(values)) e.request.intent.slots[name] = {name,value};
   return e;
 }
+test('a complete phrase writes once through the API with every spoken detail and no elicitation', async t => {
+  const api=await fixture();t.after(()=>api.close());
+  const skill=createSkill({...config,fetchImpl:async(url,options)=>{
+    const r=await api.inject({method:options.method,url:new URL(url).pathname,headers:options.headers,payload:options.body});
+    return new Response(r.body,{status:r.statusCode});
+  }});
+  const request=envelope({accessToken:await token(alice,{azp:'commandement-alexa'}),
+    name:'deux paquets de pâtes au rayon épicerie',details:false});
+  for(let attempt=0;attempt<2;attempt++) {
+    const result=await skill.invoke(request);
+    assert.match(speech(result),/J’ai ajouté pâtes, quantité 2, unité paquet, rayon Épicerie/);
+    assert.equal(result.response.directives,undefined);assert.deepEqual(result.sessionAttributes,{});
+  }
+  const items=await api.store.listGroceries({familyId:family});assert.equal(items.length,1);
+  assert.deepEqual([items[0].name,items[0].quantity,items[0].unit,items[0].category],['pâtes',2,'paquet','Épicerie']);
+});
+
+test('partial phrases elicit only missing details, preserve them across turns and allow cancellation',async()=>{
+  const writes=[];const skill=createSkill({...config,fetchImpl:async(_u,o)=>{
+    writes.push(JSON.parse(o.body).items[0]);return Response.json({success:true,data:{count:1,items:[{id:'saved',...writes.at(-1)}]}});
+  }});
+  const start=await skill.invoke(envelope({name:'deux bouteilles de lait',details:false}));
+  assert.equal(start.response.directives[0].slotToElicit,'rayon');assert.equal(writes.length,0);
+  const saved=await skill.invoke(turn(start,{rayon:'frais'}));
+  assert.match(speech(saved),/J’ai ajouté lait/);
+  assert.deepEqual(writes[0],{name:'lait',quantity:2,unit:'bouteille',category:'Frais',source:'alexa'});
+  const other=await skill.invoke(envelope({name:'pain au rayon boulangerie',details:false,id:'next',attributes:saved.sessionAttributes}));
+  assert.equal(other.response.directives[0].slotToElicit,'quantite');
+  const skipped=await skill.invoke(envelope({intent:'PasserPrecision',details:false,attributes:other.sessionAttributes}));
+  assert.equal(skipped.response.directives[0].slotToElicit,'unite');
+  assert.equal(skipped.sessionAttributes.groceryDraft.rayon,'Boulangerie');
+  const cancelled=await skill.invoke(envelope({intent:'AMAZON.CancelIntent',attributes:skipped.sessionAttributes}));
+  assert.match(speech(cancelled),/Ajout annulé/);assert.equal(writes.length,1);
+  const explicit=await skill.invoke(envelope({name:'trois kilos de pâtes au rayon frais'}));
+  assert.match(speech(explicit),/quantité 2, unité paquet, rayon Épicerie/);
+});
 test('guided dialogue collects missing fields, accepts quantity plus unit together and writes only at the end',async()=>{
   const writes=[];const skill=createSkill({...config,fetchImpl:async(_u,o)=>{writes.push(o);return Response.json({success:true,data:{count:1,items:[{id:'saved',...JSON.parse(o.body).items[0]}]}});}});
   const start=await skill.invoke(envelope({name:'pommes',details:false}));

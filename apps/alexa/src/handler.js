@@ -1,11 +1,12 @@
 import Alexa from 'ask-sdk-core';
 import { createHash } from 'node:crypto';
 import {fields, questions, cleanText, normalizeField, slotValue, nextField, readDraft, updatedIntent} from './grocery-dialog.js';
+import {parseArticle} from './grocery-phrase.js';
 
 const escapeSpeech = value => value.replace(/[&<>"']/g, c => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
 }[c]));
-const help = 'Dites par exemple : ajoute du lait. Je demande ensuite la quantité, l’unité et le rayon manquants. Vous pouvez dire passer, ou annuler.';
+const help = 'Dites par exemple : ajoute deux paquets de pâtes au rayon épicerie. Je demande seulement les précisions manquantes. Vous pouvez dire passer, ou annuler.';
 
 // An Echo identifies the linked account, not the person speaking in the room.
 export function createSkill({ skillId, familyId, apiBaseUrl, fetchImpl = fetch }) {
@@ -59,8 +60,8 @@ export function createSkill({ skillId, familyId, apiBaseUrl, fetchImpl = fetch }
         const name = cleanText(slots.article?.value, 255);
         if (!draft || (name && draft.name !== name)) {
           if (!name) return response(h, 'Je n’ai pas identifié l’article. ' + help, true);
-          // Preserve compound names. Each new item gets one stable key for the entire dialogue.
-          draft = {name, requestId: envelope.request.requestId};
+          // Parse only a new item. Follow-up slots refer to its normalized name.
+          draft = {...parseArticle(name), requestId: envelope.request.requestId};
         }
         for (const field of fields) {
           const raw = slotValue(slots[field]);

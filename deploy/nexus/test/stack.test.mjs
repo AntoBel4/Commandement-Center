@@ -158,6 +158,16 @@ test('production gateway, real identity, two household members and outsider', {s
       assert.equal(list.length,1,'Real identity and PostgreSQL keep a single Alexa addition');
       assert.equal(list[0].source,'alexa');
       assert.equal(list[0].quantity,1.5);assert.equal(list[0].unit,'kg');assert.equal(list[0].category,'Fruits & légumes');
+      const phrase=structuredClone(envelope), phraseName='phrase demo '+randomUUID();
+      phrase.request.requestId=randomUUID();
+      phrase.request.intent.slots.article.value='deux paquets de '+phraseName+' au rayon épicerie';
+      for(let attempt=0;attempt<2;attempt++) {
+        const result=await skill.invoke(phrase);
+        assert.match(result.response.outputSpeech.ssml,/J’ai ajouté/);assert.equal(result.response.directives,undefined);
+      }
+      const phraseItems=(await (await call(0,'/grocery')).json()).data.filter(i=>i.name===phraseName);
+      assert.equal(phraseItems.length,1,'A one-sentence request remains one row when delivered twice');
+      assert.equal(phraseItems[0].quantity,2);assert.equal(phraseItems[0].unit,'paquet');assert.equal(phraseItems[0].category,'Épicerie');
       assert.equal((await fetch(base+'/integrations/alexa',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(envelope)})).status,400,'Public gateway refuses unsigned Alexa calls');
     }
   } finally {
