@@ -2,8 +2,21 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Prochaine phase : Alexa pour les courses, puis Google Agenda. Destination hors serveur toujours différée.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses installée pour recette, liaison utilisateur et essais Echo encore attendus ; Google Agenda ensuite. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Alexa courses — installée pour recette le 18 septembre
+
+Phase Alexa demandée après validation des tests T1 à T8. Google Agenda vient ensuite, puis les commandes vocales de rendez-vous.
+
+- [PR 7 — Courses Alexa](https://github.com/AntoBel4/Commandement-Center/pull/7), branche `feat/alexa-groceries`, tête `f74f1a76b0af34d1f7e1ff0011d45f6e4caa0ad5` : brouillon non fusionné, installation de cette révision pour la recette. [Guide et limites](https://github.com/AntoBel4/Commandement-Center/blob/feat/alexa-groceries/docs/ALEXA-COURSES.md).
+- Skill française « Courses Maison », invocation « courses maison », modèle construit et tests Development activés. Un article par demande ; source Alexa et compte lié, sans identification du locuteur.
+- Client dédié code/PKCE S256, audience API, jetons courts et renouvellement ; API limitée à l’ajout de courses pour ce client. Liaison persistante explicitement autorisée après demande d’accord. Aucun secret dans le dépôt, Notion ou le chat ; saisie personnelle du secret dans Amazon encore attendue.
+- Tests locaux : 30 réussis dans la commande générale, deux options backend ignorées ; test du générateur client réussi. Parcours séparé Keycloak/PostgreSQL réel réussi : code PKCE, renouvellement Basic, restrictions d’accès, ajout persisté une seule fois en cas de répétition. CI PostgreSQL et GitGuardian réussis.
+- Sauvegarde locale de production faite avant intervention ; restauration isolée des deux bases, empreintes et nombres d’enregistrements vérifiés. Cela ne valide pas encore une restauration complète du service ni une sauvegarde hors serveur.
+- Six services Maison sains après installation. HTTPS accueil et découverte OIDC 200 ; courses anonymes 401 ; administration 404 ; POST Alexa sans signature 400. Vérification des paramètres du client effectuée sans afficher le secret.
+- Aucune modification DNS/Cloudflare, autre sous-domaine ou service tiers. Seuls API/web Maison et le nouveau service Alexa sont concernés ; configurations précédentes conservées pour retour arrière.
+- **Encore à vérifier :** enregistrement de la liaison dans Amazon, demande réellement signée reçue depuis Amazon, association personnelle du compte et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
 
@@ -92,7 +105,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Recette d’usage en production terminée : Antoine confirme « T1 à T8 parfaits ». Préparer ensuite Alexa pour les courses (skill française, liaison au foyer, vérification des requêtes et essai sur Echo réel), puis Google Agenda et les créneaux à double validation. Ne pas refaire les essais validés.
+1. Terminer l’enregistrement du secret Alexa dans Amazon, vérifier une demande Amazon signée puis associer personnellement Maison et valider les deux Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
