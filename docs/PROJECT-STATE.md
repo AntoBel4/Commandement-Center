@@ -14,7 +14,9 @@ Agenda partagé pour le foyer, Google comme référence des événements confirm
 - Google Calendar API activée après accord explicite d’Antoine sur les conditions ; état Activé observé dans la console.
 - Partage avec Belinda enregistré à l’adresse fournie, droit d’ajouter/modifier, détails des événements marqués privés masqués. Réception et affichage sur son téléphone non vérifiés.
 - Compte technique Maison Agenda créé sans rôle Cloud. Accès persistant au seul agenda Maison - Famille explicitement autorisé puis enregistré : lecture/ajout/modification/suppression, sans gestion du partage, détails privés masqués. Aucun autre agenda partagé avec ce compte.
-- Après téléchargement interrompu, Antoine autorise explicitement la suppression de la seule clé inutilisée. Suppression réalisée et confirmée dans Google : liste des clés vide. Compte et partages conservés, aucune installation Nexus. Nouvelle création/téléchargement personnels proposés dans Chrome ou Edge ; aucun fichier secret à transmettre dans le chat. T06 En cours ; aucun événement synchronisé et aucun déploiement Google réalisé.
+- Après suppression autorisée de la clé du téléchargement interrompu, Antoine fournit le dossier contenant la nouvelle clé JSON. Identité/projet vérifiés sans afficher le secret ; transfert SSH dans la configuration privée Maison sur Nexus, dossier 700 et fichier 600 réservés au propriétaire.
+- Test réel en lecture seule depuis un conteneur temporaire Nexus : échange de jeton Google 200, lecture du seul agenda familial 200, rôle writerWithoutPrivateAccess, fuseau Europe/Paris. Aucun événement retourné dans la fenêtre des sept prochains jours. Aucun événement créé/modifié ni service existant redémarré. La clé n’est pas encore raccordée à l’API applicative.
+- T06 En cours : accès Google depuis Nexus confirmé, code d’affichage/création et synchronisation du portail encore à implémenter puis déployer et vérifier en usage.
 
 ## Alexa courses — acceptée depuis l’application du téléphone
 
@@ -125,7 +127,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Poursuivre Google Agenda : Calendar API activée, agenda Maison - Famille partagé avec Belinda et accès technique limité autorisé/enregistré. Clé du téléchargement interrompu supprimée avec accord, liste vide vérifiée. Recréer et télécharger personnellement une clé JSON dans Chrome ou Edge, puis installer de manière protégée et raccorder Maison. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
+1. Poursuivre Google Agenda : Calendar API activée, agenda Maison - Famille partagé avec Belinda et accès technique limité autorisé/enregistré. Nouvelle clé installée de manière protégée sur Nexus et accès Google réel en lecture confirmé. Raccorder maintenant la lecture/création dans Maison, les changements Google et les créneaux à double validation, puis déployer et faire la recette. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
