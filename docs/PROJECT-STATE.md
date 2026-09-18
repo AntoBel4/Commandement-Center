@@ -1,9 +1,17 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
+Dernière mise à jour : 19 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
 T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Créneaux à double validation — préparés le 19 septembre, non installés
+
+- Antoine choisit « Nous saisissons les créneaux » : proposition manuelle de 1 à 5 horaires, sans recherche automatique de disponibilités. Chacun valide depuis son propre compte ; proposer ne vaut pas accord. Le même horaire accepté par les deux déclenche un seul événement Google.
+- Réalisation sauvegardée dans la PR 8, branche `feat/google-calendar`, tête `c76d27ed537a7a721a9e67459e35deee819ed594`. Propositions et accords persistés, versions périmées refusées, retrait/annulation avant double accord. Une création engagée est figée et peut être vérifiée/reprise sans doublon depuis l’un ou l’autre compte. Pour changer les détails, annuler puis proposer à nouveau.
+- Validation locale : 74 tests applicatifs réussis avec PostgreSQL réel ; 2 scénarios optionnels ignorés (Keycloak réel et redémarrage du conteneur PostgreSQL). Trois tests de préparation réussis. Concurrence, reprise après nouvelle instance et perte de réponse Google simulée vérifiées. Parcours navigateur avec deux comptes fictifs et événement unique réussi ; formulaire 320 px, vues 390/1280 px et absence d’erreur console vérifiés. Nginx contrôlé dans un conteneur jetable. Aucun nouvel essai Google réel.
+- Installation préparée avec migration additive `005_calendar_proposals.sql`, service migrate aligné sur GOOGLE_RELEASE, puis API/web. Guide et retour arrière vers 6534c0c dans `docs/GOOGLE-AGENDA.md`. Aucun secret, nouveau partage, coût, changement Nexus/DNS ou déploiement de cette phase.
+- PR 8 reste en brouillon ; T06 En cours. Prochaine action : obtenir l’accord d’installation de cette phase sur Nexus, puis recette guidée avec deux comptes distincts. La précédente vérification sur le téléphone de Belinda reste reportée ; aucune réussite déduite. La dernière preuve d’installation reste 6534c0c (18 septembre), non revérifiée sur Nexus pendant cette session.
 
 ## Google Agenda — lecture et création installées, recette utilisateur en cours
 
@@ -131,7 +139,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Recette de Google Agenda installé à 6534c0c (PR 8 brouillon) : ajout, modification Google, récurrence et annulation d’une occurrence acceptés sur le téléphone d’Antoine. Test Belinda explicitement reporté par Antoine faute d’accès à son agenda, occurrence de test conservée ; aucune validation de son téléphone. Prochaine phase : réaliser les créneaux à double validation ; Telegram et rendez-vous vocaux restent dans leurs lots. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
+1. Recette de Google Agenda installé à 6534c0c (PR 8 brouillon) : ajout, modification Google, récurrence et annulation d’une occurrence acceptés sur le téléphone d’Antoine. Test Belinda explicitement reporté par Antoine faute d’accès à son agenda, occurrence de test conservée ; aucune validation de son téléphone. Phase créneaux manuels réalisée à c76d27e, non installée : obtenir l’accord d’installation sur Nexus, puis faire la recette avec deux comptes. PR 8 reste en brouillon ; Telegram et rendez-vous vocaux restent dans leurs lots. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
