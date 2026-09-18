@@ -9,10 +9,12 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 
 Agenda partagé pour le foyer, Google comme référence des événements confirmés, affichage et ajout dans Maison, modifications/annulations/récurrences Google reflétées, puis créneaux à double validation selon le besoin existant. Rappels Telegram et capture vocale des rendez-vous restent dans leurs lots respectifs.
 
-- Compte propriétaire choisi : Antoine. Nouvel agenda privé « Maison - Famille » créé, fuseau Europe/Paris ; agenda Famille préexistant préservé. Aucun événement ni partage supplémentaire créé.
-- Projet Google dédié Maison Famille créé. Antoine exige zéro dépense et autorise le compte de facturation actif seulement si nécessaire. Vérification dans la console : aucun compte de facturation associé au nouveau projet ; aucun service payant activé.
-- Google Calendar API : activation préparée, accord demandé sur les conditions Google API et Calendar affichées avant activation. Accès serveur dédié et partage avec Belinda restent à préparer.
-- T06 En cours. Aucune clé ni autorisation serveur Google créée, aucun événement synchronisé et aucun déploiement Google réalisé.
+- Compte propriétaire choisi : Antoine. Nouvel agenda privé « Maison - Famille » créé, fuseau Europe/Paris ; agenda Famille préexistant préservé. Aucun événement créé.
+- Projet Google dédié Maison Famille créé. Antoine exige zéro dépense et autorise le compte de facturation actif seulement si nécessaire. Vérification après activation de Calendar API : aucun compte de facturation associé ; aucun service payant activé.
+- Google Calendar API activée après accord explicite d’Antoine sur les conditions ; état Activé observé dans la console.
+- Partage avec Belinda enregistré à l’adresse fournie, droit d’ajouter/modifier, détails des événements marqués privés masqués. Réception et affichage sur son téléphone non vérifiés.
+- Compte technique Maison Agenda créé sans rôle Cloud. Accès persistant au seul agenda Maison - Famille explicitement autorisé puis enregistré : lecture/ajout/modification/suppression, sans gestion du partage, détails privés masqués. Aucun autre agenda partagé avec ce compte.
+- Création personnelle de la clé JSON demandée à Antoine ; fenêtre prête. Aucune clé créée par l’agent ni installée à ce stade. T06 En cours ; aucun événement synchronisé et aucun déploiement Google réalisé.
 
 ## Alexa courses — acceptée depuis l’application du téléphone
 
@@ -123,7 +125,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Poursuivre Google Agenda : nouvel agenda Maison - Famille et projet dédiés créés, projet sans facturation. Activer Calendar API après accord sur ses conditions, préparer l’accès limité à cet agenda et le partage avec Belinda, puis raccorder Maison. Zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
+1. Poursuivre Google Agenda : Calendar API activée, agenda Maison - Famille partagé avec Belinda et accès technique limité autorisé/enregistré. Attendre la création personnelle de la clé JSON puis l’installer de manière protégée et raccorder Maison. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
