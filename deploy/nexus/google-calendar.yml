@@ -15,6 +15,12 @@ services:
     networks: [internal, google_egress]
   web:
     image: commandement-web:${GOOGLE_RELEASE:?}
+    volumes:
+      - type: bind
+        source: ./google-calendar-nginx.conf
+        target: /etc/nginx/family-integrations/google-calendar.conf
+        read_only: true
+        bind: {create_host_path: false}
 networks:
   google_egress:
     driver: bridge
