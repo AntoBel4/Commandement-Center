@@ -14,7 +14,7 @@ Agenda partagé pour le foyer, Google comme référence des événements confirm
 - Google Calendar API activée après accord explicite d’Antoine sur les conditions ; état Activé observé dans la console.
 - Partage avec Belinda enregistré à l’adresse fournie, droit d’ajouter/modifier, détails des événements marqués privés masqués. Réception et affichage sur son téléphone non vérifiés.
 - Compte technique Maison Agenda créé sans rôle Cloud. Accès persistant au seul agenda Maison - Famille explicitement autorisé puis enregistré : lecture/ajout/modification/suppression, sans gestion du partage, détails privés masqués. Aucun autre agenda partagé avec ce compte.
-- Téléchargement de la clé interrompu selon Antoine. Une clé active a néanmoins été créée par son action dans Google ; aucun fichier correspondant trouvé dans le dossier Téléchargements, aucune installation Nexus. Suppression de cette seule clé inutilisée préparée, accord demandé avant remplacement. T06 En cours ; aucun événement synchronisé et aucun déploiement Google réalisé.
+- Après téléchargement interrompu, Antoine autorise explicitement la suppression de la seule clé inutilisée. Suppression réalisée et confirmée dans Google : liste des clés vide. Compte et partages conservés, aucune installation Nexus. Nouvelle création/téléchargement personnels proposés dans Chrome ou Edge ; aucun fichier secret à transmettre dans le chat. T06 En cours ; aucun événement synchronisé et aucun déploiement Google réalisé.
 
 ## Alexa courses — acceptée depuis l’application du téléphone
 
@@ -125,7 +125,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Poursuivre Google Agenda : Calendar API activée, agenda Maison - Famille partagé avec Belinda et accès technique limité autorisé/enregistré. Résoudre le téléchargement interrompu : accord demandé pour supprimer la seule clé inutilisée, puis remplacer et récupérer le fichier avant installation protégée et raccordement Maison. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
+1. Poursuivre Google Agenda : Calendar API activée, agenda Maison - Famille partagé avec Belinda et accès technique limité autorisé/enregistré. Clé du téléchargement interrompu supprimée avec accord, liste vide vérifiée. Recréer et télécharger personnellement une clé JSON dans Chrome ou Edge, puis installer de manière protégée et raccorder Maison. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
