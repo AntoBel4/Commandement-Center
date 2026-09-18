@@ -2,7 +2,19 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
+T08 : préparation de production et sauvegarde/restauration intégrée en PR 6 ; aucun déploiement Nexus. Destination de sauvegarde hors serveur à choisir plus tard par Antoine.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## T08 — préparation Nexus intégrée le 18 septembre
+
+Antoine approuve de préparer Nexus avant les intégrations (« ok commençons »), pour un premier périmètre comptes/courses. T08 reste en cours : préparation intégrée, installation et mise en service non réalisées.
+
+- [PR 6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) fusionnée dans main au commit `d61d4186e9b4b9019e9332c38095a2746cc00d3d`, tête vérifiée `f673e90e15f24d4527ac71e624100fe42e1b9a95`. CI PostgreSQL et GitGuardian réussis ; aucune revue humaine GitHub en attente. Workflow de tests uniquement.
+- Compose de production indépendant, Keycloak en mode production, deux bases internes, Nginx seul derrière Traefik, routes administratives et intégrations non exposées. Configuration privée générée sans écrasement et mots de passe initiaux temporaires. [Procédure](https://github.com/AntoBel4/Commandement-Center/blob/main/docs/NEXUS-PRODUCTION.md).
+- Diagnostic direct de Nexus en lecture seule effectué. Aucun service serveur installé, arrêté ou modifié ; aucun DNS modifié ni compte familial réel créé. Les connexions testées utilisent uniquement des comptes fictifs dans Docker local.
+- Validation locale : 2 tests du générateur ; images API/web construites ; Compose et sondes sains ; code/PKCE, changement du mot de passe initial, partage des courses, reprises sans doublon, refus du visiteur et du jeton d'identité. Export de deux jeux de sauvegarde et restauration des deux bases dans un conteneur sans réseau réussis, empreintes et nombres d'enregistrements correspondants. Reprise des services après sauvegarde vérifiée.
+- Antoine choisit une nouvelle destination hors Nexus puis reporte son emplacement (« À choisir plus tard »). Aucun stockage distant, achat, transfert ou planification créé. La copie hors serveur, la restauration du service complet, les objectifs de reprise et les alertes restent à établir.
+- Travail dans `nexus-production/`, autres dossiers locaux préservés. Préparation validée techniquement ; certificat réel, DNS/TLS, comptes personnels et accès Android indépendant du PC restent à vérifier. T04b reste terminé : ne pas redemander les anciens essais.
 
 ## T04b — recette validée et intégration du 18 septembre
 
@@ -33,6 +45,7 @@ Antoine confirme les 13 essais guidés PC, le correctif de déconnexion (« Ca f
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
+| [6 — Préparation Nexus](https://github.com/AntoBel4/Commandement-Center/pull/6) | feat/nexus-production | f673e90e15f24d4527ac71e624100fe42e1b9a95 | Fusionnée le 18 septembre, commit d61d4186e9b4b9019e9332c38095a2746cc00d3d | Préparation testée localement ; installer/configurer le périmètre comptes/courses et vérifier l'accès réel. |
 | [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 983643f0f8020d0542881cb93cbe490a935ceabe | Fusionnée le 18 septembre, commit 1959ace33eddc4fc67f778694afac13782be5ada | Comptes/courses validés PC et Android ; intégrations et déploiement à préparer. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
@@ -52,9 +65,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T04b terminé : 13 essais PC et 7 essais Android validés ; second téléphone dispensé par Antoine. PR 5 fusionnée, carte Notion et journal mis à jour. Ne pas redemander ces essais ni traiter l’adresse locale comme un accès de production.
-2. Préparer T06 et les autres intégrations : agenda Google partagé/autorisations, créneaux avec double validation, bot familial/appairages et compte développeur Amazon. Ne pas présenter les routes de départ comme des intégrations opérationnelles.
-3. Préparer l’identité de production, le routage Traefik et le sous-domaine, puis les sauvegardes, la restauration et la mise en service. Le Compose auth actuel reste local en start-dev ; aucun déploiement implicite. PR 2 alignée, encore en brouillon.
+1. T08 : installer la préparation de production intégrée en PR 6 sur Nexus, avec configuration privée et deux comptes personnels ; vérifier le domaine HTTPS et l'accès Android sans USB. Aucun déploiement implicite ne découle de la fusion.
+2. Choisir ultérieurement la nouvelle destination chiffrée de sauvegarde hors Nexus, conformément au report demandé par Antoine. Définir les objectifs de reprise, tester une restauration du service complet et raccorder les alertes avant de terminer T08.
+3. Poursuivre ensuite T06 et les intégrations Google Agenda/créneaux à double validation, Telegram et Alexa. La V1 complète demeure distincte de la première mise en service comptes/courses. PR 2 reste en brouillon.
 
 ## Socle T02 — preuves du 18 septembre
 
