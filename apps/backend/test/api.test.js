@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildApp } from '../src/app.js';
+import { buildApp as build } from '../src/app.js';
+import { InMemoryStore } from '../src/services/store.js';
+process.env.NODE_ENV = 'test';
+const buildApp = () => build({store:new InMemoryStore(),auth:{enabled:false},logger:false});
 
 test('POST /api/v1/events creates an event', async (t) => {
   const app = await buildApp();
@@ -73,7 +76,7 @@ test('event validation rejects invalid time and oversized title', async (t) => {
   assert.equal(response.json().error.code, 'VALIDATION_ERROR');
 });
 
-test('updating a grocery item maps purchasedBy to purchased_by', async (t) => {
+test('updating a development grocery retains the storage response shape', async (t) => {
   const app = await buildApp();
   t.after(() => app.close());
 
@@ -87,11 +90,11 @@ test('updating a grocery item maps purchasedBy to purchased_by', async (t) => {
   const response = await app.inject({
     method: 'PUT',
     url: `/api/v1/grocery/${id}`,
-    payload: { purchased: true, purchasedBy: 'Paul' }
+    payload: { purchased: true, version: 1 }
   });
 
   assert.equal(response.statusCode, 200);
-  assert.equal(response.json().data.purchased_by, 'Paul');
+  assert.equal(response.json().data.purchased_by, null);
   assert.equal('purchasedBy' in response.json().data, false);
   assert.ok(response.json().data.purchased_at);
 });

@@ -1,135 +1,57 @@
 # Centre de Commandement Familial
 
-Implémentation MVP+ d'un centre de commandement familial basé sur la spécification fournie.
+Portail familial en préparation : courses partagées, agenda et capture vocale.
+La maquette Maison validée est dans prototype/index.html ; elle reste autonome.
+Le socle API T02 est décrit dans [docs/T02-COURSES.md](docs/T02-COURSES.md).
+L’état vérifié et la prochaine action figurent dans [docs/PROJECT-STATE.md](docs/PROJECT-STATE.md).
 
 ## Structure
 
-- `apps/backend`: API Fastify (événements, courses, sync, webhooks), validation Zod, logs.
-- `apps/alexa`: handler Alexa Skill (`AjouterEvenement`, `AjouterCourse`) qui appelle l'API backend.
-- `apps/web`: interface web légère pour voir/créer des événements, gérer des courses et déclencher les syncs.
-- `supabase/migrations`: schéma SQL initial pour Supabase/PostgreSQL.
+- apps/backend : API Fastify, stockage PostgreSQL, migrations et tests.
+- apps/web : ancienne interface technique ; raccordement de Maison prévu dans T04b.
+- apps/alexa : code de départ de la future intégration, pas une preuve de service connecté.
+- supabase/migrations : migrations PostgreSQL standard.
+- deploy/keycloak : realm de préparation locale, inscriptions fermées et PKCE.
 
-La migration `002_family_scope.sql` prépare l'isolation par famille et les
-index PostgreSQL. Les colonnes `family_id` sont volontairement nullable pendant
-la transition vers l'authentification et la persistance.
+## Développement local
 
-## Développement et déploiement Docker
+Node.js 22 ou supérieur et npm sont requis.
 
-Le projet est prévu pour fonctionner derrière Caddy. Copier `.env.example`
-vers `.env`, définir un mot de passe PostgreSQL fort, puis lancer :
-
-```bash
-docker compose up --build
-```
-
-Le service web écoute dans le réseau Docker sur `web:80` et l'API sur
-`api:3000`. Caddy doit reverse-proxyer le domaine public vers ces services.
-La base PostgreSQL n'est pas exposée sur l'hôte.
-
-L'authentification OIDC/Keycloak est désactivée en développement (`AUTH_ENABLED=false`).
-Avant toute exposition publique, configurer un realm Keycloak, un client
-`commandement-center`, les URLs `AUTH_*`, puis activer `AUTH_ENABLED=true`.
-L'API exigera alors un Bearer token valide et un `X-Family-Id` correspondant à
-une ligne de `family_members`.
-
-Pour lancer Keycloak localement avec son realm importé :
-
-```bash
-docker compose --profile auth up -d
-```
-
-La console sera disponible sur `http://localhost:8081`. Le mot de passe
-administrateur doit être remplacé par une valeur forte dans `.env` avant tout
-déploiement sur Nexus. La commande `start-dev` est réservée au développement ;
-Nexus devra utiliser une commande Keycloak de production derrière Caddy.
-
-Après avoir créé un utilisateur dans le realm `commandement`, récupérer son
-UUID dans la console Keycloak, renseigner `FAMILY_NAME`, `KEYCLOAK_USER_ID` et
-`DATABASE_URL`, puis lancer une seule fois :
-
-```bash
-docker compose run --rm \
-  -e FAMILY_NAME="Ma famille" \
-  -e KEYCLOAK_USER_ID="UUID_DE_L_UTILISATEUR" \
-  api npm run bootstrap:family -w @family/backend
-```
-
-La commande crée la famille et donne le rôle `owner` à cet utilisateur. Elle
-ne doit pas être exposée comme une route HTTP.
-
-## Prérequis
-
-- Node.js 18+
-- npm 9+
-
-## Procédure de test pas à pas
-
-### 1) Installer les dépendances
-
-```bash
-npm install
-```
-
-### 2) Lancer le backend
-
-```bash
-npm run dev:backend
-```
-
-Le backend écoute par défaut sur `http://localhost:3000`.
-
-### 3) Vérifier l'API rapidement
-
-```bash
-curl http://localhost:3000/health
-```
-
-Réponse attendue:
-
-```json
-{"status":"ok"}
-```
-
-### 4) Tester la création d'un événement
-
-```bash
-curl -X POST http://localhost:3000/api/v1/events \
-  -H "content-type: application/json" \
-  -d '{"title":"Dentiste","date":"2026-04-20","time":"15:00","person":"Paul","source":"dashboard"}'
-```
-
-### 5) Tester la création d'une course
-
-```bash
-curl -X POST http://localhost:3000/api/v1/grocery/batch \
-  -H "content-type: application/json" \
-  -d '{"items":[{"name":"Lait","quantity":2,"unit":"litres","source":"dashboard"}]}'
-```
-
-### 6) Lancer l'interface web
-
-Depuis `apps/web`:
-
-```bash
-cd apps/web
-python3 -m http.server 4173
-```
-
-Puis ouvrir `http://localhost:4173` dans le navigateur.
-
-- Renseigner l'URL API (par défaut `http://localhost:3100` avec Docker Compose).
-- Utiliser les formulaires pour créer événements/courses.
-- Utiliser les boutons "Rafraîchir" et les boutons de sync.
-
-### 7) Exécuter les tests automatiques
-
-```bash
+```sh
+npm ci --ignore-scripts
 npm test
 ```
 
-## Variables utiles
+Copier .env.example vers .env et définir les valeurs privées. Pour un essai Node en mémoire uniquement, définir explicitement NODE_ENV=development et AUTH_ENABLED=false, laisser DATABASE_URL vide, puis :
 
-- `PORT`, `HOST`, `LOG_LEVEL` pour le backend.
-- `FAMILY_API_BASE_URL` pour la lambda Alexa.
-- Renseigner les secrets uniquement dans `.env` ou dans le gestionnaire de
-  secrets du serveur ; ne jamais les committer.
+```sh
+node --env-file=.env apps/backend/src/server.js
+```
+
+Ce mode n’est pas utilisable en production. L’API refuse le stockage mémoire et l’authentification désactivée en production. Avec authentification, adapter AUTH_JWKS_URL pour qu’elle soit joignable depuis le processus Node (localhost pour un lancement sur le PC ; nom du service pour Docker).
+
+## Préparation Docker locale
+
+Le Compose existant sert à la préparation locale. Les ports du fichier override sont limités à 127.0.0.1. Ce fichier n’est pas une configuration de mise en ligne Nexus ; le raccordement Traefik et l’identité de production restent à préparer.
+
+Renseigner POSTGRES_PASSWORD, KEYCLOAK_DB_PASSWORD, KEYCLOAK_ADMIN_PASSWORD et AUTH_ISSUER_URL dans .env. AUTH_AUDIENCE vaut commandement-api. Puis :
+
+```sh
+docker compose --profile auth up --build -d
+```
+
+La base n’a pas de port publié. Le service migrate exécute les migrations avant le démarrage de l’API et du worker. /health indique que le processus répond ; /ready vérifie l’accès au schéma des courses.
+
+Keycloak local utilise start-dev et le realm commandement. Créer deux utilisateurs dans sa console locale, puis renseigner FAMILY_ID (UUID stable), FAMILY_NAME et KEYCLOAK_USER_IDS (les deux UUID séparés par une virgule) :
+
+```sh
+docker compose run --rm -e FAMILY_ID -e FAMILY_NAME -e KEYCLOAK_USER_IDS api npm run bootstrap:family -w @family/backend
+```
+
+Les variables de provisionnement doivent être exportées dans le terminal qui exécute cette commande, ou fournies explicitement avec -e NOM=VALEUR ; le fichier .env Compose seul ne les exporte pas dans le terminal. Aucun mot de passe utilisateur n’est inscrit dans le realm ou Git.
+
+Les jetons d’accès doivent être destinés à commandement-api. Chaque requête API utilise Authorization: Bearer et X-Family-Id, vérifiés côté serveur. Le profil auth local ne prouve pas que Keycloak est prêt en production.
+
+## Livraison
+
+Tout le Centre est destiné à Docker derrière le Traefik existant, avec configuration privée externe. Aucun déploiement sur Nexus, DNS, intégration Google/Telegram/Alexa ou notification réelle n’est déclenché par ce dépôt ou ces tests.
