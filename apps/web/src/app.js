@@ -64,7 +64,10 @@ function settings() {
 function render() {
   $('#date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', timeZone:'Europe/Paris'});
   if (!state.ready) return;
-  $('#account').textContent = person + ' · Mon compte'; $('#account').disabled = false;
+  $('#account').textContent = person;
+  $('#account').setAttribute('aria-label', person + ' · Mon compte');
+  $('#account').title = 'Mon compte'; $('#account').disabled = false;
+  $('#signout').hidden = false;
   $('#nav').innerHTML = [['home','home','Aujourd’hui'],['shopping','bag','Courses'],['agenda','calendar','Agenda'],['settings','settings','Réglages']].map(([view,ic,label]) => `<button data-view="${view}" class="${view === state.view ? 'active' : ''}" ${view === state.view ? 'aria-current="page"' : ''}>${icon(ic)}<span>${label}</span>${view === 'shopping' ? `<span class="count">${active().length}</span>` : ''}</button>`).join('');
   const toolbar = `<div class="toolbar"><small>${state.stale ? 'Liste non actualisée · modifications suspendues' : 'Liste actualisée à ' + new Date(state.updated).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})}</small>${button('refresh', icon('refresh') + 'Actualiser', state.busy ? 'disabled' : '')}</div>`;
   $('#page').innerHTML = pendingCard() + toolbar + ({home, shopping, settings, agenda: () => header('Notre agenda.', 'Du temps pour l’essentiel.', false) + agendaCard()})[state.view]();
@@ -83,6 +86,8 @@ function lockOut(message, forbidden = false) {
   sessionEpoch++; state.ready = false; state.items = []; state.stale = true;
   $('#modal').close(); $('#modal-body').textContent = ''; $('#toast').classList.remove('show'); undo = null;
   $('#nav').innerHTML = ''; $('#account').textContent = forbidden ? 'Changer de compte' : 'Se connecter'; $('#account').disabled = false;
+  $('#account').removeAttribute('aria-label'); $('#account').removeAttribute('title');
+  $('#signout').hidden = !auth?.authenticated;
   $('#page').innerHTML = `<section class="card card-pad login-card"><div class="eyebrow">Bienvenue à la maison</div><h1>Le quotidien,<br>ensemble.</h1><p>${esc(message)}</p>${button(forbidden ? 'logout' : 'login', forbidden ? 'Changer de compte' : 'Se connecter')}</section>`;
   notice();
 }

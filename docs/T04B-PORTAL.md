@@ -68,6 +68,10 @@ Le serveur écoute exclusivement `127.0.0.1:4173` (port modifiable par `PORTAL_P
 
 ## Recette utilisateur encore ouverte
 
+Retour du 18 septembre : Antoine déclare les 13 essais guidés réussis, après les deux premiers essais connexion/ajout et partage avec le second compte. La série couvre ajout détaillé, achat, réouverture, report, retour au jour courant, urgence, attribution, libération, retrait/annulation, rechargement, nouveautés, refus du visiteur et présentation générale. Ce retour ne valide pas les deux Android.
+
+Observation : déconnexion difficile à trouver dans Réglages. Un bouton textuel « Déconnexion » est désormais présent dans l’en-tête sur chaque page connectée. Vérification après correction : bouton visible à 320 px sans débordement, déconnexion Keycloak réelle et retour à l’écran de connexion. Les 13 essais ne sont pas à refaire pour ce changement ciblé.
+
 1. Connexion et déconnexion avec les deux comptes de test ; vérifier l’accueil et l’ajout sur ordinateur.
 2. À deux : création, achat/réouverture, report, urgence, attribution, retrait et annulation. Vérifier la visibilité après actualisation depuis l’autre compte.
 3. Retours sur les textes, les filtres et le récapitulatif ; vérifier le confort des boutons et des formulaires sur les deux Android quand un environnement accessible aux téléphones aura été préparé.
