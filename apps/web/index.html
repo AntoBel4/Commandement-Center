@@ -1,89 +1,33 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Centre de Commandement Familial</title>
-    <link rel="stylesheet" href="./src/styles.css" />
-  </head>
-  <body>
-    <main class="container">
-      <header>
-        <h1>Centre de Commandement Familial</h1>
-        <p>Interface simple pour piloter les événements, les courses et les synchronisations.</p>
-      </header>
-
-      <section class="toolbar card">
-        <label for="apiBaseUrl">Backend URL</label>
-        <input id="apiBaseUrl" type="url" value="http://localhost:3100" />
-        <button id="saveApiBase" type="button">Sauvegarder</button>
-        <span id="statusText" class="status"></span>
-      </section>
-
-      <section class="toolbar card auth-panel">
-        <label for="authBaseUrl">Keycloak URL</label>
-        <input id="authBaseUrl" type="url" value="http://localhost:8081" />
-        <label for="familyId">Family ID</label>
-        <input id="familyId" type="text" value="576fadf8-f7b4-40b9-bf70-90945c2f0dd4" />
-        <button id="authButton" type="button">Se connecter</button>
-        <span id="authStatus" class="status"></span>
-      </section>
-
-      <section class="grid two-cols">
-        <article class="card">
-          <h2>Ajouter un événement</h2>
-          <form id="eventForm" class="form-grid">
-            <input name="title" placeholder="Titre" required />
-            <input name="person" placeholder="Personne" />
-            <input name="date" type="date" required />
-            <input name="time" type="time" />
-            <input name="location" placeholder="Lieu" />
-            <button type="submit">Créer événement</button>
-          </form>
-        </article>
-
-        <article class="card">
-          <h2>Ajouter une course</h2>
-          <form id="groceryForm" class="form-grid">
-            <input name="name" placeholder="Article" required />
-            <input name="quantity" type="number" min="0" step="0.1" placeholder="Quantité" />
-            <input name="unit" placeholder="Unité" />
-            <input name="category" placeholder="Catégorie" />
-            <button type="submit">Ajouter course</button>
-          </form>
-        </article>
-      </section>
-
-      <section class="grid two-cols">
-        <article class="card">
-          <h2>Événements</h2>
-          <button id="refreshEvents" type="button">Rafraîchir</button>
-          <ul id="eventsList"></ul>
-        </article>
-
-        <article class="card">
-          <h2>Courses</h2>
-          <button id="refreshGroceries" type="button">Rafraîchir</button>
-          <ul id="groceryList"></ul>
-        </article>
-      </section>
-
-      <section class="card">
-        <h2>Actions de synchronisation</h2>
-        <div class="sync-actions">
-          <button data-sync="google" type="button">Sync Google</button>
-          <button data-sync="telegram" type="button">Sync Telegram</button>
-          <button data-sync="notion" type="button">Sync Notion</button>
-          <button data-sync="daily-report" type="button">Rapport quotidien</button>
-        </div>
-        <div class="sync-log-toolbar">
-          <h3>Historique</h3>
-          <button id="refreshSyncLogs" type="button">Rafraîchir</button>
-        </div>
-        <ul id="syncLogsList"></ul>
-      </section>
-    </main>
-
-    <script type="module" src="./src/app.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#234b3e">
+  <meta name="referrer" content="no-referrer">
+  <title>Maison — Le quotidien, ensemble</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/src/styles.css">
+  <link rel="stylesheet" href="/src/portal.css">
+</head>
+<body>
+  <a class="skip-link" href="#page">Aller au contenu</a>
+  <aside class="sidebar" aria-label="Navigation principale">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>maison.</div>
+    <div class="brand-sub">Le quotidien, ensemble.</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-bottom"><div class="family"><div><h3>Notre famille</h3><small>Un espace pour nous deux</small></div></div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar row between"><span class="date" id="date"></span><span class="mobile-brand">maison.</span><button class="btn account-btn" id="account" disabled>Connexion…</button></header>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <div id="page" tabindex="-1"><div class="empty">Ouverture de votre espace…</div></div>
+    <div class="footer-note">Pensé pour notre famille.<span>✦</span>Un peu moins à penser, un peu plus à partager.</div>
+  </main>
+  <dialog id="modal" aria-labelledby="modal-title"><div id="modal-body"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <noscript>Activez JavaScript pour accéder à votre espace familial.</noscript>
+  <script type="module" src="/src/app.js"></script>
+</body>
 </html>

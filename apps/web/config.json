@@ -1,0 +1,4 @@
+{
+  "familyId": "",
+  "auth": { "url": "http://localhost:8081", "realm": "commandement", "clientId": "commandement-center" }
+}

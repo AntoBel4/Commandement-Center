@@ -1,5 +1,3 @@
-FROM nginx:1.27-alpine
-
 FROM node:22-alpine AS assets
 WORKDIR /app
 COPY package*.json ./
@@ -9,7 +7,8 @@ COPY apps/alexa/package.json apps/alexa/package.json
 RUN npm ci --omit=dev
 
 FROM nginx:1.27-alpine
-COPY apps/web /usr/share/nginx/html
+COPY apps/web/index.html apps/web/config.json apps/web/icon.svg apps/web/manifest.webmanifest /usr/share/nginx/html/
+COPY apps/web/src /usr/share/nginx/html/src
 COPY --from=assets /app/node_modules/keycloak-js/lib/keycloak.js /usr/share/nginx/html/vendor/keycloak.js
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
