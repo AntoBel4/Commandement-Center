@@ -3,12 +3,13 @@
 Portail familial en préparation : courses partagées, agenda et capture vocale.
 La maquette Maison validée est dans prototype/index.html ; elle reste autonome.
 Le socle API T02 est décrit dans [docs/T02-COURSES.md](docs/T02-COURSES.md).
+Le portail connecté et sa recette sont décrits dans [docs/T04B-PORTAL.md](docs/T04B-PORTAL.md).
 L’état vérifié et la prochaine action figurent dans [docs/PROJECT-STATE.md](docs/PROJECT-STATE.md).
 
 ## Structure
 
 - apps/backend : API Fastify, stockage PostgreSQL, migrations et tests.
-- apps/web : ancienne interface technique ; raccordement de Maison prévu dans T04b.
+- apps/web : portail Maison, connexion personnelle et courses persistantes (T04b, recette ordinateur et Android validée ; intégrations et déploiement à préparer).
 - apps/alexa : code de départ de la future intégration, pas une preuve de service connecté.
 - supabase/migrations : migrations PostgreSQL standard.
 - deploy/keycloak : realm de préparation locale, inscriptions fermées et PKCE.
@@ -51,6 +52,8 @@ docker compose run --rm -e FAMILY_ID -e FAMILY_NAME -e KEYCLOAK_USER_IDS api npm
 Les variables de provisionnement doivent être exportées dans le terminal qui exécute cette commande, ou fournies explicitement avec -e NOM=VALEUR ; le fichier .env Compose seul ne les exporte pas dans le terminal. Aucun mot de passe utilisateur n’est inscrit dans le realm ou Git.
 
 Les jetons d’accès doivent être destinés à commandement-api. Chaque requête API utilise Authorization: Bearer et X-Family-Id, vérifiés côté serveur. Le profil auth local ne prouve pas que Keycloak est prêt en production.
+
+Le portail exige un fichier public `config.json` avec le foyer provisionné et l’adresse Keycloak ; voir [la configuration T04b](docs/T04B-PORTAL.md#configuration-locale-et-docker). Sa valeur de foyer vide bloque l’ouverture tant qu’il n’est pas configuré. Le navigateur utilise l’API sur la même origine via Nginx.
 
 ## Livraison
 
