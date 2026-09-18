@@ -2,7 +2,7 @@
 
 Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses installée pour recette, liaison utilisateur et essais Echo encore attendus ; Google Agenda ensuite. Destination hors serveur toujours différée.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses installée pour recette, liaison personnelle confirmée, lancement normal dans le simulateur réussi ; essais Echo encore attendus ; Google Agenda ensuite. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
 ## Alexa courses — installée pour recette le 18 septembre
@@ -17,9 +17,10 @@ Phase Alexa demandée après validation des tests T1 à T8. Google Agenda vient 
 - Six services Maison sains après installation. HTTPS accueil et découverte OIDC 200 ; courses anonymes 401 ; administration 404 ; POST Alexa sans signature 400. Vérification des paramètres du client effectuée sans afficher le secret.
 - Aucune modification DNS/Cloudflare, autre sous-domaine ou service tiers. Seuls API/web Maison et le nouveau service Alexa sont concernés ; configurations précédentes conservées pour retour arrière.
 - « Vos skills » retrouvé par Antoine ; association interrompue par Bad Gateway. Erreur Nginx « upstream sent too big header » reproduite avec un état OAuth fictif long. Correctif 702a125 : limites bornées adaptées aux cookies de liaison, uniquement dans le serveur Maison et la route de connexion. Recette complète locale réelle réussie avec état de 4 000 caractères ; CI/GitGuardian réussis. Seul web recréé sur Nexus ; six services sains et même contrôle public passé de 502 à 200 avec formulaire présent.
-- Déclaration du type de certificat public corrigée en wildcard dans la skill après contrôle TLS public valide. Le premier retest manuel Amazon affiche encore le refus ; ne pas déclarer le transport signé validé. Aucun changement Cloudflare/DNS.
-- Après correction, association personnelle confirmée par Antoine (« Compte associé ») ; échanges de jetons 200 observés sur Maison. Premier ajout réel sur Echo demandé, résultat attendu.
-- **Encore à vérifier :** demande réellement signée reçue depuis Amazon et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
+- Déclaration du type de certificat public corrigée en wildcard dans la skill après contrôle TLS public valide. Après un premier retest encore refusé, le diagnostic manuel Amazon réussit : demande signée reçue et réponse Maison 200 observée le 18 septembre à 17:49 UTC. Le scénario fictif sans jeton reçoit logiquement la carte de liaison. Aucun changement Cloudflare/DNS.
+- Après correction, association personnelle confirmée par Antoine (« Compte associé ») ; échanges de jetons 200 observés sur Maison. Premier essai Echo : « aucun groupe ou appareil », aucun ajout confirmé. Antoine confirme Français (France) sur l’enceinte.
+- Modèle vocal reconstruit avec succès le 18 septembre (console : 19:55). Après reconstruction, « ouvre courses maison » dans le simulateur produit le véritable accueil Maison, avec compte lié et réponse signée traitée. Le blocage de reconnaissance antérieur ne se reproduit plus dans ce test. Nouvel essai réel Echo demandé, résultat attendu.
+- **Encore à vérifier :** ajout réel depuis les Echo et présence dans Maison. Transport signé et lancement normal du simulateur validés ; cela ne valide pas encore l’usage réel sur enceinte. T03 reste En cours.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
 
@@ -108,7 +109,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Association personnelle réussie après correction du Bad Gateway. Valider le premier ajout vocal dans Maison, vérifier les appels signés puis essayer le second Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
+1. Association personnelle, transport signé et lancement normal du simulateur réussis après correction et reconstruction. Attendre le résultat du nouvel essai Echo, vérifier le premier ajout vocal dans Maison puis essayer le second Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
