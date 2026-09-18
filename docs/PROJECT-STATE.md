@@ -4,6 +4,15 @@ Dernière mise à jour : 18 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. Aucun travail différé ni surveillance programmée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
 
+## T04b — version à vérifier du 18 septembre
+
+- [PR 5 — Portail Maison connecté](https://github.com/AntoBel4/Commandement-Center/pull/5), branche `feat/t04b-portal`, commit `9179d6450cd8811cca369d592f73b2eb10e831eb`. Sauvegardée en brouillon, non fusionnée ; retours utilisateur à recueillir. [Contrat et recette](https://github.com/AntoBel4/Commandement-Center/blob/feat/t04b-portal/docs/T04B-PORTAL.md).
+- Connexion personnelle, courses persistantes, attribution « Je m’en occupe », achat/réouverture, report par date, urgence dans la liste, retrait/annulation. Reprise des ajouts avec clé conservée et gestion explicite des conflits.
+- 7 tests web et 26 contrôles backend avec PostgreSQL réussis ; 2 scénarios backend optionnels non exécutés dans cette commande. Recette navigateur avec Keycloak/PostgreSQL réels et comptes fictifs : deux membres partagent la liste, visiteur refusé, cycle des courses vérifié. Coupure API puis rechargement/reprise d’un ajout vérifiés. Docker construit et Nginx contrôlé.
+- Page Courses à 320/390/768/1440 px sans débordement horizontal ; formulaire inspecté à 320 px. La recette sur les deux Android et les retours d’Antoine restent ouverts. Aucun raccourci Android installé ou testé sur appareil réel.
+- L’agenda Google, les créneaux à double validation, Telegram, la journée tranquille opérationnelle et Alexa restent à préparer dans leurs lots. Les nouveautés courses sont indiquées localement par compte et par onglet ; pas de synchronisation des lectures entre appareils.
+- Aucun déploiement Nexus ni DNS modifié. L’aperçu de cette session est local au PC et ne constitue pas une URL de production. Ne pas supposer qu’il tourne encore lors d’une nouvelle session.
+
 ## Où nous en sommes
 
 - Cadrage V1 établi : portail web privé, courses partagées, agenda et capture vocale, socle Docker prévu derrière Traefik.
@@ -13,7 +22,7 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 - Maquette interactive « Maison » livrée : Aujourd’hui, Courses, Agenda, Réglages. Elle est indépendante de l’application, avec données fictives uniquement.
 - Les 12 tests guidés de la maquette initiale sont déclarés réussis par Antoine : accueil, ajout/achat/retour/report/urgence/suppression des courses, récapitulatif, création/gestion des rendez-vous, profils et rappels.
 - Deux ajouts ensuite livrés : indication des nouveautés par profil sur courses/agenda, et Journée tranquille personnelle jusqu’au lendemain à 7 h Paris (simulation, urgences conservées, reprise anticipée et préférences préservées). Leurs deux essais sont déclarés réussis par Antoine : 14 essais validés au total et T04a = Terminé.
-- Retenus pour la suite, non implémentés : « Je m’en occupe » et propositions de créneaux avec validation des deux personnes avant création du rendez-vous. Détails et autres choix dans Notion.
+- « Je m’en occupe » réalisé dans la PR 5, en attente de recette utilisateur. Les propositions de créneaux avec validation des deux personnes restent à préparer avec T06. Détails et autres choix dans Notion.
 - Aucun déploiement de cette version sur le serveur ; aucune intégration réelle Google/Telegram/Alexa connectée par ces sessions.
 - Base de code examinée au commit 03cf35c05a16714bf49958d191dc092980124b00 : connecteurs de synchronisation incomplets, déploiement initial Caddy, authentification désactivable. La proposition V1 précise les corrections nécessaires.
 
@@ -21,6 +30,7 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 
 | PR | Branche | Dernier commit observé | État observé | Suite |
 | --- | --- | --- | --- | --- |
+| [5 — Portail T04b](https://github.com/AntoBel4/Commandement-Center/pull/5) | feat/t04b-portal | 9179d6450cd8811cca369d592f73b2eb10e831eb | Ouverte, brouillon, non fusionnée | Recette utilisateur du portail connecté ; Android à vérifier. |
 | [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | docs/family-v1-delivery | 4303eda1e438f777698bd665a3db95ad6ed1a7e3 | Ouverte, brouillon, non fusionnée | Plan aligné avec T01, maquette validée et T02 ; revue finale documentaire avant fusion. |
 | [3 — Maquette Maison](https://github.com/AntoBel4/Commandement-Center/pull/3) | prototype/family-portal | 4366576a63b399a6b921f2dec62a3861fdcbe93e | Fusionnée le 18 septembre, commit 16a635c89f10190daaa447a51bcf2af69ebe86da | Maquette validée ; préparer T04b. |
 | [4 — Socle T02](https://github.com/AntoBel4/Commandement-Center/pull/4) | feat/t02-courses | 7e49ac0bd29b033f166dc15370aafaa6dfc04c91 | Fusionnée le 18 septembre, commit afaebca082e69b90eb5ef412a9a19f8f3b33f5ec | Raccorder le portail dans T04b ; aucun déploiement. |
@@ -39,7 +49,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. T04b : raccorder Maison à la connexion et aux courses persistantes de T02. Gérer les conflits de version, les reprises d’envoi et la prise en charge « Je m’en occupe ». Les parcours visuels et les deux Android restent à vérifier.
+1. T04b : reprendre les essais utilisateur sur la version de la PR 5, puis corriger les retours. Commencer par l’accueil, l’ajout et le partage entre deux comptes de test sur ordinateur. Préparer ensuite un environnement accessible aux deux Android ; l’aperçu actuel est limité au PC. Garder la PR en brouillon tant que la revue requise n’est pas terminée.
 2. Préparer T06 et les autres intégrations : agenda Google partagé/autorisations, créneaux avec double validation, bot familial/appairages et compte développeur Amazon. Ne pas présenter les routes de départ comme des intégrations opérationnelles.
 3. Préparer l’identité de production, le routage Traefik et le sous-domaine, puis les sauvegardes, la restauration et la mise en service. Le Compose auth actuel reste local en start-dev ; aucun déploiement implicite. PR 2 alignée, encore en brouillon.
 
