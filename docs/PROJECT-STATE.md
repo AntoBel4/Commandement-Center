@@ -9,14 +9,16 @@ Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant
 
 Phase Alexa demandée après validation des tests T1 à T8. Google Agenda vient ensuite, puis les commandes vocales de rendez-vous.
 
-- [PR 7 — Courses Alexa](https://github.com/AntoBel4/Commandement-Center/pull/7), branche `feat/alexa-groceries`, tête `f74f1a76b0af34d1f7e1ff0011d45f6e4caa0ad5` : brouillon non fusionné, installation de cette révision pour la recette. [Guide et limites](https://github.com/AntoBel4/Commandement-Center/blob/feat/alexa-groceries/docs/ALEXA-COURSES.md).
+- [PR 7 — Courses Alexa](https://github.com/AntoBel4/Commandement-Center/pull/7), branche `feat/alexa-groceries`, tête `702a12550185564e01a78b45e6b87c4df2ed5369` : brouillon non fusionné. Installation initiale f74f1a7 ; correctif de configuration web 702a125 installé ensuite, images applicatives inchangées. [Guide et limites](https://github.com/AntoBel4/Commandement-Center/blob/feat/alexa-groceries/docs/ALEXA-COURSES.md).
 - Skill française « Courses Maison », invocation « courses maison », modèle construit et tests Development activés. Un article par demande ; source Alexa et compte lié, sans identification du locuteur.
-- Client dédié code/PKCE S256, audience API, jetons courts et renouvellement ; API limitée à l’ajout de courses pour ce client. Liaison persistante explicitement autorisée après demande d’accord. Aucun secret dans le dépôt, Notion ou le chat ; saisie personnelle du secret dans Amazon encore attendue.
+- Client dédié code/PKCE S256, audience API, jetons courts et renouvellement ; API limitée à l’ajout de courses pour ce client. Liaison persistante explicitement autorisée après demande d’accord. Aucun secret dans le dépôt, Notion ou le chat ; secret enregistré personnellement, succès de sauvegarde Amazon vérifié.
 - Tests locaux : 30 réussis dans la commande générale, deux options backend ignorées ; test du générateur client réussi. Parcours séparé Keycloak/PostgreSQL réel réussi : code PKCE, renouvellement Basic, restrictions d’accès, ajout persisté une seule fois en cas de répétition. CI PostgreSQL et GitGuardian réussis.
 - Sauvegarde locale de production faite avant intervention ; restauration isolée des deux bases, empreintes et nombres d’enregistrements vérifiés. Cela ne valide pas encore une restauration complète du service ni une sauvegarde hors serveur.
 - Six services Maison sains après installation. HTTPS accueil et découverte OIDC 200 ; courses anonymes 401 ; administration 404 ; POST Alexa sans signature 400. Vérification des paramètres du client effectuée sans afficher le secret.
 - Aucune modification DNS/Cloudflare, autre sous-domaine ou service tiers. Seuls API/web Maison et le nouveau service Alexa sont concernés ; configurations précédentes conservées pour retour arrière.
-- **Encore à vérifier :** enregistrement de la liaison dans Amazon, demande réellement signée reçue depuis Amazon, association personnelle du compte et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
+- « Vos skills » retrouvé par Antoine ; association interrompue par Bad Gateway. Erreur Nginx « upstream sent too big header » reproduite avec un état OAuth fictif long. Correctif 702a125 : limites bornées adaptées aux cookies de liaison, uniquement dans le serveur Maison et la route de connexion. Recette complète locale réelle réussie avec état de 4 000 caractères ; CI/GitGuardian réussis. Seul web recréé sur Nexus ; six services sains et même contrôle public passé de 502 à 200 avec formulaire présent.
+- Déclaration du type de certificat public corrigée en wildcard dans la skill après contrôle TLS public valide. Le premier retest manuel Amazon affiche encore le refus ; ne pas déclarer le transport signé validé. Aucun changement Cloudflare/DNS.
+- **Encore à vérifier :** nouvelle association personnelle du compte, demande réellement signée reçue depuis Amazon et ajout réel depuis les Echo. Le premier essai du simulateur n’a pas fourni de réponse Maison vérifiable. T03 reste En cours ; ne pas confondre installation et recette réussie.
 
 ## Reprise autorisée le 18 septembre — domaine familial publié
 
@@ -105,7 +107,7 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Terminer l’enregistrement du secret Alexa dans Amazon, vérifier une demande Amazon signée puis associer personnellement Maison et valider les deux Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
+1. Relancer l’association personnelle depuis Courses Maison après correction du Bad Gateway, vérifier une demande Amazon signée puis valider les deux Echo. PR 7 reste en brouillon jusqu’à la recette. Ensuite Google Agenda et les créneaux à double validation. T1 à T8 sont déjà validés et ne sont pas à refaire.
 2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
 3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
 
