@@ -10,4 +10,8 @@
 .proposal-fields label { min-width: 0; }
 .proposal-fields input { width: 100%; min-width: 0; margin: 6px 0; }
 .proposals-card h3, .proposals-card p { overflow-wrap: anywhere; }
+.proposal-state { margin: 14px 0; padding: 14px; border-radius: 12px; background: var(--sage); }
+.proposal-state strong { display: block; margin-bottom: 6px; }
+.proposal-state p { font-size: 14px; }
+.proposal-state.disagreement { background: var(--peach); color: #773c28; border-left: 4px solid var(--orange); }
 @media(max-width:480px) { .proposal-fields .two { grid-template-columns: 1fr; } }

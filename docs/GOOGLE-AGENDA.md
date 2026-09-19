@@ -20,6 +20,7 @@ Phase choisie le 19 septembre 2026 : saisie manuelle, sans recherche automatique
 - « Proposer des créneaux » partage un titre, un lieu et des précisions facultatives, avec 1 à 5 horaires explicites en heure de Paris. Les doublons, fins invalides, heures ambiguës et créneaux déjà commencés sont refusés. Les conflits avec l’agenda ne sont pas recherchés.
 - La proposition seule ne vaut pas accord. Chaque membre valide un seul créneau depuis son compte. Les choix et la proposition persistent dans PostgreSQL ; un changement de choix remplace seulement celui de son auteur. Aucun compte ne peut valider pour l’autre.
 - Tant que les choix diffèrent, rien n’est envoyé à Google. Deux choix identiques figent la proposition et déclenchent la création du seul horaire retenu. En cas de lecture périmée, recharger puis valider à nouveau ; aucun accord obsolète n’est appliqué silencieusement.
+- Un encadré affiche explicitement « Sans accord commun » lorsque les deux membres ont choisi des horaires différents, et rappelle qu’aucun rendez-vous n’est créé. Avec zéro ou un accord, il précise quelle validation reste attendue.
 - Avant les deux accords, chacun peut retirer son accord ou annuler la proposition. Pour changer le titre, le lieu, les précisions ou les horaires, annuler et proposer de nouveau : les anciens accords ne sont pas réutilisés.
 - La phase de création est enregistrée durablement avant l’appel Google. Une réponse perdue, un redémarrage ou deux reprises simultanées conservent le même identifiant Google, même si l’autre membre reprend. « Vérifier la création » permet une reprise explicite ; aucun traitement automatique en arrière-plan. Pendant cette vérification, le choix reste figé et ne peut être annulé dans Maison.
 - « Création confirmée » n’apparaît qu’après réponse Google. L’historique décrit cette création ; les modifications et suppressions ultérieures restent reflétées par la lecture de l’agenda. Si Google a annulé un événement dont la réponse initiale avait été perdue, il n’est pas recréé ; vérifier directement dans Google.
@@ -35,10 +36,14 @@ Fichier privé `.private/nexus/google-calendar.env` :
 
 ```dotenv
 GOOGLE_RELEASE=<commit immuable des images API et web>
+# Facultatif : correctif d’affichage seul, sans recréer API/migrate.
+GOOGLE_WEB_RELEASE=<commit immuable de l’image web>
 GOOGLE_CALENDAR_ID=<agenda dédié>
 ```
 
 `common.sh` active alors `google-calendar.yml`. Le foyer vient de la configuration privée existante. Seuls API et web changent d’image ; l’API reçoit un réseau de sortie dédié pour joindre Google, aucun port hôte supplémentaire. Le service Alexa conserve sa propre révision. Aucune modification DNS, Traefik, Nextcloud ou autre application.
+
+Sans GOOGLE_WEB_RELEASE, web suit GOOGLE_RELEASE. Pour une correction d’affichage seule, conserver GOOGLE_RELEASE, définir GOOGLE_WEB_RELEASE et recréer uniquement web. Pour revenir à un déploiement commun API/web ou appliquer le retour arrière ci-dessous, retirer cette surcharge ou l’aligner sur la révision voulue. Conserver les images précédentes et une copie privée du fichier d’environnement avant le changement.
 
 Sauvegarder avant installation. `backup.sh` conserve aussi la configuration Google et la clé dans le répertoire privé de sauvegarde. Ces copies sont sensibles ; la protection hors serveur reste à décider.
 

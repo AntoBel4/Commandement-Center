@@ -16,7 +16,7 @@ services:
         bind: {create_host_path: false}
     networks: [internal, google_egress]
   web:
-    image: commandement-web:${GOOGLE_RELEASE:?}
+    image: commandement-web:${GOOGLE_WEB_RELEASE:-${GOOGLE_RELEASE:?}}
     volumes:
       - type: bind
         source: ./google-calendar-nginx.conf

@@ -5,6 +5,15 @@ export function slotLabel(slot) {
   const date = value => new Date(value+'T12:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Paris'});
   return `${date(slot.date)} à ${slot.time} → ${slot.endDate===slot.date?'':date(slot.endDate)+' à '}${slot.endTime}`;
 }
+function agreementStatus(proposal,userId) {
+  const votes=proposal.members.map(member=>proposal.votes[member]);
+  const count=votes.filter(vote=>Number.isInteger(vote)).length;
+  if(proposal.status==='publishing') return '<div class="proposal-state"><strong>Accord trouvé</strong><p>Vous avez validé le même créneau. La création dans Google reste à confirmer.</p></div>';
+  if(count===2 && votes[0]!==votes[1]) return '<div class="proposal-state disagreement" role="status"><strong>Sans accord commun</strong><p>Vous avez choisi des créneaux différents. Aucun rendez-vous n’est créé. Pour avancer, l’un de vous peut valider le créneau choisi par l’autre.</p></div>';
+  if(count===0) return '<div class="proposal-state"><strong>En attente des deux accords</strong><p>Aucun de vous n’a encore validé de créneau. La proposition seule ne crée pas de rendez-vous.</p></div>';
+  const mine=Number.isInteger(proposal.votes[userId]);
+  return `<div class="proposal-state"><strong>${mine?'En attente de l’accord de l’autre membre':'En attente de votre accord'}</strong><p>${mine?'Votre choix est enregistré. L’autre membre doit valider le même créneau.':'L’autre membre a fait son choix. Validez le même créneau pour créer le rendez-vous, ou choisissez-en un autre.'}</p></div>`;
+}
 export class PendingProposal {
   constructor(storage,scope) { this.storage=storage;this.key='maison:proposal-pending:'+scope; }
   read() { const raw=this.storage.getItem(this.key);if(!raw)return null;const v=JSON.parse(raw);if(!v.key||!v.body?.slots)throw Error('Proposition sauvegardée illisible.');return v; }
@@ -38,6 +47,7 @@ export class ProposalsView {
       ${saved?`<div class="calendar-pending"><p>Envoi à vérifier : ${esc(saved.body.title)}</p><button class="btn" data-proposal="resend" ${blocked?'disabled':''}>Reprendre la proposition</button></div>`:''}
       ${!this.loaded?'<p class="empty">'+(this.error?'Propositions indisponibles.':'Chargement des propositions…')+'</p>':!list.length?'<p class="empty">Aucune proposition en attente.</p>':''}
       ${list.map(p=>`<article class="proposal"><h3>${esc(p.body.title)}</h3>${p.body.location?`<p>${esc(p.body.location)}</p>`:''}${p.body.description?`<p class="calendar-description">${esc(p.body.description)}</p>`:''}
+        ${agreementStatus(p,this.userId)}
         ${p.body.slots.map((slot,i)=>{const mine=p.votes[this.userId]===i,other=p.members.some(m=>m!==this.userId&&p.votes[m]===i);return `<div class="proposal-slot"><p>${esc(slotLabel(slot))}</p><p class="form-note">Vous : ${mine?'accord donné':'sans accord'} · Autre membre : ${other?'accord donné':'sans accord'}</p>${p.status==='pending'?`<button class="btn ${mine?'':'primary'}" data-proposal="${mine?'withdraw':'approve'}" data-id="${p.id}" data-slot="${i}" ${blocked||this.error?'disabled':''}>${mine?'Retirer mon accord':'Valider ce créneau'}</button>`:''}</div>`;}).join('')}
         ${p.status==='publishing'?`<div class="calendar-pending"><p>Deux accords reçus. La création dans Google reste à confirmer. Ce choix est figé pendant la vérification.</p><button class="btn primary" data-proposal="retry" data-id="${p.id}" ${blocked?'disabled':''}>Vérifier la création</button></div>`:`<button class="btn text" data-proposal="cancel" data-id="${p.id}" ${blocked||this.error?'disabled':''}>Annuler la proposition</button>`}</article>`).join('')}
       ${!compact&&confirmed.length?`<details><summary>Dernières créations confirmées</summary>${confirmed.map(p=>`<p>${esc(p.body.title)} · Création confirmée dans Google le ${esc(new Date(p.confirmedAt).toLocaleDateString('fr-FR'))}. L’agenda ci-dessus reflète les changements ultérieurs.</p>`).join('')}</details>`:''}
