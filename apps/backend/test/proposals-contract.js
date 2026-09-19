@@ -79,6 +79,64 @@ export async function proposalContract(t,makeStore) {
     assert.equal((await act(p,alice,'approve',4)).statusCode,400);
     assert.equal((await post('',{...proposalBody,votes:{[alice]:0,[bob]:0}},alice,randomUUID())).statusCode,400);
   });
+  await t.test('recipient can reject every slot, persist the response, withdraw or later agree',async()=>{
+    let p=await create();const before=calls;
+    assert.equal((await act(p,alice,'decline')).statusCode,409);
+    p=(await act(p,bob,'approve',1)).json().data.proposal;
+    p=(await act(p,bob,'decline')).json().data.proposal;
+    assert.equal(p.votes[bob],'none');assert.equal(p.status,'pending');assert.equal(calls,before);
+    app=await open();
+    let list=await app.inject({url:'/api/v1/calendar/proposals',headers:await headers(alice)});
+    p=list.json().data.proposals.find(x=>x.id===p.id);assert.equal(p.votes[bob],'none');
+    p=(await act(p,alice)).json().data.proposal;assert.equal(p.status,'pending');assert.equal(calls,before);
+    p=(await act(p,bob,'withdraw')).json().data.proposal;assert.equal(p.votes[bob],undefined);
+    p=(await act(p,bob,'decline')).json().data.proposal;
+    p=(await act(p,bob)).json().data.proposal;assert.equal(p.status,'confirmed');assert.equal(calls,before+1);
+    assert.equal((await act(p,bob,'decline')).statusCode,409);
+  });
+  await t.test('new slots replace rejected ones atomically and require two fresh approvals',async()=>{
+    let p=await create();p=(await act(p,alice)).json().data.proposal;
+    p=(await act(p,bob,'decline')).json().data.proposal;
+    const old=p, before=calls, body={...proposalBody,slots:[{...proposalBody.slots[0],time:'12:00',endTime:'13:00'}]};
+    const revision={action:'revise',version:p.version,revisionKey:randomUUID(),body};
+    const revise=()=>post('/'+p.id+'/actions',revision,bob);
+    p=(await revise()).json().data.proposal;
+    assert.deepEqual(p.body,body);assert.deepEqual(p.votes,{});assert.equal(p.creator,bob);assert.equal(calls,before);
+    assert.equal((await act(old,alice,'approve',1)).statusCode,409);
+    p=(await act(p,alice)).json().data.proposal;
+    app=await open();
+    const replay=await revise();assert.equal(replay.statusCode,200);assert.deepEqual(replay.json().data.proposal.votes,{[alice]:0});
+    assert.equal((await post('/'+p.id+'/actions',{...revision,body:proposalBody},bob)).statusCode,409);
+    assert.equal((await post('/'+p.id+'/actions',revision,alice)).statusCode,409);
+    p=(await act(p,bob)).json().data.proposal;assert.equal(p.status,'confirmed');assert.equal(calls,before+1);
+    assert.equal(events.get(p.eventId).body.time,'12:00');
+    assert.equal((await revise()).json().data.proposal.status,'confirmed');assert.equal(calls,before+1);
+    assert.equal((await post('/'+p.id+'/actions',{...revision,version:p.version,revisionKey:randomUUID()},bob)).statusCode,409);
+  });
+  await t.test('invalid replacements preserve all previous choices and simultaneous replacements cannot overwrite',async()=>{
+    let p=await create();p=(await act(p,alice)).json().data.proposal;p=(await act(p,bob,'decline')).json().data.proposal;
+    const revision={action:'revise',version:p.version,revisionKey:randomUUID(),body:proposalBody};
+    for(const body of [{...proposalBody,slots:[]},{...proposalBody,slots:Array(2).fill(proposalBody.slots[0])},
+      {...proposalBody,slots:[{date:'2020-01-01',time:'10:00',endDate:'2020-01-01',endTime:'11:00'}]}]) {
+      assert.equal((await post('/'+p.id+'/actions',{...revision,body},bob)).statusCode,400);
+    }
+    const list=await app.inject({url:'/api/v1/calendar/proposals',headers:await headers()});
+    assert.deepEqual(list.json().data.proposals.find(x=>x.id===p.id),p);
+    assert.equal((await post('/'+p.id+'/actions',{action:'decline',version:p.version,slot:0},bob)).statusCode,400);
+    const results=await Promise.all([post('/'+p.id+'/actions',revision,bob),post('/'+p.id+'/actions',{...revision,revisionKey:randomUUID()},alice)]);
+    assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,409]);
+  });
+  await t.test('replacing conflicting choices races safely against agreement on the old slot',async()=>{
+    let p=await create();p=(await act(p,alice)).json().data.proposal;p=(await act(p,bob,'approve',1)).json().data.proposal;
+    const before=calls;
+    const results=await Promise.all([
+      post('/'+p.id+'/actions',{action:'revise',version:p.version,revisionKey:randomUUID(),body:proposalBody},bob),act(p,bob)
+    ]);
+    assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,409]);
+    const saved=results.find(r=>r.statusCode===200).json().data.proposal;
+    assert.equal(calls,before+(saved.status==='confirmed'?1:0));
+    if(saved.status==='pending')assert.deepEqual(saved.votes,{});
+  });
   await t.test('bad dates, duplicates, past dates and DST ambiguity never save or publish',async()=>{
     const before=calls;
     for(const slots of [[],Array(6).fill(proposalBody.slots[0]),Array(2).fill(proposalBody.slots[0]),
