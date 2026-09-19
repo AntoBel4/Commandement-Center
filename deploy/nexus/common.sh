@@ -12,5 +12,8 @@ dc() {
   if test -f "$NEXUS_ROOT/.private/nexus/google-calendar.env"; then
     args+=(--env-file "$NEXUS_ROOT/.private/nexus/google-calendar.env" -f "$NEXUS_ROOT/deploy/nexus/google-calendar.yml")
   fi
+  if test -f "$NEXUS_ROOT/.private/nexus/telegram.env"; then
+    args+=(--env-file "$NEXUS_ROOT/.private/nexus/telegram.env" -f "$NEXUS_ROOT/deploy/nexus/telegram.yml")
+  fi
   docker compose "${args[@]}" "$@"
 }

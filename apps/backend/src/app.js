@@ -1,3 +1,6 @@
+import telegramRoutes from './routes/telegram.js';
+import {TelegramStore} from './services/telegram-store.js';
+import {TelegramReminders} from './services/telegram-reminders.js';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import eventRoutes from './routes/events.js';
@@ -9,7 +12,7 @@ import { registerAuth } from './utils/auth.js';
 import calendarRoutes from './routes/calendar.js';
 import { calendarFromEnvironment } from './services/google-calendar.js';
 
-export async function buildApp({ store = createStore(), auth, logger, calendar = calendarFromEnvironment() } = {}) {
+export async function buildApp({ store = createStore(), auth, logger, calendar = calendarFromEnvironment(), telegram } = {}) {
   if (process.env.NODE_ENV === 'production' && store.constructor.name === 'InMemoryStore') {
     throw new Error('Production requires persistent storage');
   }
@@ -34,6 +37,7 @@ export async function buildApp({ store = createStore(), auth, logger, calendar =
 
   app.decorate('store', store);
   app.decorate('calendar', calendar);
+  app.decorate('telegram',telegram??(process.env.TELEGRAM_BOT_USERNAME&&store.pool?new TelegramReminders({store:new TelegramStore(store.pool),familyId:process.env.GOOGLE_CALENDAR_FAMILY_ID,botUsername:process.env.TELEGRAM_BOT_USERNAME}):null));
   registerAuth(app, auth);
   app.addHook('onClose', async () => {
     if (typeof store.close === 'function') await store.close();
@@ -43,6 +47,7 @@ export async function buildApp({ store = createStore(), auth, logger, calendar =
   app.get('/ready', async (request, reply) => {
     try {
       await store.checkReady();
+      if(app.telegram&&store.pool)await store.pool.query('select 1 from telegram_state limit 0');
       return { status: 'ok' };
     } catch {
       return reply.code(503).send({ status: 'unavailable' });
@@ -50,6 +55,7 @@ export async function buildApp({ store = createStore(), auth, logger, calendar =
   });
   app.register(eventRoutes);
   app.register(calendarRoutes);
+  app.register(telegramRoutes);
   app.register(groceryRoutes);
   app.register(syncRoutes);
   app.register(webhookRoutes);
