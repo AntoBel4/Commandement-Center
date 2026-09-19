@@ -15,3 +15,5 @@
 .proposal-state p { font-size: 14px; }
 .proposal-state.disagreement { background: var(--peach); color: #773c28; border-left: 4px solid var(--orange); }
 @media(max-width:480px) { .proposal-fields .two { grid-template-columns: 1fr; } }
+
+.telegram-settings > * + *{margin-top:14px}.telegram-settings .btn{overflow-wrap:anywhere}

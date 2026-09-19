@@ -8,6 +8,7 @@ running=()
 containers=()
 services=(web api keycloak)
 if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then services+=(alexa); fi
+if test -f "$NEXUS_ROOT/.private/nexus/telegram.env"; then services+=(telegram); fi
 for service in "${services[@]}"; do
   container=$(dc ps --status running -q "$service")
   if [[ -n "$container" ]]; then running+=("$service"); containers+=("$container"); fi
@@ -51,7 +52,7 @@ if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then
   extra+=(alexa.env)
 fi
 # The identity dump contains the linked client's secret; no plaintext client export is needed.
-for file in google-calendar.env google-calendar.json; do
+for file in google-calendar.env google-calendar.json telegram.env telegram-token; do
   if test -f "$NEXUS_ROOT/.private/nexus/$file"; then
     cp -- "$NEXUS_ROOT/.private/nexus/$file" "$destination/$file"
     extra+=("$file")

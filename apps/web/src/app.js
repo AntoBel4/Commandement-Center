@@ -1,7 +1,8 @@
 import { createClient, PendingAddition, validateConfig, civilDate, nextDay, bucket } from './client.js';
 import { paths } from './icons.js';
 import { CalendarView } from './calendar.js';
-let calendar;
+import { TelegramView } from './telegram.js';
+let calendar, telegram;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
@@ -61,7 +62,7 @@ function shopping() {
   return header('Les courses.', 'Une envie, un oubli ? Ajoutez-le, c’est partagé.') + `<div class="full-grid"><section><div class="tabs" aria-label="Filtrer les courses">${[['open','À acheter'],['later','Plus tard'],['purchased','Achetés']].map(([id,label]) => `<button data-filter="${id}" class="${state.filter === id ? 'active' : ''}" aria-pressed="${state.filter === id}">${label} · ${state.items.filter(i => bucket(i) === id).length}</button>`).join('')}</div><div class="card card-pad">${items.length ? groups.map(group => `<div class="group-label">${esc(group)}</div>${items.filter(i => (i.category || 'Autre') === group).map(i => grocery(i)).join('')}`).join('') : '<div class="empty"><h3>Rien dans cette liste.</h3><p>Les courses apparaissent ici après leur enregistrement.</p></div>'}</div></section><aside>${recapCard()}</aside></div>`;
 }
 function settings() {
-  return header('À notre façon.', 'Votre compte et les services de la maison.', false) + `<div class="settings-grid"><section class="card card-pad"><h2>Votre espace</h2><div class="setting-row"><div><h3>${esc(person)}</h3><small>Compte personnel · accès au foyer vérifié</small></div><span class="pill">Connecté</span></div><div class="setting-row"><div><h3>Une liste commune</h3><small>Les ajouts et les actions sont enregistrés pour les membres autorisés du foyer.</small></div></div>${button('logout','Se déconnecter')}</section><section class="card card-pad"><h2>Sur votre téléphone</h2><div class="info-line"><div><h3>Retrouver Maison facilement</h3><p>Dans le menu de votre navigateur Android, choisissez « Ajouter à l’écran d’accueil » ou « Installer l’application », si proposé. Ouvrez d’abord l’adresse du portail sur ce téléphone.</p><p>Une connexion au réseau reste nécessaire pour lire et modifier les courses.</p></div></div></section><section class="card card-pad"><h2>Les prochaines connexions</h2>${[['Google Agenda','Rendez-vous partagés : affichage et ajout dans Maison.'],['Telegram','Récapitulatifs, rappels et journée tranquille personnelle.'],['Alexa','Ajouter une demande avec la voix.']].map(([name,detail]) => `<div class="setting-row"><div><h3>${name}</h3><small>${detail}</small></div><span class="pill neutral">${name === 'Google Agenda' ? (calendar?.updated && !calendar.error ? 'Connecté' : 'À vérifier') : 'À préparer'}</span></div>`).join('')}</section></div>`;
+  return header('À notre façon.', 'Votre compte et les services de la maison.', false) + `<div class="settings-grid">${telegram?.card()??''}<section class="card card-pad"><h2>Votre espace</h2><div class="setting-row"><div><h3>${esc(person)}</h3><small>Compte personnel · accès au foyer vérifié</small></div><span class="pill">Connecté</span></div><div class="setting-row"><div><h3>Une liste commune</h3><small>Les ajouts et les actions sont enregistrés pour les membres autorisés du foyer.</small></div></div>${button('logout','Se déconnecter')}</section><section class="card card-pad"><h2>Sur votre téléphone</h2><div class="info-line"><div><h3>Retrouver Maison facilement</h3><p>Dans le menu de votre navigateur Android, choisissez « Ajouter à l’écran d’accueil » ou « Installer l’application », si proposé. Ouvrez d’abord l’adresse du portail sur ce téléphone.</p><p>Une connexion au réseau reste nécessaire pour lire et modifier les courses.</p></div></div></section><section class="card card-pad"><h2>Les prochaines connexions</h2>${[['Google Agenda','Rendez-vous partagés : affichage et ajout dans Maison.'],['Alexa','Ajouter une demande avec la voix.']].map(([name,detail]) => `<div class="setting-row"><div><h3>${name}</h3><small>${detail}</small></div><span class="pill neutral">${name === 'Google Agenda' ? (calendar?.updated && !calendar.error ? 'Connecté' : 'À vérifier') : 'À préparer'}</span></div>`).join('')}</section></div>`;
 }
 function render() {
   $('#date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', timeZone:'Europe/Paris'});
@@ -85,7 +86,7 @@ function openModal(title, body) {
   $('#modal input')?.focus();
 }
 function lockOut(message, forbidden = false) {
-  calendar?.destroy(); calendar = null;
+  calendar?.destroy(); telegram?.destroy(); calendar = null;
   sessionEpoch++; state.ready = false; state.items = []; state.stale = true;
   $('#modal').close(); $('#modal-body').textContent = ''; $('#toast').classList.remove('show'); undo = null;
   $('#nav').innerHTML = ''; $('#account').textContent = forbidden ? 'Changer de compte' : 'Se connecter'; $('#account').disabled = false;
@@ -110,7 +111,7 @@ async function load() {
           seen = new Set(saved ? JSON.parse(saved) : items.map(i => i.id));
         } catch { seen = new Set(items.map(i => i.id)); }
       }
-      notice(); render(); if (['home','agenda'].includes(state.view)) calendar?.load(); return true;
+      notice(); render(); telegram?.load(); if (['home','agenda'].includes(state.view)) calendar?.load(); return true;
     } catch (error) {
       if (epoch !== sessionEpoch) return false;
       state.stale = true;
@@ -249,6 +250,7 @@ async function start() {
     request = createClient({auth, familyId:config.familyId});
     calendar = new CalendarView({request,userId,storage:{getItem:k=>sessionStorage.getItem(k),setItem:(k,v)=>sessionStorage.setItem(k,v),removeItem:k=>sessionStorage.removeItem(k)},scope:`${config.familyId}:${userId}`,render,openModal,toast,
       unauthorized:error=>lockOut(error.message,error.status===403)});
+    telegram = new TelegramView({request,render,toast,openModal,unauthorized:error=>lockOut(error.message,error.status===403)});
     seenKey = `maison:seen:${config.familyId}:${userId}`;
     try { pending = new PendingAddition(sessionStorage, `${config.familyId}:${userId}`); pending.read(); }
     catch { storageError = true; }
