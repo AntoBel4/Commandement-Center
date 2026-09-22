@@ -1,9 +1,18 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 19 septembre 2026 (Europe/Paris).
+Dernière mise à jour : 22 septembre 2026 (Europe/Paris).
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
 T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Reprise du 22 septembre — documentation et pilote préparé
+
+- Antoine indique que la configuration de Belinda n’est pas terminée et envisage de la faire le 23 septembre. Google et Telegram sur ce téléphone restent non validés ; réception du test Telegram Antoine déjà confirmée. Ne pas refaire les essais acceptés ou dispensés.
+- Contrôle Nexus en lecture seule le 22 septembre : HEAD `fb9aedf92f270affda33ebc97dc75309d0cd3063`, sept services sains (API, web, Telegram, Alexa, identité et deux bases). Aucun déploiement ni modification de configuration dans cette séance.
+- Notion actualisé : tableau de bord, pages thématiques, 16 cartes, ancienne fiche et références interprojets retrouvées. Correction du constat erroné d’absence de Keycloak dans un audit adjacent ; son existence ne prouve pas le raccordement d’une autre application. Historique conservé. Recherche limitée aux pages accessibles/remontées par le connecteur.
+- [Suivi du pilote sur sept jours et incidents](https://app.notion.com/p/3e3f514ea66d81509fabea37d514fce6) créé : journées J1–J7, preuves par personne, registre incident/impact/responsable/correction/retest et bilan final. **Support prêt, pilote complet non démarré**. Début réel à convenir après prérequis ; aucune réussite, observation ou surveillance automatique déduite. Objectif du 7 octobre indicatif.
+- Statuts : T01/T02/T03/T04a/T04b terminés selon les périmètres acceptés ; T05/T08 En cours ; T06 À vérifier ; T07/T09/T10 À faire ; V2 Plus tard. PR 2, 8 et 9 ouvertes en brouillon.
+- Pour finir la V1 : finaliser Belinda et les rappels réels ; livrer courses Telegram (capture/actions, coupure 17 h 15, résumé 17 h 20, urgences et sonde 17 h 30), rendez-vous vocaux, administration/reprise/sauvegarde/alertes ; réaliser sept jours de pilote, traiter les incidents puis transmettre le guide et clôturer les PR prêtes. Destination hors serveur toujours différée, aucun fournisseur ni coût choisi.
 
 ## Telegram — réception Antoine confirmée, Belinda à valider
 
@@ -160,9 +169,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Créneaux manuels et extension refus/autres horaires acceptés par l’utilisateur le 19 septembre, version API/web 348dd38. Ne pas refaire ces essais. Rappels Telegram désormais installés à fb9aedf : réception personnelle Antoine confirmée ; prochaine action, liaison/réception Belinda et vérification des premières échéances ; T05 En cours, PR 9 brouillon. Rendez-vous vocaux dans leur lot. Vérification Google sur le téléphone de Belinda toujours explicitement reportée, occurrence précédente conservée ; aucune validation de ce téléphone déduite. T06 En cours et PR 8 brouillon pour ce critère distinct. Projet sans facturation, zéro dépense autorisée. Ne pas reprendre les essais Alexa dispensés ni T1 à T8.
-2. Toute intervention DNS/Cloudflare reste strictement limitée à famille.estarellas.online. Aucun changement des autres noms, de leurs règles ni des réglages globaux ; aucun alias vers Nextcloud.
-3. Conserver la destination hors serveur différée. Administration nominative, restauration complète et alertes restent à terminer dans T08 ; les intégrations suivent. PR 2 reste en brouillon.
+1. Terminer la configuration Google/Telegram de Belinda (envisagée le 23 septembre), puis recueillir son résultat réel et celui des rappels automatiques. T06 À vérifier ; réception du test Antoine déjà acceptée.
+2. Finir T05 courses Telegram, T07 rendez-vous vocaux et T08 exploitation/reprise/alertes. Respecter la destination hors serveur différée et les essais dispensés. Aucun changement hors du périmètre Maison.
+3. Fixer J1 quand les prérequis sont prêts, renseigner le [suivi de sept jours](https://app.notion.com/p/3e3f514ea66d81509fabea37d514fce6), corriger/retester les incidents puis terminer T10 et revoir les PR 2/8/9. Le support de suivi ne vaut pas pilote effectué.
 
 ## Socle T02 — preuves du 18 septembre
 
