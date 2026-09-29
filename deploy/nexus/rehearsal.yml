@@ -1,0 +1,65 @@
+# Restore rehearsal only (restore-service.sh --rehearse). Standalone: never combined with
+# compose.yml. No published port, no proxy network, no Traefik label, no production
+# volume or bind mount; one internal network without egress, so no Google or Telegram call.
+# web, telegram and alexa are deliberately absent.
+name: ${REHEARSAL_PROJECT:?}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:?}
+    environment:
+      POSTGRES_DB: commandement
+      POSTGRES_USER: commandement
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    networks: [rehearsal]
+
+  keycloak-db:
+    image: ${POSTGRES_IMAGE:?}
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+    volumes: ["keycloak_data:/var/lib/postgresql/data"]
+    networks: [rehearsal]
+
+  keycloak:
+    image: ${KEYCLOAK_IMAGE:?}
+    command: [start]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?}
+      KC_HOSTNAME: https://${PORTAL_HOST:?}/auth
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+    networks: [rehearsal]
+    profiles: [services]
+
+  api:
+    image: commandement-api:${RELEASE:?}
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?}
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      AUTH_ENABLED: "true"
+      AUTH_ISSUER_URL: https://${PORTAL_HOST:?}/auth/realms/commandement
+      AUTH_AUDIENCE: commandement-api
+      AUTH_JWKS_URL: http://keycloak:8080/auth/realms/commandement/protocol/openid-connect/certs
+      CORS_ORIGINS: https://${PORTAL_HOST:?}
+      FAMILY_TIMEZONE: Europe/Paris
+      # Deliberately no GOOGLE_* nor TELEGRAM_* variable and no secret file mounted.
+    networks: [rehearsal]
+    profiles: [services]
+
+volumes:
+  postgres_data:
+  keycloak_data:
+networks:
+  rehearsal:
+    internal: true
