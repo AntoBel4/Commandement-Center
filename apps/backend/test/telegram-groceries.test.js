@@ -15,7 +15,9 @@ async function setup(now='2026-09-29T15:00:00Z') {
   await link(f.service,alice,11,1);await link(f.service,bob,22,2);
   let n=100;const say=(chat,text,from=chat,type='private')=>f.service.update({update_id:n++,message:{chat:{id:chat,type},from:{id:from,is_bot:false},text}});
   const press=(chat,data,from=chat)=>f.service.update({update_id:n++,callback_query:{id:'cb'+n,from:{id:from,is_bot:false},data,message:{chat:{id:chat,type:'private'}}}});
-  const add=(name,fields={})=>{const [item]=groceries.addGroceryBatch([{name}],family,{actorId:alice});Object.assign(groceries.groceryItems.find(i=>i.id===item.id),fields);return item.id;};
+  // The store stamps available_on with the real Paris date; pin it to the simulated day so tests do not depend on the wall clock.
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris'}).format(new Date(now));
+  const add=(name,fields={})=>{const [item]=groceries.addGroceryBatch([{name}],family,{actorId:alice});Object.assign(groceries.groceryItems.find(i=>i.id===item.id),{available_on:today},fields);return item.id;};
   return {...f,groceries,sent,answers,say,press,add};
 }
 

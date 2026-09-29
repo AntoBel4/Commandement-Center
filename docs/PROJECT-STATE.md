@@ -13,6 +13,7 @@ Session cloud d'une heure (22:17–23:05 UTC), sans accès à Nexus, Notion ni a
 - **Code** : `deploy/nexus/backup-offsite.sh` (907fd02), `restore-service.sh` + `rehearsal.yml` (c4594e3), `monitor.sh` (2e3a3ab) ; docs `docs/deploiement-nexus.md` (87c2c18) et `docs/EXPLOITATION.md` (7727f2a, brouillon non vérifié).
 - **Preuve locale (Docker, données fictives)** : sauvegarde réelle via `backup.sh` → chiffrement age → déchiffrement avec la clé sur l'entrée standard → empreintes → restauration des deux bases dans un projet isolé ; comptes identiques (1|2|42|97|13 et 2|3|2) ; aucun reste. Refus vérifiés : archive altérée, mauvaise clé, interruption, production sans confirmation. `monitor.sh` testé avec curl simulé (panne, anti-rebond, sans répétition, maintenance, rétablissement).
 - **Non vérifié** : envoi S3 réel, `If-None-Match` chez Contabo, politique Contabo en écriture seule, `--with-services`, `--production`, minuteurs systemd, alerte Telegram réelle, procédure Keycloak nominative.
+- **CI** : échec de « test » sur 75dd3aa après minuit Paris — deux tests T05 dépendaient de l'horloge réelle (date du jour posée par le magasin). Test corrigé (date simulée), pas le code ; en production l'horloge réelle est cohérente.
 - **Limite** : une clé en écriture seule ne peut pas vérifier l'existence d'un objet ; vérification seulement si `s3:ListBucket` est accordé (`OFFSITE_CHECK=list`), sinon noms uniques + `If-None-Match`.
 
 ## Séance cloud du 29 septembre — préparation du pilote (dépôt uniquement)
