@@ -1,9 +1,19 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 29 septembre 2026, fin de soirée (Europe/Paris) — séance cloud sans accès à Nexus ni à Notion. **Cette version vit sur la branche `claude/eager-galileo-ezltlj` (PR 10), pas sur main.**
+Dernière mise à jour : 30 septembre 2026, 1 h (Europe/Paris) — séance cloud sans accès à Nexus ni à Notion. **Cette version vit sur la branche `claude/eager-galileo-ezltlj` (PR 10), pas sur main.**
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
 T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Séance cloud du 29 septembre (soir) — T08 exploitation côté dépôt
+
+Session cloud d'une heure (22:17–23:05 UTC), sans accès à Nexus, Notion ni aux comptes ; **rien d'installé sur Nexus**. Travail ajouté à la PR 10 (même branche, pas de push forcé).
+
+- **Décisions d'Antoine** : D2 perte maximale 24 h (nocturne), reprise 4 h sur Nexus, 24 h ailleurs. D3 archive chiffrée age, clé publique seule sur Nexus, S3 Contabo compartiment dédié, utilisateur limité au compartiment **en écriture seule sans suppression**, rotation distante depuis le PC (clé de rotation seulement sur le PC), clé privée USB + papier hors Nexus ; repli SSH (PC tire) documenté. Exigences : noms uniques jamais réécrits, refus d'écraser ; checklist panneau Contabo (politique, pas de suppression, versionnage/verrouillage, coût).
+- **Code** : `deploy/nexus/backup-offsite.sh` (907fd02), `restore-service.sh` + `rehearsal.yml` (c4594e3), `monitor.sh` (2e3a3ab) ; docs `docs/deploiement-nexus.md` (87c2c18) et `docs/EXPLOITATION.md` (7727f2a, brouillon non vérifié).
+- **Preuve locale (Docker, données fictives)** : sauvegarde réelle via `backup.sh` → chiffrement age → déchiffrement avec la clé sur l'entrée standard → empreintes → restauration des deux bases dans un projet isolé ; comptes identiques (1|2|42|97|13 et 2|3|2) ; aucun reste. Refus vérifiés : archive altérée, mauvaise clé, interruption, production sans confirmation. `monitor.sh` testé avec curl simulé (panne, anti-rebond, sans répétition, maintenance, rétablissement).
+- **Non vérifié** : envoi S3 réel, `If-None-Match` chez Contabo, politique Contabo en écriture seule, `--with-services`, `--production`, minuteurs systemd, alerte Telegram réelle, procédure Keycloak nominative.
+- **Limite** : une clé en écriture seule ne peut pas vérifier l'existence d'un objet ; vérification seulement si `s3:ListBucket` est accordé (`OFFSITE_CHECK=list`), sinon noms uniques + `If-None-Match`.
 
 ## Séance cloud du 29 septembre — préparation du pilote (dépôt uniquement)
 
@@ -182,8 +192,8 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Trancher D2 et D3 puis réaliser T08 dans le dépôt (sauvegarde chiffrée hors Nexus, restauration du service complet, alerte Maison, administration nominative, `docs/deploiement-nexus.md`).
-2. Installer la révision PR 10 (T05) sur Nexus avec sauvegarde préalable, puis dérouler `docs/procedure-belinda.md` avec Belinda (A1–A9).
+1. Préparer hors Nexus (clé age sur USB + papier, compartiment et utilisateur Contabo écriture seule, checklist B0), puis dérouler `docs/deploiement-nexus.md` A (PR 10) et B–C (T08) sur Nexus ; test de déchiffrement depuis le PC.
+2. Dérouler `docs/procedure-belinda.md` avec Belinda (A1–A9).
 3. Réunir les prérequis de `docs/pilote-7-jours.md`, fixer J1 et tenir le suivi Notion ; ne pas lancer le pilote avant.
 
 ## Socle T02 — preuves du 18 septembre
