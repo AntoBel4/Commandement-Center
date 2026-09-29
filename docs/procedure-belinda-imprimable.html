@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maison — aide-mémoire</title>
+<style>
+  :root { --ink:#1d2330; --muted:#566074; --line:#d7dce5; --accent:#2f6f5e; --bg:#ffffff; }
+  @page { size: A4; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 12pt/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 186mm; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 19pt; margin: 0 0 2px; color: var(--accent); }
+  .lead { margin: 0 0 8px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+  section { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; break-inside: avoid; }
+  section.wide { grid-column: 1 / -1; }
+  h2 { font-size: 12.5pt; margin: 0 0 3px; }
+  p, ul { margin: 0 0 3px; }
+  ul { padding-left: 16px; }
+  .key { font-weight: 650; }
+  .call { border: 2px solid var(--accent); }
+  footer { margin-top: 6px; font-size: 9.5pt; color: var(--muted); }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  @media print { main { padding: 0; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Maison — l’aide-mémoire de Belinda</h1>
+  <p class="lead">Notre liste de courses et notre agenda communs. Icône <span class="key">Maison</span> sur le téléphone ; les messages arrivent dans Telegram, conversation <span class="key">Maison</span>.</p>
+  <div class="grid">
+    <section>
+      <h2>🛒 Ajouter une course</h2>
+      <p>Dans Telegram, conversation Maison : écrivez l’article et envoyez (« lait »). Plusieurs : un par ligne. Réponse : « Course ajoutée ».</p>
+      <p>Ou dans l’application : <span class="key">Courses → Ajouter à la liste</span>.</p>
+    </section>
+    <section>
+      <h2>Les quatre boutons</h2>
+      <ul>
+        <li>✅ acheté</li>
+        <li>📅 <span class="key">Demain</span> : reporter</li>
+        <li>❗ <span class="key">Urgent</span> : Antoine est prévenu tout de suite</li>
+        <li>✖ retirer de la liste</li>
+      </ul>
+      <p>Sans rien toucher, la course reste sur la liste. Antoine voit ce que vous faites.</p>
+    </section>
+    <section>
+      <h2>⏰ Chaque jour à 17 h 20</h2>
+      <p>Le récapitulatif des courses demandées jusqu’à 17 h 15. Ajouté après ? Visible tout de suite dans la liste, et dans le récapitulatif du lendemain. Rien à acheter ? « Rien à acheter aujourd’hui ».</p>
+    </section>
+    <section>
+      <h2>📅 Reporter ou marquer urgent dans l’application</h2>
+      <p><span class="key">Date des courses</span> pour choisir un autre jour ; <span class="key">Signaler comme urgent</span> pour prévenir Antoine.</p>
+    </section>
+    <section class="wide">
+      <h2>🤝 Proposer un rendez-vous</h2>
+      <p>Application Maison → <span class="key">Agenda → Proposer des créneaux</span> : 1 à 5 horaires, puis <span class="key">Partager la proposition</span>. Le rendez-vous n’est créé que lorsque vous et Antoine avez validé <em>le même</em> créneau (<span class="key">Valider ce créneau</span>). Rien ne convient : <span class="key">Aucun créneau ne convient ?</span></p>
+    </section>
+    <section>
+      <h2>🔔 Vos rappels</h2>
+      <ul>
+        <li>7 h : l’agenda du jour</li>
+        <li>9 h : les rendez-vous sans heure</li>
+        <li>1 heure avant chaque rendez-vous</li>
+      </ul>
+    </section>
+    <section>
+      <h2>🌙 Mettre en pause (Réglages)</h2>
+      <p><span class="key">Journée tranquille</span> : plus de rappels ni de récapitulatif jusqu’à demain 7 h ; les courses urgentes arrivent quand même. <span class="key">Reprendre maintenant</span> pour annuler.</p>
+      <p><span class="key">Suspendre mes rappels</span> : plus aucun message jusqu’à <span class="key">Activer mes rappels</span>.</p>
+    </section>
+    <section class="wide call">
+      <h2>☎️ Un rappel n’arrive pas ?</h2>
+      <p>Regardez dans <span class="key">Réglages</span> si la journée tranquille ou la suspension sont actives. Sinon, <span class="key">appelez Antoine</span>. Ne désinstallez pas Telegram et ne touchez pas « Dissocier Telegram ».</p>
+    </section>
+  </div>
+  <footer>Sécurité : Maison ne demande jamais votre mot de passe par Telegram. Ne transférez jamais un lien ou un code reçu de Maison. — Version du 29 septembre 2026, pour le pilote.</footer>
+</main>
+</body>
+</html>
