@@ -22,7 +22,7 @@ export function createClient({ auth, familyId, fetcher = fetch, timeout = 12000 
     catch { throw new ApiError('Votre session a expiré. Reconnectez-vous.', 401); }
     if (!auth.authenticated || !auth.token) throw new ApiError('Reconnectez-vous pour continuer.', 401);
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+    const timer = setTimeout(() => controller.abort(), path.startsWith('/calendar/') ? Math.max(timeout,30000) : timeout);
     try {
       const response = await fetcher('/api/v1' + path, {
         method, credentials: 'omit', cache: 'no-store', signal: controller.signal,
@@ -35,10 +35,25 @@ export function createClient({ auth, familyId, fetcher = fetch, timeout = 12000 
       try { payload = await response.json(); }
       catch { throw new ApiError('Réponse du service illisible. Actualisez la liste pour vérifier.', response.ok ? 0 : response.status); }
       if (!response.ok || payload.success !== true) {
+        const calendarMessages = {
+          PROPOSAL_VERSION:'La proposition a changé. Vérifiez les choix actuels avant de valider à nouveau.',
+          PROPOSAL_STATE:'Cette proposition ne peut plus être modifiée. Vérifiez son état actuel.',
+          PROPOSAL_MEMBERS:'Les deux membres du foyer doivent correspondre à ceux de la proposition.',
+          PROPOSAL_NOT_FOUND:'Cette proposition n’est plus disponible.',
+          PROPOSAL_PAST:'Un créneau est déjà commencé. Choisissez un horaire à venir.',
+          PROPOSAL_DUPLICATE:'Deux créneaux sont identiques. Gardez une seule fois chaque horaire.',
+          PROPOSAL_KEY_REUSED:'Cet envoi correspond à une autre proposition. Actualisez avant de recommencer.',
+          CALENDAR_UNAVAILABLE:'Google Agenda est indisponible. L’enregistrement n’est pas confirmé ; reprenez le même envoi pour vérifier.',
+          CALENDAR_LOCAL_TIME:'Cette heure est inexistante ou ambiguë lors du changement d’heure. Choisissez une autre heure.',
+          CALENDAR_END:'La fin du rendez-vous doit être après le début.',
+          CALENDAR_KEY_REUSED:'Cet envoi correspond à un autre rendez-vous. Vérifiez l’agenda avant de recommencer.',
+          CALENDAR_CANCELLED:'Ce rendez-vous a été annulé dans Google. Il ne sera pas recréé par cet envoi.',
+          CALENDAR_TOO_MANY:'Cette période contient trop de rendez-vous. Réduisez la période affichée.'
+        };
         const messages = {401: 'Votre session a expiré. Reconnectez-vous.', 403: 'Ce compte n’a pas accès à ce foyer.',
           409: 'La liste a changé depuis votre dernière lecture. Vérifiez sa nouvelle version avant de recommencer.',
           404: 'Cet article n’est plus disponible.', 400: 'Vérifiez les informations saisies.'};
-        throw new ApiError(messages[response.status] || 'Le service est indisponible. Réessayez dans un instant.', response.status, payload.error?.code);
+        throw new ApiError(calendarMessages[payload.error?.code] || messages[response.status] || 'Le service est indisponible. Réessayez dans un instant.', response.status, payload.error?.code);
       }
       return payload.data;
     } catch (error) {

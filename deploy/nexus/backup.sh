@@ -8,6 +8,7 @@ running=()
 containers=()
 services=(web api keycloak)
 if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then services+=(alexa); fi
+if test -f "$NEXUS_ROOT/.private/nexus/telegram.env"; then services+=(telegram); fi
 for service in "${services[@]}"; do
   container=$(dc ps --status running -q "$service")
   if [[ -n "$container" ]]; then running+=("$service"); containers+=("$container"); fi
@@ -51,5 +52,11 @@ if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then
   extra+=(alexa.env)
 fi
 # The identity dump contains the linked client's secret; no plaintext client export is needed.
+for file in google-calendar.env google-calendar.json telegram.env telegram-token; do
+  if test -f "$NEXUS_ROOT/.private/nexus/$file"; then
+    cp -- "$NEXUS_ROOT/.private/nexus/$file" "$destination/$file"
+    extra+=("$file")
+  fi
+done
 (cd -- "$destination" && sha256sum courses.dump identity.dump courses.counts identity.counts production.env portal-config.json commandement-realm.json source-commit.txt images.json "${extra[@]}" > SHA256SUMS)
 printf 'Complete local backup. Copy encrypted off-server before declaring protection: %s\n' "$destination"

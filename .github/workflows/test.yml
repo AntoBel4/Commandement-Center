@@ -26,6 +26,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: for script in deploy/nexus/*.sh; do bash -n "$script"; done
       - run: node --test deploy/nexus/test/prepare.test.mjs deploy/nexus/test/alexa-client.test.mjs
       - run: npm test
         env:

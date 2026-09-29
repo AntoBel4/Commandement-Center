@@ -1,0 +1,54 @@
+# Enabled only by the private telegram.env file. Outbound polling; no webhook exposed.
+services:
+  migrate:
+    image: commandement-api:${TELEGRAM_RELEASE:?}
+  api:
+    image: commandement-api:${TELEGRAM_RELEASE:?}
+    environment:
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?}
+  web:
+    image: commandement-web:${TELEGRAM_RELEASE:?}
+    volumes:
+      - type: bind
+        source: ./telegram-nginx.conf
+        target: /etc/nginx/family-integrations/telegram.conf
+        read_only: true
+        bind: {create_host_path: false}
+  telegram:
+    image: commandement-api:${TELEGRAM_RELEASE:?}
+    command: [node, apps/backend/src/telegram-worker.js]
+    restart: unless-stopped
+    stop_grace_period: 45s
+    security_opt: [no-new-privileges:true]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?}
+      GOOGLE_CALENDAR_CREDENTIALS_FILE: /run/secrets/google-calendar.json
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:?}
+      GOOGLE_CALENDAR_FAMILY_ID: ${FAMILY_ID:?}
+      TELEGRAM_TOKEN_FILE: /run/secrets/telegram-token
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?}
+      PORTAL_URL: https://${PORTAL_HOST:?}/
+    volumes:
+      - type: bind
+        source: ../../.private/nexus/google-calendar.json
+        target: /run/secrets/google-calendar.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ../../.private/nexus/telegram-token
+        target: /run/secrets/telegram-token
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [internal, google_egress]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "const fs=require('fs');try{process.exit(Date.now()-Number(fs.readFileSync('/tmp/telegram-health','utf8'))<180000?0:1)}catch{process.exit(1)}"]
+      interval: 30s
+      timeout: 5s
+      retries: 4
+      start_period: 45s
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
