@@ -1,9 +1,22 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 22 septembre 2026 (Europe/Paris).
+Dernière mise à jour : 29 septembre 2026, fin de soirée (Europe/Paris) — séance cloud sans accès à Nexus ni à Notion. **Cette version vit sur la branche `claude/eager-galileo-ezltlj` (PR 10), pas sur main.**
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
 T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur toujours différée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Séance cloud du 29 septembre — préparation du pilote (dépôt uniquement)
+
+Session cloud sans accès à Nexus, Notion ni aux comptes : rien n’a été installé, déployé ni vérifié sur le serveur ; aucune recette avec Belinda. La configuration de Belinda envisagée le 23 septembre n’est pas consignée : considérée **non faite**.
+
+- **Empilement** : `main ← PR 8 (feat/google-calendar, 348dd38) ← PR 9 (feat/telegram-reminders, fb9aedf) ← [PR 10](https://github.com/AntoBel4/Commandement-Center/pull/10) (claude/eager-galileo-ezltlj)`, brouillon. PR 10 contient une fusion de `feat/telegram-reminders` (pas de réécriture) et cette fiche. Ordre de fusion : 8 → 9 → 10, chacune sur accord d’Antoine.
+- **T05 courses Telegram — code écrit et testé, non installé** (commit f30a8e6) : capture un article par ligne confirmée après enregistrement durable (clé `telegram:<update_id>`), boutons acheté/demain/urgent/annuler, récapitulatif 17 h 20 aux deux membres des demandes reçues jusqu’à 17 h 15 (reports et anciennes demandes compris), urgences immédiates, reçus, sonde 17 h 30 d’acceptation Telegram avec alerte à Antoine seul (`TELEGRAM_ALERT_USER`). Aucune migration, aucun port. Guide : `docs/TELEGRAM-RAPPELS.md`.
+- **Décisions d’Antoine le 29 septembre** : D1 « Rien à acheter aujourd’hui » envoyé pendant le pilote, à réévaluer à sa fin. D5 : une urgence est envoyée même en journée tranquille ; rien en suspension ; pas de récapitulatif en journée tranquille ; la sonde n’attend pas les membres suspendus ou en journée tranquille. Règles validées du parcours courses appliquées telles quelles. Belinda : téléphone Android. Pas de Google Drive pour les sauvegardes. Une sonde externe surveille déjà Nexus : ne pas la dupliquer, ne pas toucher Léo.
+- **Validation** : 100 tests applicatifs réussis localement avec PostgreSQL 16 réel, 2 options non exécutées (Keycloak réel, redémarrage PostgreSQL), 3 tests de préparation, `bash -n` des scripts. CI « test » et GitGuardian verts sur f30a8e6. Non vérifié : affichage navigateur des Réglages, réception Telegram réelle.
+- **Documents** : `docs/procedure-belinda.md` + `docs/procedure-belinda-imprimable.html` (une page A4 vérifiée en PDF) ; `docs/pilote-7-jours.md` (T09, pilote **sans T07**, non lancé) ; `docs/guide-famille.md` (T10 : guide, limites acceptées ou proposées, relecture PR 2/8/9).
+- **Relecture des PR** : PR 2 pas prête (contenu du 18 septembre à réaligner) ; PR 8 techniquement prête, critère Google chez Belinda manquant ; PR 9 pas prête (Belinda, premiers rappels réels) ; PR 10 pas prête (non installée).
+- **T08 non fait, prêt à démarrer** : D2 (perte de données et délai de reprise) et D3 (destination hors Nexus : S3 Contabo existant / tirage par le PC / disque USB ; garde de la clé privée hors Nexus) à trancher d’abord. `docs/deploiement-nexus.md` non écrit. T07 non fait (hors pilote).
+- Statuts proposés à reporter dans Notion par Antoine : T05 À vérifier ; T08 En cours (rien de nouveau) ; T09 À vérifier (cadre écrit, pilote non lancé) ; T10 À vérifier ; T07 À faire.
 
 ## Reprise du 22 septembre — documentation et pilote préparé
 
@@ -169,9 +182,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Terminer la configuration Google/Telegram de Belinda (envisagée le 23 septembre), puis recueillir son résultat réel et celui des rappels automatiques. T06 À vérifier ; réception du test Antoine déjà acceptée.
-2. Finir T05 courses Telegram, T07 rendez-vous vocaux et T08 exploitation/reprise/alertes. Respecter la destination hors serveur différée et les essais dispensés. Aucun changement hors du périmètre Maison.
-3. Fixer J1 quand les prérequis sont prêts, renseigner le [suivi de sept jours](https://app.notion.com/p/3e3f514ea66d81509fabea37d514fce6), corriger/retester les incidents puis terminer T10 et revoir les PR 2/8/9. Le support de suivi ne vaut pas pilote effectué.
+1. Trancher D2 et D3 puis réaliser T08 dans le dépôt (sauvegarde chiffrée hors Nexus, restauration du service complet, alerte Maison, administration nominative, `docs/deploiement-nexus.md`).
+2. Installer la révision PR 10 (T05) sur Nexus avec sauvegarde préalable, puis dérouler `docs/procedure-belinda.md` avec Belinda (A1–A9).
+3. Réunir les prérequis de `docs/pilote-7-jours.md`, fixer J1 et tenir le suivi Notion ; ne pas lancer le pilote avant.
 
 ## Socle T02 — preuves du 18 septembre
 
