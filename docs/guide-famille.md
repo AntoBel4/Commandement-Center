@@ -39,7 +39,7 @@ Proposées à l’acceptation pour le pilote (**non encore acceptées**, à conf
 
 9. Courses Telegram : pas de quantité, unité ni rayon par Telegram (à compléter dans Maison) ; pas de message vocal ; 10 articles par message ; récapitulatif limité à 30 lignes et 12 lignes de boutons.
 10. Pas de récapitulatif ni de sonde si le service est arrêté de 17 h 20 à 17 h 45 ; un membre relié entre 17 h 20 et 17 h 30 peut déclencher une alerte sans objet.
-11. Exploitation (T08 non fait) : pas de copie de sauvegarde hors Nexus, restauration du service complet jamais éprouvée, pas d’alerte de panne propre à Maison, administration Keycloak par le compte d’amorçage non nominatif. Ce sont des **dettes**, pas des choix : à lever par T08 ou à accepter explicitement avant J1.
+11. Exploitation : T08 est écrit et testé localement (sauvegarde chiffrée vers Contabo, restauration, alerte Maison, administration nominative documentée) mais **pas installé** sur Nexus. Tant qu’il ne l’est pas : pas de copie hors Nexus, restauration du service complet jamais éprouvée en production, pas d’alerte propre à Maison, Keycloak administré par le compte d’amorçage. Ce sont des **dettes**, pas des choix : à lever par l’installation T08 (`docs/deploiement-nexus.md`) ou à accepter explicitement avant J1.
 
 ## Relecture des PR ouvertes (29 septembre 2026, aucune fusion)
 
