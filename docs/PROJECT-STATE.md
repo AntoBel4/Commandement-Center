@@ -1,6 +1,19 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026 (Europe/Paris), adaptation du script aux versions protégées ; version de la branche PR 10.
+Dernière mise à jour : 2 octobre 2026 (Europe/Paris), archive réelle restituée et déchiffrée USB/papier, correctif de restauration depuis le PC ; branche PR 10.
+
+## Point de reprise — 2 octobre 2026, 03 h 30 Paris : archive réelle et clés USB/papier
+
+Résultats exécutés par Antoine sur PC/Nexus et transmis dans la conversation ; reçus et chemins privés dans T08 Notion.
+
+- Nexus contrôlé à `fb9aedf92f270affda33ebc97dc75309d0cd3063`, checkout propre, sept services sains. Préparation temporaire age 1.3.2, sauvegarde réelle avec le script de cette révision, chiffrement avec la clé publique existante ; services redevenus sains après sauvegarde. Aucun code PR 10 installé.
+- Archive chiffrée transférée vers PC par `scp -O` (SFTP a échoué), empreinte conforme. Deux envois réels via AWS CLI 2.37.8 Linux/AMD64 épinglée : `amazon/aws-cli@sha256:420ab345e847291b541b45d989535f55bcff957c27fa1100fae4aa233e86398c`. Content-MD5 pour archive et SHA-256, profil dédié, sans liste ni If-None-Match. Reçu des deux VersionId conservé sur PC.
+- Rétentions des deux versions GOVERNANCE 30 jours vérifiées, récupération des versions exactes confirmée, SHA-256 conforme à la paire récupérée et à l'empreinte avant envoi.
+- Déchiffrement complet de l'archive récupérée avec USB : code 0. Test indépendant de la copie papier, ressaisie masquée sur PC et stdin age local : code 0. Sortie vers NUL, pas de copie en clair sur PC par ces tests. Clé privée jamais transmise à Nexus. Ces preuves ne valent pas encore examen du contenu/restauration.
+- Refus de liste Maison avec la politique finale enfin retesté : code 255, AccessDenied. Les autres droits administratifs non testés individuellement restent ouverts.
+- Correctif B4 préparé : `--decrypted-stdin --tar-sha256` reçoit seulement le tar déchiffré sur PC par SSH, vérifie le flux intégral avant Docker, refuse chemins/liens dangereux, vérifie le manifeste, nettoie les ressources isolées. Le mode historique transmettant une identité age reste compatible mais n'est pas autorisé par la consigne actuelle ; ne pas l'utiliser.
+- Vérification locale : 31 tests de préparation réussis, dont 13 nouveaux pour ce correctif ; Bash/tar/sha256sum réels et Docker simulé. Aucune preuve Docker réelle déduite de ces tests. Transport Windows et B4 avec les vrais services restent à éprouver.
+- **Prochaines actions :** préparer uniquement les scripts de répétition à une révision exacte dans un dossier séparé ; vérifier l'image API effective (les overlays peuvent remplacer RELEASE), répéter sur le contenu récupéré sans clé sur Nexus ; préparer ensuite l'installation et le retour arrière. Coût/quota, rotation distante, 2FA effective, minuteurs, alertes et autres prérequis T08 restent ouverts. Fusions 8 → 9 → 10 avec accord explicite, PR 10 toujours brouillon.
 
 ## Point de reprise — 2 octobre 2026 : script adapté dans PR 10
 

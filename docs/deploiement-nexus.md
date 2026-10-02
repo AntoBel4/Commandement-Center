@@ -154,25 +154,49 @@ Attendu : code 0, empreinte conforme, liste contenant notamment `courses.dump`, 
 
 ### B4. Répétition de restauration sur Nexus (sans toucher la production)
 
-La clé part du PC, traverse SSH et reste en mémoire sur Nexus :
+**Consigne du 2 octobre : la clé privée ne doit jamais parvenir à Nexus, même en mémoire.** L'ancien exemple SSH envoyant la clé sur stdin est retiré. Le mode historique du script reste compatible, mais ne doit pas être utilisé dans ce projet. Le PC déchiffre l'archive récupérée par VersionId, puis transmet uniquement le tar déchiffré dans le tunnel SSH.
+
+Le script accepte désormais :
 
 ```bash
-ssh nexus 'cd <racine> && sudo deploy/nexus/restore-service.sh --rehearse /<OFFSITE_WORKDIR>/outbox/commandement-<…>.tar.age' < /media/<usb>/maison-backup.key
-# puis, images API/Keycloak présentes : même commande avec --rehearse --with-services
+restore-service.sh --rehearse [--with-services] --decrypted-stdin \
+  --tar-sha256 <SHA-256 du tar calculé sur le PC> commandement-<horodatage>-<suffixe>
 ```
 
-- **Sécurité** : projet Compose `commandement-rehearsal-<horodatage>` défini par `deploy/nexus/rehearsal.yml` : aucun port, aucun réseau `proxy`, aucun label Traefik, aucun volume ni fichier de production monté, réseau interne sans sortie ; web, telegram et alexa jamais démarrés ; l’API n’a aucune variable Google ni Telegram (configuration effective affichée, mots de passe masqués). Données déchiffrées (secrets de production) dans un dossier temporaire 700, **supprimé à la sortie, en cas d’erreur ou d’interruption** ; projet et volumes de répétition supprimés.
-- **Sauvegarde préalable** : aucune nécessaire (production intacte).
-- **Retour arrière** : `docker compose -p commandement-rehearsal-<…> -f deploy/nexus/rehearsal.yml down -v` si une coupure brutale (SIGKILL) a empêché le nettoyage ; `ls /tmp/commandement-restore.*` doit être vide.
-- **Attendu** : « Archive decrypted and SHA256SUMS verified », « counts match », et avec `--with-services` : `api /ready 200` et Keycloak prêt.
+Il exige l'empreinte du **tar déchiffré**, distincte de celle du `.tar.age`. Il reçoit intégralement le flux dans un dossier temporaire privé, vérifie son empreinte avant extraction ou Docker, refuse les chemins hors du dossier attendu ainsi que les liens/fichiers spéciaux, puis vérifie `SHA256SUMS`. Une coupure, y compris dans le remplissage final du tar, ne peut pas être acceptée sur la seule base des fichiers déjà reçus.
+
+Exemple **Bash sur le PC**, après vérification de la paire chiffrée récupérée (chemins à adapter, jamais à copier sans vérification) :
+
+```bash
+(
+  set -Eeuo pipefail
+  umask 077
+  work=$(mktemp -d)
+  trap 'rm -rf -- "$work"' EXIT
+  name='commandement-<horodatage>-<suffixe>'
+  age -d -i /media/<usb>/maison-backup.key -o "$work/payload.tar" "/<recuperation>/$name.tar.age"
+  digest=$(sha256sum "$work/payload.tar" | cut -d ' ' -f1)
+  ssh nexus "bash /<scripts-verifies>/restore-service.sh --rehearse --decrypted-stdin --tar-sha256 $digest $name" < "$work/payload.tar"
+)
+```
+
+**Windows PowerShell : ne pas remplacer ce transfert par un pipeline texte ou une redirection binaire PowerShell 5.1.** Déchiffrer avec `age --output` dans un dossier temporaire dont l'ACL exclut les autres utilisateurs, calculer `Get-FileHash`, puis utiliser un flux binaire .NET vers l'entrée standard du processus SSH. Vérifier séparément les codes age et SSH, puis supprimer le clair dans un `finally`. Aucune clé privée ne doit figurer dans la commande SSH, un fichier Nexus ou le flux tar.
+
+Préparation temporaire avant installation : copier uniquement le script corrigé et `rehearsal.yml` depuis un commit exact de PR 10 dans un dossier privé séparé, vérifier leurs empreintes et la syntaxe Bash. Ne pas changer le checkout en production. Vérifier les images et la révision API réellement présentes avant `--with-services` : `RELEASE` de `production.env` peut être remplacée par les overlays Google/Telegram dans le service actif ; ne pas considérer le test probant s'il utilise une autre image sans l'avoir relevé.
+
+- **Sécurité** : projet Compose isolé, aucun port, réseau proxy, label Traefik, volume/fichier de production monté. Réseau interne sans sortie ; web, Telegram et Alexa ne sont jamais démarrés. Données déchiffrées et tar transitoire dans un dossier 700, supprimé à la sortie, en cas d'erreur ou d'interruption prise en charge. Projet et volumes de répétition supprimés ; nom avec suffixe aléatoire pour éviter les collisions.
+- **Sauvegarde préalable** : aucune nécessaire pour ce test isolé ; la production est intacte.
+- **Retour arrière** : le script nettoie ses ressources. En cas de SIGKILL ou coupure de machine, relever le projet exact avant de supprimer uniquement ce projet et ses volumes, puis son dossier temporaire ; jamais de purge Docker globale. Le clair sur PC doit aussi être retiré.
+- **Attendu** : `complete stream SHA-256 verified`, `Archive contents and SHA256SUMS verified`, `counts match`, puis avec `--with-services` : `api /ready 200` et Keycloak prêt.
 
 ### B5. Restauration de production — **manuelle uniquement**
 
 `--production` n’est **jamais** appelé par `monitor.sh` ni par un minuteur. Uniquement à la main, après décision d’Antoine :
 
 ```bash
-git checkout --detach <SHA de source-commit.txt de l'archive>
-ssh nexus 'cd <racine> && sudo deploy/nexus/restore-service.sh --production --confirm commandement-<…> --pre-backup /<sauvegardes>/avant-restauration-$(date +%F-%H%M) /<…>/commandement-<…>.tar.age' < /media/<usb>/maison-backup.key
+# Sur Nexus : checkout exact préalablement vérifié, sauvegarde et accord explicite.
+# Sur le PC : tar déchiffré dans un dossier privé et empreinte vérifiés comme en B4.
+ssh nexus 'bash /<racine>/deploy/nexus/restore-service.sh --production --confirm commandement-<…> --pre-backup /<sauvegardes>/avant-restauration-<date> --decrypted-stdin --tar-sha256 <SHA-du-tar> commandement-<…>' < /<prive-PC>/payload.tar
 ```
 
 - **Sécurité** : écrase les deux bases de production ; refuse sans `--confirm <nom exact de l’archive>` et si le code en place diffère de celui de la sauvegarde. `--restore-private` réinstalle aussi les fichiers privés (nouvelle machine).
@@ -235,3 +259,12 @@ Contrôle toutes les 5 minutes des seuls conteneurs Maison (postgres, keycloak-d
 Les observations Contabo sur PC sont détaillées en B0 et dans `docs/PROJECT-STATE.md` : protection et restauration d'une version d'un fichier technique confirmées, pas encore d'archive réelle envoyée depuis Nexus.
 
 Les tests automatisés `deploy/nexus/test/backup-offsite.test.mjs` exécutent le vrai script Bash, tar et OpenSSL ; export des bases, age et Docker/S3 sont simulés. Ils vérifient les Content-MD5 des deux fichiers, les reçus de versions, le SHA-256 de l'archive envoyée, les échecs d'envoi/checksum/chiffrement/réponse sans version, le refus des anciennes options, `--no-upload` et la rotation locale sans suppression distante. Ils ne remplacent ni l'intégration avec l'image CLI retenue ni B3/B4.
+
+
+## Qualification réelle du 2 octobre — PC et Nexus, avant installation
+
+Antoine a exécuté une sauvegarde réelle avec le script déjà installé à fb9aedf, puis le chiffrement age 1.3.2 avec la clé publique existante, dans une préparation temporaire séparée. Après l'arrêt cohérent/reprise, les sept services Maison étaient sains. Archive récupérée sur le PC via SCP historique (`scp -O`, sous-système SFTP indisponible dans l'essai) et empreinte conforme.
+
+Deux PutObject réels (archive et SHA-256), Content-MD5 pour chacun, avec le compte dédié et l'image officielle AWS CLI 2.37.8 : `amazon/aws-cli@sha256:420ab345e847291b541b45d989535f55bcff957c27fa1100fae4aa233e86398c`. VersionId conservés dans un reçu sur PC. Rétention GOVERNANCE 30 jours constatée sur chacune ; récupération par versions exactes, empreinte conforme au SHA-256 récupéré et à celle relevée avant envoi. Déchiffrement complet avec l'USB puis indépendamment avec la clé ressaisie depuis le papier : codes age 0, sortie vers NUL, aucune copie en clair conservée sur PC par ces deux tests. Liste Maison refusée avec la politique finale (AccessDenied).
+
+Ces résultats sont issus des sorties communiquées par l'utilisateur. Ils qualifient l'envoi manuel avec l'image épinglée et les déchiffrements, **pas encore l'exécution de backup-offsite.sh sur Nexus ni la restauration du contenu récupéré**. B4, coût/quota, rotation, 2FA effective, installation, minuteurs et alertes restent ouverts. Versions et preuves privées : carte T08 Notion.

@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
-# Restore from an ENCRYPTED off-site archive. The age private key is read on standard
-# input and kept in memory only (never written to Nexus disks). Decrypted files hold
-# production secrets: they are deleted on exit, error or interruption.
+# Preferred input: a tar stream decrypted on the PC. The private key never reaches
+# Nexus. The independently computed tar SHA-256 is mandatory and checked before
+# extraction or Docker. Temporary plaintext is removed on exit/error/interruption.
+# The legacy encrypted-file/identity-stdin input remains for compatibility only;
+# do NOT use it where the private key must stay off the server.
 #
 #   Rehearsal (isolated Compose project, no port, no proxy, no production volume):
-#     restore-service.sh --rehearse [--with-services] /abs/archive.tar.age < key-from-usb
+#     restore-service.sh --rehearse [--with-services] --decrypted-stdin \
+#       --tar-sha256 HEX commandement-TIMESTAMP-SUFFIX < decrypted.tar
 #   Production (MANUAL ONLY, never from monitor.sh or a timer):
 #     restore-service.sh --production --confirm <archive-name> --pre-backup /abs/new-dir \
-#       [--restore-private] /abs/archive.tar.age < key-from-usb
+#       [--restore-private] --decrypted-stdin --tar-sha256 HEX NAME < decrypted.tar
 set -Eeuo pipefail
 umask 077
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 mode='' with_services=false confirm='' pre_backup='' restore_private=false
+decrypted_stdin=false tar_sha256='' identity=''
 while (($#)); do
   case $1 in
     --rehearse) mode=rehearse;;
     --production) mode=production;;
     --with-services) with_services=true;;
     --restore-private) restore_private=true;;
+    --decrypted-stdin) decrypted_stdin=true;;
+    --tar-sha256) tar_sha256=${2:?}; shift;;
     --confirm) confirm=${2:?}; shift;;
     --pre-backup) pre_backup=${2:?}; shift;;
     -*) echo "Unknown option $1" >&2; exit 1;;
@@ -25,18 +31,22 @@ while (($#)); do
   esac
   shift
 done
-test "$#" -eq 1 && [[ "$1" = /*.tar.age && -f "$1" ]] && [[ -n "$mode" ]] || {
-  echo 'Usage: restore-service.sh --rehearse [--with-services] | --production --confirm NAME --pre-backup DIR [--restore-private]  /abs/archive.tar.age < age-key' >&2; exit 1; }
-archive=$1
-name=$(basename -- "$archive" .tar.age)
+test "$#" -eq 1 && [[ -n "$mode" ]] || {
+  echo 'Usage: restore-service.sh --rehearse [--with-services] | --production --confirm NAME --pre-backup DIR [--restore-private] --decrypted-stdin --tar-sha256 HEX NAME < decrypted.tar' >&2; exit 1; }
+if [[ "$decrypted_stdin" = true ]]; then
+  name=$1
+  [[ "$tar_sha256" =~ ^[a-fA-F0-9]{64}$ ]] || { echo 'A PC-computed tar SHA-256 is required.' >&2; exit 1; }
+else
+  [[ -z "$tar_sha256" && "$1" = /*.tar.age && -f "$1" ]] || { echo 'Provide an encrypted archive or use --decrypted-stdin.' >&2; exit 1; }
+  archive=$1
+  name=$(basename -- "$archive" .tar.age)
+fi
 [[ "$name" =~ ^commandement-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{8}$ ]] || { echo 'Unexpected archive name.' >&2; exit 1; }
 if [[ "$mode" = production ]]; then
   [[ "$confirm" = "$name" ]] || { echo "Production restore requires --confirm $name" >&2; exit 1; }
   [[ "$pre_backup" = /* ]] || { echo 'Production restore requires --pre-backup /absolute/new-directory' >&2; exit 1; }
 fi
-test ! -t 0 || { echo 'Provide the age private key on standard input (e.g. < /media/usb/key.txt or through ssh).' >&2; exit 1; }
-identity=$(cat)
-[[ "$identity" == *AGE-SECRET-KEY-1* ]] || { echo 'Standard input is not an age identity.' >&2; exit 1; }
+test ! -t 0 || { echo 'Provide the requested input on standard input.' >&2; exit 1; }
 
 work=''
 project=''
@@ -53,22 +63,47 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
+trap 'exit 129' HUP
 work=$(mktemp -d "${TMPDIR:-/tmp}/commandement-restore.XXXXXX")
 
-if test -f "$archive.sha256"; then (cd -- "$(dirname -- "$archive")" && sha256sum -c --quiet "$name.tar.age.sha256"); fi
-age -d -i <(printf '%s\n' "$identity") "$archive" | tar -C "$work" --no-same-owner -xf -
-identity=''
+if [[ "$decrypted_stdin" = true ]]; then
+  cat > "$work/payload.tar"
+  (cd -- "$work" && printf '%s  payload.tar\n' "$tar_sha256" | sha256sum -c --quiet)
+  echo 'PC-decrypted tar received; complete stream SHA-256 verified.'
+else
+  identity=$(cat)
+  [[ "$identity" == *AGE-SECRET-KEY-1* ]] || { echo 'Standard input is not an age identity.' >&2; exit 1; }
+  if test -f "$archive.sha256"; then (cd -- "$(dirname -- "$archive")" && sha256sum -c --quiet "$name.tar.age.sha256"); fi
+  age -d -i <(printf '%s\n' "$identity") "$archive" > "$work/payload.tar"
+  identity=''
+fi
+# backup.sh creates only regular files in one flat, named directory. Refuse
+# traversal, absolute paths, extra roots, symlinks and hardlinks before extraction.
+tar -tf "$work/payload.tar" > "$work/entries"
+while IFS= read -r entry; do
+  [[ "$entry" = "$name/" || "$entry" =~ ^$name/[a-zA-Z0-9][a-zA-Z0-9._-]*$ ]] || {
+    echo 'Unsafe or unexpected archive path.' >&2; exit 1; }
+done < "$work/entries"
+tar -tvf "$work/payload.tar" > "$work/types"
+while IFS= read -r entry; do
+  [[ "${entry:0:1}" = '-' || "${entry:0:1}" = d ]] || { echo 'Archive links and special files are not allowed.' >&2; exit 1; }
+done < "$work/types"
+tar -C "$work" --no-same-owner --no-same-permissions -xf "$work/payload.tar"
 backup="$work/$name"
 test -d "$backup" || { echo 'Archive layout unexpected.' >&2; exit 1; }
+while IFS= read -r line; do
+  [[ "$line" =~ ^[a-fA-F0-9]{64}\ [\ *][a-zA-Z0-9][a-zA-Z0-9._-]*$ ]] || { echo 'Unsafe checksum manifest.' >&2; exit 1; }
+done < "$backup/SHA256SUMS"
 (cd -- "$backup" && sha256sum -c --quiet SHA256SUMS)
-echo "Archive decrypted and SHA256SUMS verified: $name"
+echo "Archive contents and SHA256SUMS verified: $name"
 
 envvalue() { grep -m1 "^$1=" "$backup/production.env" | cut -d= -f2-; }
 courses_counts='select (select count(*) from families), (select count(*) from family_members), (select count(*) from grocery_items), (select count(*) from grocery_history), (select count(*) from grocery_requests);'
 identity_counts='select (select count(*) from realm), (select count(*) from user_entity), (select count(*) from credential);'
 
 if [[ "$mode" = rehearse ]]; then
-  project="commandement-rehearsal-$(date +%s)"
+  suffix=${work##*.}
+  project="commandement-rehearsal-$(date +%s)-${suffix,,}"
   {
     printf 'REHEARSAL_PROJECT=%s\n' "$project"
     for key in POSTGRES_IMAGE POSTGRES_PASSWORD KEYCLOAK_DB_PASSWORD KEYCLOAK_IMAGE PORTAL_HOST RELEASE DATABASE_URL; do
