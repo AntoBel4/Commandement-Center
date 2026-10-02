@@ -1,6 +1,21 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026, 07 h 42 (Europe/Paris), nettoyage et santé confirmés après restauration des bases ; préparation du test API/Keycloak, branche PR 10.
+Dernière mise à jour : 2 octobre 2026 (Europe/Paris), clôture et blocage du panneau Contabo ; branche PR 10.
+
+## Point de reprise — 2 octobre 2026, clôture depuis téléphone
+
+Cette note prévaut sur les prochaines actions historiques ci-dessous. Consignation des résultats transmis par Antoine ; aucun nouveau test serveur effectué pendant cette clôture.
+
+- Répétition complète `--with-services` lancée depuis le PC avec les fichiers de `a1941b5`, mais résultat non récupéré. B4 reste partiel : restauration réelle des deux bases déjà validée, succès API/Keycloak non établi. Aucun événement exploitable dans l'historique Docker interrogé.
+- Contrôles ultérieurs depuis téléphone : aucun conteneur ni processus de répétition ; aucun volume/réseau portant le préfixe du test et aucun dossier de restauration de l'utilisateur dans /tmp. Nettoyage confirmé dans ces emplacements uniquement. Sept services Maison healthy au dernier contrôle.
+- Prérequis contrôlés : horloge Europe/Paris et NTP synchronisé ; aucune unité installée ni minuteur système chargé aux noms maison-* ou commandement-* (sans conclusion sur cron, autres noms ou unités utilisateur). Checkout de production propre à `fb9aedf92f270affda33ebc97dc75309d0cd3063`, images API/web correspondantes présentes. Permissions privées conformes ; configurations hors site absentes. Sauvegarde préalable et copies de retour arrière restent à préparer.
+- Connexion au panneau Contabo avec second facteur demandé et validé confirmée. L'onglet Buckets affiche un refus d'accès persistant, y compris après actualisation, alors qu'Antoine indique utiliser son compte administrateur et que Storage Settings reste accessible. Cause inconnue ; cela ne prouve pas la disparition des compartiments ni un échec S3. Les téléchargements antérieurs par VersionId restent validés dans leur portée. Aucun droit ni politique modifié.
+- Capacité et occupation globales relevées dans le panneau ; détails chiffrés privés dans T08 Notion. Occupation par compartiment, prise en compte des versions, tarif, dépassement et rotation restent à déterminer.
+- Antoine est sur téléphone via Termux/SSH et WireGuard, sans accès au PC Windows. Ne pas lui redemander cet accès pendant cette pause. Les identifiants administrateur et la clé privée age restent hors Nexus.
+- **Reprise au retour sur PC :** 1) récupérer uniquement le résultat filtré conservé dans la session PowerShell de la répétition API/Keycloak, si elle existe encore ; sinon maintenir le résultat inconnu ; 2) effectuer une requête S3 en lecture seule avec le profil administrateur existant pour comparer avec le panneau ; 3) traiter les critères encore ouverts avant installation (script hors site réel sur Nexus, sauvegarde/retour arrière, minuteurs/alertes, coût/rotation).
+- T08 reste En cours. PR 10 ouverte, brouillon, non fusionnée et non installée en production. Cette clôture modifie seulement la documentation et le suivi ; aucune fusion, installation, modification de droits ni nouvelle opération sur Nexus. La note de reprise reste sur la branche de PR 10 ; main n'est pas actualisée.
+
+## Historique — points précédents
 
 ## Point de reprise — 2 octobre 2026, 07 h 42 Paris : nettoyage constaté, production saine
 
