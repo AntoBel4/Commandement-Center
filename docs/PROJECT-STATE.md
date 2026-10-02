@@ -1,6 +1,16 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026 (Europe/Paris), qualification S3 sur le PC ; version de la branche PR 10.
+Dernière mise à jour : 2 octobre 2026 (Europe/Paris), adaptation du script aux versions protégées ; version de la branche PR 10.
+
+## Point de reprise — 2 octobre 2026 : script adapté dans PR 10
+
+**Cette mise à jour complète les tests PC ci-dessous. T08 reste en cours ; aucune fusion ni installation sur Nexus.**
+
+- `backup-offsite.sh` fournit le Content-MD5 de l'archive et de son fichier SHA-256. Il utilise exclusivement PutObject, sans liste ni If-None-Match ; les anciens réglages incompatibles sont refusés avant l'export.
+- Chaque réponse doit fournir un VersionId exploitable. Un reçu local `.tar.age.versions.tsv` conserve la paire de versions ; le marqueur de succès hors site est remplacé seulement après les deux envois confirmés. En cas d'échec, l'ancien marqueur et le reçu partiel sont conservés. La rotation locale traite les reçus avec leurs archives ; aucun effacement distant.
+- Guide B0–B3/B7 actualisé : versionnage + GOVERNANCE 30 jours, refus explicites, rétention à vérifier depuis le PC, restauration de la paire par VersionId, copie des reçus hors Nexus, rotation distante encore à décider sans bypass. Clé age déjà préparée : ne pas la recréer.
+- **Vérification locale :** syntaxe de tous les scripts valide ; 18 tests de préparation réussis, dont 15 nouveaux tests d'orchestration hors site (MD5 réels, réponses partielles/invalides, échecs, anciennes options, mode local, rotation). Bash, tar et OpenSSL réels ; export, age et Docker/S3 simulés. Ces tests sont ajoutés à la CI ; ils ne prouvent pas l'envoi réel d'une archive ni son déchiffrement.
+- **Prochaine action :** qualifier une archive chiffrée représentative avec l'image AWS CLI épinglée, vérifier les deux rétentions et restituer les deux versions ; B3 USB/papier et B4 restent nécessaires avant programmation. Installation prévue le 3 octobre sous réserve des prérequis. Coût/rotation, 2FA et refus de liste avec politique finale restent à finaliser.
 
 ## Point de reprise — 2 octobre 2026 : qualification S3 depuis le PC
 

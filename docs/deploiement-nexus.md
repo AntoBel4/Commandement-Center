@@ -39,42 +39,72 @@ Révision à installer : tête de la PR 10 au moment de l’installation, CI « 
 
 ### B0. Côté PC et panneau Contabo (Antoine, avant toute commande sur Nexus)
 
-1. **Paire de clés age, sur le PC** (pas sur Nexus) : `age-keygen -o /media/<usb>/maison-backup.key` ; relever la ligne `# public key: age1…`. Imprimer la ligne `AGE-SECRET-KEY-1…` pour la copie papier rangée ailleurs. **Implication** : quiconque détient ce fichier lit toutes les sauvegardes (qui contiennent les secrets Google, Telegram et Keycloak) ; sa perte rend les archives illisibles.
-2. **Compartiment dédié** dans l’offre S3 Contabo existante (nom d’exemple : `maison-nexus-backup`), distinct de la sauvegarde hors site existante.
-3. **Utilisateur dédié** avec ses propres identifiants S3, limité par politique de compartiment. Exemple (valeurs fictives ; ARN au format documenté par Contabo `arn:aws:iam::<s3TenantId>:user/<customerId>:<userId>`) :
+**État au 2 octobre :** clé age USB + copie papier déjà préparées ; compartiment et compte dédiés créés ; Object Lock par défaut **GOVERNANCE 30 jours** activé. Ne pas recréer la clé. Le test S3 porte sur un petit fichier technique, pas encore sur une archive chiffrée représentative. Aucun de ces changements n'est installé sur Nexus.
+
+1. **Clé privée age uniquement sur le PC/USB et papier ailleurs.** Relever la clé publique existante `age1…` pour Nexus. Quiconque détient la clé privée peut lire les archives ; sa perte les rend illisibles.
+2. **Compartiment dédié**, distinct de la sauvegarde NAS, versionné avec rétention par défaut GOVERNANCE 30 jours. Une nouvelle écriture sous le même nom **peut réussir** : elle crée une nouvelle version. La protection porte sur les versions conservées. `If-None-Match: *` n'a pas empêché deux envois lors du test Contabo ; le script ne l'utilise plus.
+3. **Utilisateur dédié en écriture seule, sans liste.** Une simple autorisation PutObject ne retire pas les droits hérités. Politique illustrative du modèle retenu (principal fictif ; adapter depuis la politique privée effectivement testée, sans écraser les règles d'autres utilisateurs) :
 
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Sid": "NexusWriteOnly",
-    "Effect": "Allow",
-    "Principal": {"AWS": ["arn:aws:iam::EXEMPLE_TENANT:user/EXEMPLE_CLIENT:EXEMPLE_UTILISATEUR"]},
-    "Action": ["s3:PutObject"],
-    "Resource": ["arn:aws:s3:::maison-nexus-backup/nexus-maison/*"]
-  }]
+  "Statement": [
+    {
+      "Sid": "AutoriserEnvoi",
+      "Effect": "Allow",
+      "Principal": {"AWS": ["arn:aws:iam::EXEMPLE_TENANT:user/EXEMPLE_CLIENT:EXEMPLE_UTILISATEUR"]},
+      "Action": "s3:PutObject",
+      "Resource": "*"
+    },
+    {
+      "Sid": "RefuserLectureSuppressionAdministration",
+      "Effect": "Deny",
+      "Principal": {"AWS": ["arn:aws:iam::EXEMPLE_TENANT:user/EXEMPLE_CLIENT:EXEMPLE_UTILISATEUR"]},
+      "Action": [
+        "s3:Get*", "s3:List*", "s3:Delete*", "s3:PutBucket*",
+        "s3:PutObjectAcl", "s3:PutObjectVersionAcl",
+        "s3:PutObjectTagging", "s3:PutObjectVersionTagging",
+        "s3:PutObjectRetention", "s3:PutObjectLegalHold",
+        "s3:BypassGovernanceRetention", "s3:PutLifecycleConfiguration",
+        "s3:PutReplicationConfiguration", "s3:PutAccelerateConfiguration",
+        "s3:PutPublicAccessBlock", "s3:CreateBucket", "s3:RestoreObject",
+        "s3:AbortMultipartUpload"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RefuserListeExplicite",
+      "Effect": "Deny",
+      "Principal": {"AWS": ["arn:aws:iam::EXEMPLE_TENANT:user/EXEMPLE_CLIENT:EXEMPLE_UTILISATEUR"]},
+      "Action": ["s3:ListBucket", "s3:ListBucketVersions", "s3:ListBucketMultipartUploads"],
+      "Resource": "*"
+    }
+  ]
 }
 ```
 
-   Optionnel : ajouter `s3:ListBucket` sur `arn:aws:s3:::maison-nexus-backup` (avec condition de préfixe) pour que le script **vérifie qu’un objet du même nom n’existe pas** (`OFFSITE_CHECK=list`). Sans ce droit, une clé en écriture seule **ne peut pas** vérifier l’existence : la protection repose alors sur des noms uniques (horodatage UTC + 32 bits aléatoires, jamais réutilisés) et sur l’en-tête `If-None-Match: *` (refus d’écraser) si Contabo le prend en charge — **non vérifié**.
+Cette politique est attachée **au compartiment Maison**. Le refus de liste explicite déjà testé est conservé. Sur chaque autre compartiment accessible au compte, une règle distincte doit refuser `s3:*` à **ce seul principal** ; ne pas bloquer les autres utilisateurs ni modifier leurs objets. Ne pas revenir à la politique initiale fondée sur `NotAction` et `s3:if-none-match`, qui n'a pas donné les résultats attendus.
 
-4. **Vérifications sur le panneau Contabo — à cocher avant de considérer la sauvegarde valide** :
-   - [ ] la politique limite l’utilisateur dédié au seul compartiment (il ne voit ni la sauvegarde existante ni d’autres compartiments) ;
-   - [ ] l’utilisateur dédié n’a **aucun droit de suppression** : depuis le PC, avec la clé de Nexus, `aws s3api delete-object …` doit répondre AccessDenied ;
-   - [ ] versionnage ou verrouillage d’objets (Object Lock) disponible ? Noter oui/non ; s’il est disponible sans coût, l’activer sur ce compartiment ;
-   - [ ] écrasement refusé : second `put-object --if-none-match '*'` sur la même clé → refus attendu ; si Contabo ignore l’en-tête, mettre `OFFSITE_IF_NONE_MATCH=false` et le noter comme limite ;
-   - [ ] **aucun coût supplémentaire** : le compartiment et l’utilisateur restent dans l’offre actuelle (quota consommé : archives de quelques Mo × 30).
-5. **Clé de rotation** (droit de suppression) : clé principale ou second utilisateur, **uniquement sur le PC**, jamais sur Nexus ni dans le dépôt.
+4. **Qualification et limites observées sur PC** :
+   - Envoi avec le compte dédié réussi ; lecture, suppression simple, suppression d'une version avec demande de bypass GOVERNANCE et réécriture à l'identique de la politique refusées (`AccessDenied`). Les autres droits administratifs ne sont pas tous testés individuellement.
+   - Liste Maison refusée avant le remplacement des autres règles, refus explicite conservé ensuite ; refaire ce contrôle avec la politique finale. Liste du compartiment NAS refusée ; aucun objet NAS manipulé ni sauvegarde NAS retestée.
+   - Rétention 30 jours constatée sur les versions administrateur et dédiée ; suppression administrateur sans bypass refusée ; première version du fichier technique restaurée après les écritures suivantes, SHA-256 conforme.
+   - **Encore à valider** : archive représentative avec l'image CLI épinglée, déchiffrement USB/papier (B3), restauration complète (B4), 2FA effectivement utilisée, coût et quota de toutes les versions. La rétention n'empêche pas un compte d'envoi compromis d'ajouter des données.
+5. **Clé d'administration/rotation uniquement sur le PC**, jamais sur Nexus ni dans le dépôt. GOVERNANCE peut être contourné par un administrateur disposant du droit de bypass ; le compte d'envoi doit rester privé de ce droit.
 
-**Repli si l’une de ces conditions est impossible** : le PC tire l’archive chiffrée par SSH (`scp nexus:<OFFSITE_WORKDIR>/outbox/commandement-*.tar.age …`, compte SSH à clé, en lecture seule sur `outbox`). Nexus ne détient alors aucun identifiant externe ; le RPO dépend du PC allumé. Lancer `backup-offsite.sh --no-upload` sur Nexus.
+**Repli si les prérequis ne sont pas réunis** : `backup-offsite.sh --no-upload` crée l'archive et son `.sha256` localement. Le PC les tire par SSH (compte à clé limité en lecture à `outbox`) ; aucun identifiant externe requis sur Nexus. Cette option ne crée aucun reçu S3 et ne met pas à jour `last-offsite-success` ; elle nécessite un suivi adapté et son RPO dépend du PC allumé.
 
 ### B1. Configuration privée sur Nexus
 
 | Commande | Sécurité | Sauvegarde | Retour arrière |
 |---|---|---|---|
-| Créer `.private/nexus/offsite.env` (600) : `OFFSITE_AGE_RECIPIENT=age1…` (clé **publique**), `OFFSITE_WORKDIR=/<chemin hors dépôt>/maison-offsite`, `OFFSITE_BUCKET=maison-nexus-backup`, `OFFSITE_ENDPOINT=https://<région>.contabostorage.com`, `OFFSITE_PREFIX=nexus-maison`, `OFFSITE_AWS_IMAGE=amazon/aws-cli@sha256:<digest relevé>`, `OFFSITE_CHECK=none` (ou `list`), `OFFSITE_IF_NONE_MATCH=true`, `OFFSITE_KEEP_LOCAL=3`, `OFFSITE_KEEP_ARCHIVES=7` | Clé publique seulement : Nexus peut chiffrer, jamais déchiffrer. | — | Supprimer le fichier. |
+| Créer `.private/nexus/offsite.env` (600) : `OFFSITE_AGE_RECIPIENT=age1…` (clé **publique**), `OFFSITE_WORKDIR=/<chemin hors dépôt>/maison-offsite`, `OFFSITE_BUCKET=maison-nexus-backup`, `OFFSITE_ENDPOINT=https://<région>.contabostorage.com`, `OFFSITE_PREFIX=nexus-maison`, `OFFSITE_AWS_IMAGE=amazon/aws-cli@sha256:<digest relevé>`, `OFFSITE_CHECK=none`, `OFFSITE_IF_NONE_MATCH=false`, `OFFSITE_KEEP_LOCAL=3`, `OFFSITE_KEEP_ARCHIVES=7` | Clé publique seulement : Nexus peut chiffrer, jamais déchiffrer. | — | Supprimer le fichier. |
 | Créer `.private/nexus/offsite-s3.env` (600) : `AWS_ACCESS_KEY_ID=…`, `AWS_SECRET_ACCESS_KEY=…`, `AWS_DEFAULT_REGION=default` | Identifiants de l’utilisateur **dédié écriture seule** ; lisibles par root sur Nexus et visibles par `docker inspect` le temps de l’envoi. | — | Révoquer la clé dans Contabo. |
-| `docker pull amazon/aws-cli:<version>` puis `docker image inspect --format '{{index .RepoDigests 0}}' amazon/aws-cli:<version>` | Image officielle épinglée par digest ; à vérifier sur place (version récente acceptant `--if-none-match`). | — | `docker image rm`. |
+| `docker pull amazon/aws-cli:<version>` puis `docker image inspect --format '{{index .RepoDigests 0}}' amazon/aws-cli:<version>` | Image officielle épinglée par digest ; à vérifier sur place (version acceptant `--content-md5` ; relever sa version et qualifier son envoi réel). | — | `docker image rm`. |
+
+Prérequis locaux : Bash, Docker, age, tar, sha256sum et **OpenSSL**. Pour chaque PutObject, le script fournit un Content-MD5 calculé sur les octets envoyés (archive **et** fichier SHA-256), avec les checksums automatiques AWS réglés sur `when_required`. L'image CLI retenue reste à tester réellement sur Contabo. Aucun multipart n'est implémenté : vérifier que la taille réelle reste compatible avec un PutObject simple.
+
+Les anciens réglages `OFFSITE_CHECK=list` ou `OFFSITE_IF_NONE_MATCH=true` sont refusés avant l'export des bases. Les nombres de jeux conservés localement doivent être des entiers strictement positifs.
 
 `backup.sh` n’inclut pas `offsite*.env` dans les sauvegardes : les identifiants S3 ne partent pas dans l’archive.
 
@@ -86,20 +116,41 @@ deploy/nexus/backup-offsite.sh
 
 - **Sécurité** : arrêt bref (≈ 1 min) des services applicatifs Maison ; le clair reste dans `OFFSITE_WORKDIR/local` (700, 3 jeux) pour la reprise 4 h ; seule l’archive `age` sort.
 - **Sauvegarde préalable** : c’est elle-même (A2 couvre la veille).
-- **Retour arrière** : aucun effet sur les données ; supprimer l’objet depuis le PC avec la clé de rotation si besoin.
-- **À vérifier sur place** : message « Encrypted archive uploaded », objet et `.sha256` visibles dans le compartiment, `last-offsite-success` mis à jour.
+- **Retour arrière** : désactiver le minuteur si nécessaire ; conserver les versions distantes jusqu'à expiration de leur rétention. Ne pas demander de bypass pour nettoyer un essai.
+- **À vérifier sur place** : message « Encrypted archive uploaded », reçu local `commandement-<…>.tar.age.versions.tsv` avec les deux VersionId, et `last-offsite-success` mis à jour. Depuis le PC administrateur, vérifier la rétention de **chacune** de ces versions et télécharger la paire exacte pour B3.
+
+Le reçu contient deux colonnes (`key`, `version_id`) et deux lignes de données : archive puis SHA-256. Le succès hors site n'est enregistré qu'après deux réponses réussies comportant un VersionId exploitable. Cela confirme l'acceptation des fichiers, pas leur déchiffrement ni leur restauration. En cas d'échec, l'ancien marqueur reste intact, l'archive et le reçu `.versions.tsv.partial` restent sur Nexus pour diagnostic. Une réponse sans VersionId peut cacher un envoi accepté : examiner les versions depuis le PC, ne pas conclure à leur absence. Une nouvelle exécution génère un nouveau nom.
+
+**Copier les reçus sur le PC après les envois**, avant leur suppression par la rotation locale (7 archives par défaut). Ils ne contiennent pas de clé privée, mais restent privés. Un reçu conservé uniquement sur Nexus ne survivrait pas à sa perte ; il localise les versions sans constituer une preuve indépendante contre une altération.
 
 ### B3. Test de la clé privée depuis le PC — condition de validité
 
-La sauvegarde n’est **pas valide** tant que ce test n’a pas réussi :
+La sauvegarde n'est **pas valide** tant que ce test n'a pas réussi avec une archive réelle. Utiliser le profil administrateur du PC. Choisir l'archive et son SHA-256 dans un reçu sauvegardé avant l'incident. À défaut, lister les versions avec `list-object-versions`, examiner les dates et identifier une paire saine ; **ne pas prendre automatiquement la dernière version après une compromission**.
+
+Exemple **Bash** (à adapter pour PowerShell) : remplacer les valeurs d'exemple ; les deux VersionId sont différents.
 
 ```bash
-# Sur le PC : télécharger l'archive et son empreinte avec la clé de rotation (PC uniquement)
-sha256sum -c commandement-<…>.tar.age.sha256
-age -d -i /media/<usb>/maison-backup.key commandement-<…>.tar.age | tar -tvf -   # liste courses.dump, identity.dump, SHA256SUMS…
+export AWS_PAGER=""
+endpoint='https://<region>.contabostorage.com'
+bucket='maison-nexus-backup'
+archive='commandement-<horodatage>-<suffixe>.tar.age'
+archive_version='<VersionId de l archive>'
+checksum_version='<VersionId du fichier sha256>'
+aws --profile contabo-maison-admin --endpoint-url "$endpoint" s3api get-object-retention \
+  --bucket "$bucket" --key "nexus-maison/$archive" --version-id "$archive_version"
+aws --profile contabo-maison-admin --endpoint-url "$endpoint" s3api get-object-retention \
+  --bucket "$bucket" --key "nexus-maison/$archive.sha256" --version-id "$checksum_version"
+aws --profile contabo-maison-admin --endpoint-url "$endpoint" s3api get-object \
+  --bucket "$bucket" --key "nexus-maison/$archive" --version-id "$archive_version" "$archive"
+aws --profile contabo-maison-admin --endpoint-url "$endpoint" s3api get-object \
+  --bucket "$bucket" --key "nexus-maison/$archive.sha256" --version-id "$checksum_version" "$archive.sha256"
+sha256sum -c "$archive.sha256"
+# Après empreinte conforme, vérifier le déchiffrement et le contenu :
+set -o pipefail
+age -d -i /media/<usb>/maison-backup.key "$archive" | tar -tvf -
 ```
 
-Refaire ce test avec la **copie papier** (ressaisie dans un fichier temporaire du PC, supprimé après) au moins une fois.
+Attendu : code 0, empreinte conforme, liste contenant notamment `courses.dump`, `identity.dump` et `SHA256SUMS`. Ne pas poursuivre si un téléchargement, la vérification ou le déchiffrement échoue. Le SHA-256 détecte une altération mais ne prouve pas seul qu'une archive est saine ; vérifier la période choisie et le contenu, puis réaliser B4. Refaire le déchiffrement avec la **copie papier** (ressaisie dans un fichier temporaire privé sur le PC, supprimé après) au moins une fois. Ne jamais transmettre la clé privée dans la conversation.
 
 ### B4. Répétition de restauration sur Nexus (sans toucher la production)
 
@@ -149,7 +200,9 @@ WantedBy=timers.target
 
 ### B7. Rotation distante depuis le PC (clé de rotation)
 
-Mensuelle, depuis le PC : lister `nexus-maison/`, conserver au moins les 30 dernières nuits et une archive par mois sur 6 mois, supprimer le reste (`aws s3api delete-object`). Jamais depuis Nexus.
+**Calendrier et nombre d'archives à conserver encore à décider avec Antoine**, après mesure de l'espace utilisé. Les 30 jours de verrouillage ne sont pas une suppression automatique. Toutes les versions, même non courantes, consomment du quota ; un nouvel envoi ne remplace pas leur stockage.
+
+Aucune purge distante automatique n'est installée. Depuis le PC, inventorier les versions (`list-object-versions`), rapprocher archives et SHA-256 avec les reçus conservés, puis contrôler la rétention de chaque version envisagée. Faire approuver la sélection avant suppression. Ne supprimer que les versions expirées et devenues inutiles, avec leur **VersionId explicite** (`delete-object --version-id …`), sans bypass GOVERNANCE. Une suppression sans VersionId peut seulement ajouter un marqueur de suppression et ne constitue pas une purge des anciennes versions. Conserver les paires nécessaires aux restaurations et tester leur lecture avant toute rotation. Jamais de clé de rotation sur Nexus.
 
 ---
 
@@ -175,3 +228,10 @@ Contrôle toutes les 5 minutes des seuls conteneurs Maison (postgres, keycloak-d
 - `rehearsal.yml --profile services` : configuration effective sans port, Traefik, réseau externe, montage, ni variable Google/Telegram ; réseau `internal: true`.
 - `monitor.sh` avec `curl` simulé (aucun appel externe) : panne signalée au 2e passage seulement, aucune répétition, silence en maintenance, rétablissement signalé, chat retrouvé en cache base arrêtée.
 - **Non vérifié** : envoi S3 réel vers Contabo, `If-None-Match` chez Contabo, `--with-services` (images API/Keycloak absentes de la session), `--production`, minuteurs systemd, réception Telegram réelle de l’alerte.
+
+
+## Qualification complémentaire du 2 octobre 2026
+
+Les observations Contabo sur PC sont détaillées en B0 et dans `docs/PROJECT-STATE.md` : protection et restauration d'une version d'un fichier technique confirmées, pas encore d'archive réelle envoyée depuis Nexus.
+
+Les tests automatisés `deploy/nexus/test/backup-offsite.test.mjs` exécutent le vrai script Bash, tar et OpenSSL ; export des bases, age et Docker/S3 sont simulés. Ils vérifient les Content-MD5 des deux fichiers, les reçus de versions, le SHA-256 de l'archive envoyée, les échecs d'envoi/checksum/chiffrement/réponse sans version, le refus des anciennes options, `--no-upload` et la rotation locale sans suppression distante. Ils ne remplacent ni l'intégration avec l'image CLI retenue ni B3/B4.

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Nightly: local backup (backup.sh), age encryption with the PUBLIC key only, then
-# upload of a unique, never-overwritten object with a write-only S3 key.
+# upload with a write-only S3 key to a versioned bucket with default Object Lock.
+# Unique names reduce collisions; retention protects versions, not object names.
 # Private settings (never in Git): .private/nexus/offsite.env and offsite-s3.env.
 # Usage: backup-offsite.sh [--no-upload]
 source "$(dirname -- "$0")/common.sh"
@@ -16,10 +17,18 @@ source "$OFFSITE_ENV"
 [[ "$OFFSITE_WORKDIR" = /* ]] || { echo 'OFFSITE_WORKDIR must be absolute.' >&2; exit 1; }
 keep_local=${OFFSITE_KEEP_LOCAL:-3}
 keep_archives=${OFFSITE_KEEP_ARCHIVES:-7}
+[[ "$keep_local" =~ ^[1-9][0-9]*$ && "$keep_archives" =~ ^[1-9][0-9]*$ ]] || {
+  echo 'Local retention counts must be positive integers.' >&2; exit 1; }
 if [[ "$upload" = true ]]; then
   : "${OFFSITE_BUCKET:?}" "${OFFSITE_ENDPOINT:?}" "${OFFSITE_PREFIX:=nexus-maison}"
+  # The qualified Contabo policy forbids listing; If-None-Match was ignored.
+  [[ "${OFFSITE_CHECK:-none}" = none && "${OFFSITE_IF_NONE_MATCH:-false}" = false ]] || {
+    echo 'Protected-version uploads require OFFSITE_CHECK=none and OFFSITE_IF_NONE_MATCH=false.' >&2; exit 1; }
+  [[ "$OFFSITE_PREFIX" =~ ^[a-zA-Z0-9][a-zA-Z0-9/_-]*$ ]] || {
+    echo 'OFFSITE_PREFIX must contain only letters, digits, slash, underscore or hyphen.' >&2; exit 1; }
   [[ "${OFFSITE_AWS_IMAGE:-}" =~ @sha256:[a-f0-9]{64}$ ]] || { echo 'OFFSITE_AWS_IMAGE must be pinned by digest.' >&2; exit 1; }
   test -f "$NEXUS_ROOT/.private/nexus/offsite-s3.env" || { echo 'Missing .private/nexus/offsite-s3.env.' >&2; exit 1; }
+  command -v openssl >/dev/null || { echo 'OpenSSL is required for Object Lock Content-MD5.' >&2; exit 1; }
 fi
 mkdir -p -m 700 -- "$OFFSITE_WORKDIR" "$OFFSITE_WORKDIR/local" "$OFFSITE_WORKDIR/outbox"
 # Maintenance marker: monitor.sh stays silent while services are stopped for the dump.
@@ -41,21 +50,28 @@ if [[ "$upload" = true ]]; then
     docker run --rm --network bridge --read-only --security-opt no-new-privileges:true \
       --env-file "$NEXUS_ROOT/.private/nexus/offsite-s3.env" \
       -e AWS_REQUEST_CHECKSUM_CALCULATION=when_required -e AWS_RESPONSE_CHECKSUM_VALIDATION=when_required \
+      -e AWS_PAGER= \
       -v "$OFFSITE_WORKDIR/outbox:/outbox:ro" "$OFFSITE_AWS_IMAGE" \
       --endpoint-url "$OFFSITE_ENDPOINT" "$@"
   }
+  receipt="$archive.versions.tsv"
+  # Keep partial receipts on failure: an accepted object may already exist remotely.
+  printf 'key\tversion_id\n' > "$receipt.partial"
   for file in "$name.tar.age" "$name.tar.age.sha256"; do
     key="$OFFSITE_PREFIX/$file"
-    # A write-only key cannot see existing objects. With s3:ListBucket granted, refuse a name already present.
-    if [[ "${OFFSITE_CHECK:-none}" = list ]]; then
-      found=$(s3 s3api list-objects-v2 --bucket "$OFFSITE_BUCKET" --prefix "$key" --query 'length(Contents[])' --output text)
-      [[ "$found" = 0 || "$found" = None ]] || { echo "Object already exists, refusing to overwrite: $key" >&2; exit 1; }
-    fi
-    extra=()
-    if [[ "${OFFSITE_IF_NONE_MATCH:-true}" = true ]]; then extra=(--if-none-match '*'); fi
-    s3 s3api put-object --bucket "$OFFSITE_BUCKET" --key "$key" --body "/outbox/$file" "${extra[@]}" >/dev/null
+    # Base64 of the binary MD5, not of its hexadecimal representation. Required
+    # for uploads into an Object Lock bucket, including the SHA-256 sidecar.
+    content_md5=$(openssl dgst -md5 -binary "$OFFSITE_WORKDIR/outbox/$file" | openssl base64 -A)
+    version=$(s3 s3api put-object --bucket "$OFFSITE_BUCKET" --key "$key" \
+      --body "/outbox/$file" --content-md5 "$content_md5" --query VersionId --output text)
+    [[ "$version" =~ ^[A-Za-z0-9._~+/=-]+$ && "$version" != None && "$version" != null ]] || {
+      echo "Upload returned no usable VersionId for $key; off-site success not recorded." >&2; exit 1; }
+    printf '%s\t%s\n' "$key" "$version" >> "$receipt.partial"
   done
-  date -u +%Y-%m-%dT%H:%M:%SZ > "$OFFSITE_WORKDIR/last-offsite-success"
+  mv -- "$receipt.partial" "$receipt"
+  # Neither an upload failure nor an incomplete receipt advances the monitor marker.
+  date -u +%Y-%m-%dT%H:%M:%SZ > "$OFFSITE_WORKDIR/last-offsite-success.partial"
+  mv -- "$OFFSITE_WORKDIR/last-offsite-success.partial" "$OFFSITE_WORKDIR/last-offsite-success"
   echo "Encrypted archive uploaded: $OFFSITE_PREFIX/$name.tar.age"
 else
   echo "Encrypted archive created (not uploaded): $archive"
@@ -67,6 +83,8 @@ prune() { # directory pattern keep
 }
 prune "$OFFSITE_WORKDIR/local" 'commandement-*' "$keep_local"
 prune "$OFFSITE_WORKDIR/outbox" 'commandement-*.tar.age' "$keep_archives"
-find "$OFFSITE_WORKDIR/outbox" -name 'commandement-*.tar.age.sha256' -printf '%f\n' | while read -r sum; do
-  test -f "$OFFSITE_WORKDIR/outbox/${sum%.sha256}" || rm -f -- "$OFFSITE_WORKDIR/outbox/$sum"
+for suffix in .sha256 .versions.tsv .versions.tsv.partial; do
+  while IFS= read -r sidecar; do
+    test -f "$OFFSITE_WORKDIR/outbox/${sidecar%"$suffix"}" || rm -f -- "$OFFSITE_WORKDIR/outbox/$sidecar"
+  done < <(find "$OFFSITE_WORKDIR/outbox" -maxdepth 1 -name "commandement-*.tar.age$suffix" -printf '%f\n')
 done
