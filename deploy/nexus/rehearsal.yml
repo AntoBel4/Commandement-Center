@@ -39,6 +39,12 @@ services:
       KC_HEALTH_ENABLED: "true"
     networks: [rehearsal]
     profiles: [services]
+    healthcheck:
+      test: [CMD, bash, -ec, "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /auth/health/ready HTTP/1.0\r\n\r\n' >&3; grep -q '200 OK' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
 
   api:
     image: commandement-api:${RELEASE:?}
@@ -56,6 +62,12 @@ services:
       # Deliberately no GOOGLE_* nor TELEGRAM_* variable and no secret file mounted.
     networks: [rehearsal]
     profiles: [services]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
 
 volumes:
   postgres_data:

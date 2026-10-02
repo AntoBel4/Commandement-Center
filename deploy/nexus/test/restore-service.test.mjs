@@ -26,7 +26,7 @@ async function fixture(t) {
     'courses.dump': 'synthetic courses', 'identity.dump': 'synthetic identity',
     'courses.counts': '1|2|3|4|5\n', 'identity.counts': '2|3|4\n',
     'source-commit.txt': 'a'.repeat(40) + '\n',
-    'production.env': 'POSTGRES_IMAGE=postgres:test\nPOSTGRES_PASSWORD=fake\nKEYCLOAK_DB_PASSWORD=fake\nKEYCLOAK_IMAGE=keycloak:test\nPORTAL_HOST=example.test\nRELEASE=test\nDATABASE_URL=postgres://fake\n'
+    'production.env': 'POSTGRES_IMAGE=postgres:test\nPOSTGRES_PASSWORD=fake\nKEYCLOAK_DB_PASSWORD=fake\nKEYCLOAK_IMAGE=keycloak:test\nPORTAL_HOST=example.test\nRELEASE=aaaaaaa\nDATABASE_URL=postgres://fake\n'
   };
   await Promise.all(Object.entries(files).map(([f, data]) => writeFile(join(backup, f), data)));
   await writeFile(join(backup, 'SHA256SUMS'), Object.entries(files).map(([f, data]) => `${hash(data)}  ${f}\n`).join(''));
@@ -36,6 +36,9 @@ async function fixture(t) {
 const fs = require('node:fs');
 const a = process.argv.slice(2);
 fs.appendFileSync(process.env.DOCKER_LOG, JSON.stringify(a)+'\\n');
+const cfg=fs.readFileSync(a[a.indexOf('--env-file')+1],'utf8');
+if(process.env.EXPECTED_API_RELEASE && !cfg.includes('RELEASE='+process.env.EXPECTED_API_RELEASE+'\\n')) process.exit(93);
+if(/^(GOOGLE_|TELEGRAM_)/m.test(cfg)) process.exit(94);
 if (a.includes('pg_restore')) {
   fs.readFileSync(0);
   if (process.env.FAIL_RESTORE) process.exit(42);
@@ -134,4 +137,28 @@ test('production still requires explicit matching confirmation and prior-backup 
   const f = await fixture(t), data = f.tar();
   await rejectedCleanly(f, f.run(data, {args: ['--production']}));
   await rejectedCleanly(f, f.run(data, {args: ['--production', '--confirm', name]}));
+});
+
+for (const [label, extras, expected] of [
+  ['base only', {}, 'aaaaaaa'],
+  ['Google overrides base', {'google-calendar.env': 'GOOGLE_RELEASE=bbbbbbb\nGOOGLE_CALENDAR_ID=fixture-only\n'}, 'bbbbbbb'],
+  ['Telegram overrides Google', {'google-calendar.env': 'GOOGLE_RELEASE=bbbbbbb\n', 'telegram.env': 'TELEGRAM_RELEASE=ccccccc\nTELEGRAM_BOT_USERNAME=fixture-only\n'}, 'ccccccc']
+]) test(`effective API release: ${label}, no integration settings imported`, async t => {
+  const f = await fixture(t);
+  for (const [file, data] of Object.entries(extras)) {
+    await writeFile(join(f.backup, file), data);
+    const manifest = await readFile(join(f.backup, 'SHA256SUMS'), 'utf8');
+    await writeFile(join(f.backup, 'SHA256SUMS'), manifest + `${hash(data)}  ${file}\n`);
+  }
+  const r = f.run(f.tar(), {env: {EXPECTED_API_RELEASE: expected}});
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, new RegExp(`Rehearsal API image: commandement-api:${expected}`));
+});
+
+test('overlay with invalid release fails before Docker instead of falling back', async t => {
+  const f = await fixture(t), data = 'TELEGRAM_RELEASE=invalid\n';
+  await writeFile(join(f.backup, 'telegram.env'), data);
+  const manifest = await readFile(join(f.backup, 'SHA256SUMS'), 'utf8');
+  await writeFile(join(f.backup, 'SHA256SUMS'), manifest + `${hash(data)}  telegram.env\n`);
+  await rejectedCleanly(f, f.run(f.tar()));
 });

@@ -97,18 +97,26 @@ done < "$backup/SHA256SUMS"
 (cd -- "$backup" && sha256sum -c --quiet SHA256SUMS)
 echo "Archive contents and SHA256SUMS verified: $name"
 
-envvalue() { grep -m1 "^$1=" "$backup/production.env" | cut -d= -f2-; }
+envvalue() { grep -m1 "^$1=" "$backup/${2:-production.env}" | cut -d= -f2-; }
 courses_counts='select (select count(*) from families), (select count(*) from family_members), (select count(*) from grocery_items), (select count(*) from grocery_history), (select count(*) from grocery_requests);'
 identity_counts='select (select count(*) from realm), (select count(*) from user_entity), (select count(*) from credential);'
 
 if [[ "$mode" = rehearse ]]; then
+  # Match common.sh overlay order without sourcing private files or importing
+  # Google/Telegram settings into the isolated services.
+  api_release=$(envvalue RELEASE)
+  if test -f "$backup/google-calendar.env"; then api_release=$(envvalue GOOGLE_RELEASE google-calendar.env); fi
+  if test -f "$backup/telegram.env"; then api_release=$(envvalue TELEGRAM_RELEASE telegram.env); fi
+  [[ "$api_release" =~ ^[a-f0-9]{7,40}$ ]] || { echo 'Invalid effective API release in backup.' >&2; exit 1; }
+  echo "Rehearsal API image: commandement-api:$api_release"
   suffix=${work##*.}
   project="commandement-rehearsal-$(date +%s)-${suffix,,}"
   {
     printf 'REHEARSAL_PROJECT=%s\n' "$project"
-    for key in POSTGRES_IMAGE POSTGRES_PASSWORD KEYCLOAK_DB_PASSWORD KEYCLOAK_IMAGE PORTAL_HOST RELEASE DATABASE_URL; do
+    for key in POSTGRES_IMAGE POSTGRES_PASSWORD KEYCLOAK_DB_PASSWORD KEYCLOAK_IMAGE PORTAL_HOST DATABASE_URL; do
       printf '%s=%s\n' "$key" "$(envvalue "$key")"
     done
+    printf 'RELEASE=%s\n' "$api_release"
   } > "$work/rehearsal.env"
   rc() { docker compose -p "$project" --env-file "$work/rehearsal.env" -f "$here/rehearsal.yml" "$@"; }
   rc up -d postgres keycloak-db

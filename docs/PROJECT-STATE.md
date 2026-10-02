@@ -1,6 +1,13 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026 (Europe/Paris), archive réelle restituée et déchiffrée USB/papier, correctif de restauration depuis le PC ; branche PR 10.
+Dernière mise à jour : 2 octobre 2026 (Europe/Paris), image effective de répétition contrôlée et attente des services corrigée ; branche PR 10.
+
+## Point de reprise — 2 octobre 2026 : images et disponibilité pour B4
+
+- Références non secrètes lues par Antoine dans la sauvegarde Nexus : base `f74f1a76b0af34d1f7e1ff0011d45f6e4caa0ad5`, Google `348dd38802ff58f2578d753a46c747d08be063ab`, Telegram `fb9aedf92f270affda33ebc97dc75309d0cd3063`. L'ordre des overlays retient donc l'image API `fb9aedf`, cohérente avec le conteneur de production observé. Les images PostgreSQL et Keycloak sont référencées par digest dans la sauvegarde ; leur présence locale reste à contrôler.
+- Correctif de répétition : respecte cet ordre sans importer les variables Google/Telegram dans les services isolés ; refuse une référence invalide avant Docker. Ajout des contrôles de santé API et Keycloak à `rehearsal.yml`, pour que `up --wait` attende leur disponibilité réelle.
+- Vérification locale : 35 tests de préparation réussis au total, dont 17 pour la restauration (4 nouveaux pour le choix de l'image). Bash/tar/empreintes réels, Docker simulé ; ces tests ne prouvent pas la restauration des bases réelles ni la disponibilité réelle de Keycloak. CI du précédent correctif `47b02e7` réussie ; CI de ce complément à vérifier après publication.
+- Prochaine opération : contrôler mémoire disponible, version Compose et présence des images sur Nexus, puis préparer les seuls fichiers de répétition dans un dossier distinct et exécuter B4 depuis l'archive récupérée, déchiffrée sur PC. Clé privée toujours hors Nexus. PR 10 non fusionnée/non installée ; checkout de production inchangé. Les prérequis T08 encore ouverts ci-dessous le restent.
 
 ## Point de reprise — 2 octobre 2026, 03 h 30 Paris : archive réelle et clés USB/papier
 
