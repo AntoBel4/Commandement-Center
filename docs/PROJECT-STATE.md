@@ -1,6 +1,17 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026 (Europe/Paris), image effective de répétition contrôlée et attente des services corrigée ; branche PR 10.
+Dernière mise à jour : 2 octobre 2026, 04 h 08 (Europe/Paris), restauration réelle des deux bases réussie ; branche PR 10.
+
+## Point de reprise — 2 octobre 2026, 04 h 08 Paris : bases restaurées depuis l'archive récupérée
+
+Résultats exécutés par Antoine et transmis dans la conversation. Cette note prévaut sur les limites historiques ci-dessous désormais levées ; détails privés et reçus dans T08 Notion.
+
+- Prérequis Nexus vérifiés : mémoire disponible, Docker Compose v2.39.4 et trois images locales présentes. Les seuls fichiers de répétition `restore-service.sh` et `rehearsal.yml` de `cefb430255f1d0ba7259dd20e8e89d67c0a4040e` ont été copiés dans un dossier privé distinct, avec empreintes et syntaxe Bash conformes. Préparation temporaire, aucun déploiement applicatif.
+- Archive récupérée par VersionId déchiffrée sur le PC avec la clé USB : code age 0. Tar conservé dans un MemoryStream .NET, empreinte calculée puis revérifiée avant transfert binaire SSH. Aucun fichier déchiffré écrit par ce bloc sur le PC ; clé privée jamais transmise à Nexus.
+- Exécution réelle `--rehearse --decrypted-stdin --tar-sha256` sur Nexus : empreinte du flux complet conforme, contenu et manifeste SHA256SUMS vérifiés, deux bases PostgreSQL restaurées dans un projet isolé et comptages identiques à la sauvegarde. Code SSH 0. Le script a annoncé son nettoyage et s'est terminé sans erreur ; tampon PC vidé. Contrôle indépendant des ressources restantes et de la santé de production à faire ensuite.
+- **Portée : restauration réelle des deux bases et transport Windows validés.** L'image API retenue est bien `fb9aedf`, mais le test sans `--with-services` n'a démarré ni l'API ni Keycloak. Leur démarrage sur les données restaurées reste à éprouver avant de considérer B4 complet.
+- Code fonctionnel utilisé : `cefb430`, 35 tests locaux de préparation et [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/36952982155). Ces tests simulés restent distincts de la preuve réelle des bases ci-dessus. PR 10 toujours brouillon, non fusionnée ; checkout et installation applicative Nexus restent à `fb9aedf` selon le dernier contrôle de production.
+- **Suite :** vérifier nettoyage et santé de production, répéter avec API/Keycloak isolés, puis préparer installation et retour arrière. Script hors site complet sur Nexus, minuteurs/alertes, coût/quota/rotation, 2FA effective et droits encore non testés restent ouverts. Ordre de fusion 8 → 9 → 10 avec accord explicite inchangé.
 
 ## Point de reprise — 2 octobre 2026 : images et disponibilité pour B4
 
