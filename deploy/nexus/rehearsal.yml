@@ -2,11 +2,15 @@
 # compose.yml. No published port, no proxy network, no Traefik label, no production
 # volume or bind mount; one internal network without egress, so no Google or Telegram call.
 # web, telegram and alexa are deliberately absent.
+# Memory ceilings apply only to this temporary project: 3.5 GiB combined.
+# Equal memory/swap ceilings prevent these containers from consuming host swap.
 name: ${REHEARSAL_PROJECT:?}
 
 services:
   postgres:
     image: ${POSTGRES_IMAGE:?}
+    mem_limit: 512m
+    memswap_limit: 512m
     environment:
       POSTGRES_DB: commandement
       POSTGRES_USER: commandement
@@ -16,6 +20,8 @@ services:
 
   keycloak-db:
     image: ${POSTGRES_IMAGE:?}
+    mem_limit: 512m
+    memswap_limit: 512m
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
@@ -25,6 +31,8 @@ services:
 
   keycloak:
     image: ${KEYCLOAK_IMAGE:?}
+    mem_limit: 2g
+    memswap_limit: 2g
     command: [start]
     environment:
       KC_DB: postgres
@@ -48,6 +56,8 @@ services:
 
   api:
     image: commandement-api:${RELEASE:?}
+    mem_limit: 512m
+    memswap_limit: 512m
     environment:
       DATABASE_URL: ${DATABASE_URL:?}
       NODE_ENV: production

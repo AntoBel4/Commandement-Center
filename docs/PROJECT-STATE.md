@@ -1,6 +1,13 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026, 04 h 08 (Europe/Paris), restauration réelle des deux bases réussie ; branche PR 10.
+Dernière mise à jour : 2 octobre 2026, 07 h 42 (Europe/Paris), nettoyage et santé confirmés après restauration des bases ; préparation du test API/Keycloak, branche PR 10.
+
+## Point de reprise — 2 octobre 2026, 07 h 42 Paris : nettoyage constaté, production saine
+
+- Contrôle indépendant exécuté par Antoine après la répétition réelle des bases : aucun conteneur, volume, réseau ni dossier temporaire du projet testé ne subsiste. Les sept services Maison sont healthy ; les anciens provision/migrate restent terminés avec code 0. Le tampon PC avait déjà été vidé à la fin du test.
+- Restauration des deux bases et transport Windows validés à `cefb430` ; API et Keycloak n'ont pas encore été démarrés sur les données restaurées. Avant ce test, correction limitée à `rehearsal.yml` : plafonds mémoire de 2 Gio pour Keycloak et 512 Mio pour chacun des trois autres conteneurs, sans swap supplémentaire. Plafonds cumulés 3,5 Gio ; aucun réglage de production modifié.
+- Le contrôle local du YAML vérifie ces plafonds et l'isolation ; les 17 tests de restauration existants passent avec Docker simulé. L'application réelle des limites et le démarrage des services plafonnés restent à éprouver sur Nexus. Ne pas déduire une validation Docker réelle de ces contrôles locaux.
+- **Prochaine opération :** préparer cette configuration de répétition à un commit exact dans un nouveau sous-dossier, valider Compose sans démarrer de conteneur et relire la mémoire disponible. Puis répéter avec `--with-services` depuis l'archive récupérée, en gardant la clé privée sur PC. PR 10 toujours brouillon et non fusionnée ; aucun déploiement applicatif. Les autres critères T08 restent ouverts.
 
 ## Point de reprise — 2 octobre 2026, 04 h 08 Paris : bases restaurées depuis l'archive récupérée
 
