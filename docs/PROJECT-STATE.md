@@ -1,6 +1,21 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 3 octobre 2026, 08 h 55 (Europe/Paris), sauvegarde systemd éprouvée et minuteur activé ; branche PR 10.
+Dernière mise à jour : 3 octobre 2026, 09 h 42 (Europe/Paris), surveillance installée et administrateur nominatif éprouvé ; branche PR 10.
+
+## Point de reprise — 3 octobre 2026, 09 h 42 : alertes éprouvées et administrateur nominatif créé
+
+Ce point prévaut sur les prochaines actions historiques ci-dessous. Résultats exécutés sur Nexus par Antoine et transmis dans la conversation ; références privées dans T08 Notion.
+
+- Inventaire complet du compartiment Maison réalisé depuis le PC, versions incluses. Antoine confirme que le coût et la capacité disponibles ne sont pas un obstacle ; aucune demande de facture à poursuivre. Conservation distante sans purge automatique pour le moment ; seuil de rétention GOVERNANCE 30 jours et rotation locale 3 jeux en clair / 7 archives chiffrées conservés.
+- Surveillance existante identifiée : workflow n8n avec mesures Prometheus et sauvegarde Restic distincte. Son code de bilan ne mémorise pas les transitions et ne contrôle pas explicitement Maison. Workflow laissé inchangé.
+- Destinataire des alertes Maison configuré dans telegram.env après copie privée de retour arrière ; liaison Telegram et présence du jeton séparé vérifiées sans exposer ce dernier.
+- [Correctif 5d38878](https://github.com/AntoBel4/Commandement-Center/commit/5d38878dae293b2c05ec9400af61d534e8edf51f) : initialisation du cache de conversation même à l'état sain ; deux observations exigées aussi pour le rétablissement. Sept tests ciblés avec Bash réel et Docker/PostgreSQL/Telegram simulés passent ; syntaxe vérifiée ; [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/37106116208).
+- Seul monitor.sh de ce correctif installé dans le checkout de production, ajout indexé volontaire. Premier contrôle réel sain, cache privé initialisé. Vers 09 h 27, arrêt contrôlé du portail web puis reprise : deux alertes réelles reçues (panne, rétablissement), aucun doublon signalé après passages supplémentaires ; sept services healthy et bloc terminé sans erreur. Ces observations ont été lancées manuellement, sans attendre la cadence de cinq minutes.
+- Unités maison-monitor.service/.timer installées et testées sous systemd (Result=success, ExecMainStatus=0), puis timer enabled/active/waiting à 09 h 30. Utilisateur du dépôt, UMask=0077, StandardInput=null, délai 2 min, OnCalendar=*:0/5, AccuracySec=15s, Persistent=false. Première échéance affichée 09 h 35 ; déclenchement automatique encore à constater. Retour arrière : `sudo systemctl disable --now maison-monitor.timer`.
+- Keycloak 26.7.0 confirmé. Lecture initiale : seul administrateur bootstrap dans master. Accès administratif et rôle admin vérifiés par kcadm ; mot de passe nominatif enregistré par Antoine dans son gestionnaire.
+- Sauvegarde préalable via systemd à 09:37:05–09:37:50 : export/chiffrement/envoi réussis et sept services healthy. Création du compte nominatif dans master, mot de passe saisi sans affichage, rôle admin attribué, activation puis connexion nominative et lecture du realm Maison réussies. Fichier de session bootstrap temporaire supprimé ; aucun secret publié.
+- **Suite immédiate :** désactiver bootstrap-admin avec une nouvelle authentification nominative et vérifier le résultat. À 09 h 42, bootstrap reste actif. Puis constater les déclenchements automatiques, finaliser le retour arrière applicatif et l'installation/recette T05.
+- Production applicative toujours fb9aedf ; préserver les ajouts indexés backup-offsite.sh et monitor.sh ainsi que le changement local de mode backup.sh. T08 En cours, PR 10 non fusionnée et T05 non déployé. Premier déclenchement nocturne de sauvegarde à constater le 4 octobre ; reprise complète sur autre machine encore à détailler.
 
 ## Point de reprise — 3 octobre 2026, 08 h 55 : sauvegarde quotidienne activée
 
