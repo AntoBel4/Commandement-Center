@@ -12,12 +12,16 @@ Deux membres, deux téléphones Android, pendant sept jours consécutifs d’usa
 
 **Hors pilote, explicitement : T07 (rendez-vous vocaux Alexa).** Règle du projet : si Alexa retarde, les courses et l’agenda passent d’abord. T07 n’est ni un prérequis ni un critère de réussite ; son absence ne peut pas faire échouer le pilote. Hors pilote aussi : toute fonction V2.
 
+## État au 3 octobre 2026
+
+Version 5bb65aa installée, tests courses manuels Antoine réussis et essais annulés. Belinda à configurer plus tard aujourd’hui. Récapitulatif/sonde et rappels agenda aux heures réelles non observés. Première sauvegarde déclenchée automatiquement attendue le 4 octobre à 03 h 30 Paris. J1 non fixé ; le 5 octobre reste une cible conditionnelle. T07 demeure hors pilote.
+
 ## Prérequis — tous requis avant J1
 
 Chaque prérequis se coche avec une preuve (commit, résultat observé, date). Sans preuve : non réuni.
 
 1. **Version installée** : la révision contenant T05 (PR 10, empilée sur PR 9 et PR 8) est installée sur Nexus selon `docs/TELEGRAM-RAPPELS.md` ; services Maison sains ; `/ready` répond ; routes privées anonymes refusées (401). La fusion des PR n’est pas requise pour le pilote, l’installation d’une révision identifiée l’est.
-2. **Sauvegarde avant J1** : sauvegarde locale complète (`deploy/nexus/backup.sh`) faite juste avant l’installation, empreintes vérifiées, et contrôle de restauration des deux bases (`deploy/nexus/restore-check.sh`) réussi sur ce jeu. Copie hors Nexus (D2/D3 tranchées le 29 septembre) : première archive chiffrée envoyée par `deploy/nexus/backup-offsite.sh`, déchiffrée depuis le PC d’Antoine (`docs/deploiement-nexus.md` B3), et répétition `restore-service.sh --rehearse` réussie sur Nexus (B4). Code écrit et testé localement, **non installé**.
+2. **Sauvegarde avant J1** : sauvegarde locale complète (`deploy/nexus/backup.sh`) faite juste avant l’installation, empreintes vérifiées, et contrôle de restauration des deux bases (`deploy/nexus/restore-check.sh`) réussi sur ce jeu. Copie hors Nexus (D2/D3 tranchées le 29 septembre) : première archive chiffrée envoyée par `deploy/nexus/backup-offsite.sh`, déchiffrée depuis le PC d’Antoine (`docs/deploiement-nexus.md` B3), et répétition `restore-service.sh --rehearse` réussie sur Nexus (B4). État au 3 octobre : T05/T08 installés, sauvegardes envoyées, déchiffrement d’une archive réelle et répétition isolée API/Keycloak réussis sur des jeux distincts. Le dernier jeu post-T05 de 10 h 54 n’a pas encore été restauré ; les preuves sur un même jeu exigées ici ne sont pas réputées acquises.
 3. **Belinda** : procédure `docs/procedure-belinda.md` réalisée, étapes A1 à A8 notées « réussi » par Antoine (compte Maison, raccourci, liaison et test Telegram, notifications, agenda partagé, rappel H-1, courses Telegram).
 4. **Antoine** : Telegram relié et test reçu (déjà accepté le 19 septembre), `TELEGRAM_ALERT_USER` configuré sur son compte Maison, rappels actifs.
 5. **Premiers rappels réels** : au moins un résumé de 7 h reçu par les deux membres, avant ou à J1.

@@ -34,6 +34,10 @@ Règles validées par Antoine, appliquées telles quelles. Toutes les heures son
 
 Limites acceptées pour le pilote : pas de quantité/unité/rayon par Telegram (à compléter dans Maison) ; pas de message vocal ; un message déjà envoyé n’est pas mis à jour quand la liste change ; un membre relié entre 17 h 20 et 17 h 30 peut déclencher une alerte sans objet.
 
+## État constaté le 3 octobre 2026
+
+Installé sur Nexus à 5bb65aa. Antoine a validé les ajouts simples/multiples, boutons et états obsolètes avec concordance web. Tous les essais ont été annulés. Belinda, livraison croisée d’urgence, récapitulatif/sonde et rappels aux heures réelles restent à vérifier ; installation ne vaut pas recette à deux.
+
 ## Installation Nexus
 
 Prérequis : bot familial créé personnellement avec BotFather, getMe vérifié, aucun webhook existant, Google déjà installé. Aucun port public pour Telegram : réception par getUpdates sortant. Ne pas supprimer le webhook d’un autre service ni réutiliser son bot.
@@ -58,9 +62,9 @@ Jeton dans .private/nexus/telegram-token, hors Git, propriétaire compatible UID
 
 common.sh charge l’overlay Telegram après Google. TELEGRAM_RELEASE prend alors la priorité pour API, web et migrate. backup.sh conserve aussi le jeton et la configuration Telegram dans les sauvegardes privées ; ne jamais publier ces sauvegardes.
 
-Retour arrière T05 seul : recréer API/web/worker avec l’image de la révision précédente (fb9aedf) ; l’ancienne version ignore les nouvelles clés d’état et les boutons (elle ne demande plus les `callback_query`). Les courses déjà ajoutées par Telegram restent dans la liste.
+Retour arrière T05 seul : conserver le checkout et les scripts T08 ; restaurer les configurations privées de référence, recharger common.sh dans un nouveau processus, puis recréer API/web/worker avec l’image de la révision précédente (fb9aedf) ; l’ancienne version ignore les nouvelles clés d’état et les boutons (elle ne demande plus les `callback_query`). Les courses déjà ajoutées par Telegram restent dans la liste.
 
-Retour arrière complet : arrêter le service telegram pendant que son overlay est actif, retirer uniquement telegram.env de la configuration active en conservant une copie privée, revenir au code précédent et recréer API/web avec leurs anciennes images Google. Conserver la table 006 et ses liaisons/reçus ; ne pas restaurer une base ancienne pour ce seul retour. Aucun événement Google n’est créé ou supprimé par ce lot.
+Retour arrière complet : arrêter le service telegram pendant que son overlay est actif, retirer uniquement telegram.env de la configuration active en conservant une copie privée, conserver les scripts d’exploitation T08 et recréer API/web avec leurs anciennes images Google. Conserver la table 006 et ses liaisons/reçus ; ne pas restaurer une base ancienne pour ce seul retour. Aucun événement Google n’est créé ou supprimé par ce lot.
 
 ## Vérifications
 

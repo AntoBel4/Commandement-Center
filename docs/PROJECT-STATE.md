@@ -1,6 +1,42 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 3 octobre 2026, après l'échec de déploiement de 10 h 10 (Europe/Paris) ; branche PR 10.
+Dernière mise à jour : clôture du 3 octobre 2026 (Europe/Paris).
+
+## Clôture de session — 3 octobre 2026, après le contrôle de 10 h 55 (Europe/Paris)
+
+La séance technique du matin est terminée. Le projet et le pilote ne sont pas déclarés terminés. Preuves : sorties Nexus et retours d'usage transmis par Antoine ; les contrôles GitHub ont été relus lors de cette clôture. Aucun nouveau déploiement n'est déclenché par cette mise à jour documentaire.
+
+### Version en service et recette T05
+
+- API, web et Telegram utilisent `5bb65aaa11bbaa07873e80cc22fc9266a51e59ae`. Sept services sains après déploiement puis après sauvegarde. Alexa, Keycloak et les bases conservent leurs images précédentes.
+- Échec initial à 10 h 10 : fichiers de migration illisibles dans l'image sous l'utilisateur non privilégié. Repli automatique vers les anciennes images réussi avant la bascule. Correctif de permissions 5bb65aa, lectures comme node/nginx vérifiées sur Nexus, migrations exécutées sans erreur, nouvelle mise en service réussie vers 10 h 35.
+- CI de 5bb65aa : test, image-permissions et GitGuardian réussis ([exécution](https://github.com/AntoBel4/Commandement-Center/actions/runs/37109336087)). Ces contrôles ne remplacent pas une recette des deux conversations.
+- Antoine confirme : ajouts simples et multiples, boutons acheté/demain/urgent/annuler et résultats visibles dans le web ; anciens boutons répondant « déjà retiré » ou « déjà acheté ». Tous les articles d'essai annulés à la fin.
+- **T05 reste En cours** : téléphone de Belinda à configurer plus tard le 3 octobre selon Antoine ; réception croisée d'urgence, récapitulatif réel de 17 h 20 et contrôle de 17 h 30 non observés. Rappels agenda 7 h / 9 h / H-1 et comportements de pause sur les deux comptes restent à éprouver.
+
+### Sauvegarde, administration et alertes T08
+
+- Sauvegarde après installation T05 : service lancé à **10:54:19**, terminé à **10:55:05**, Result=success et ExecMainStatus=0 ; archive `commandement-20261003T085419Z-26343773.tar.age` envoyée hors site. Sept services healthy ensuite, aucun marqueur de maintenance. Cette archive précise n'a pas encore été récupérée, déchiffrée ou restaurée.
+- Preuves distinctes acquises : archive du 2 octobre restaurée en environnement isolé (deux bases, nombres d'enregistrements conformes, API et Keycloak prêts, nettoyage effectué) ; archive du 3 octobre à 08 h 30 récupérée par versions exactes, SHA-256 conforme et déchiffrement intégral réussi. Ne pas attribuer ces essais à la sauvegarde de 10 h 54.
+- Sauvegarde quotidienne programmée à **03 h 30 Europe/Paris** : timer enabled/active/waiting. Premier déclenchement par le timer attendu **le 4 octobre** ; pas encore observé. Les exécutions précédentes ont lancé manuellement le service systemd.
+- Conservation distante **sans purge automatique**, capacité et coût jugés suffisants par Antoine ; GOVERNANCE 30 jours minimum vérifié sur les deux versions de l'archive de 08 h 30. Rotation locale : 3 jeux en clair et 7 archives chiffrées. Ne pas imposer une conservation « 30 quotidiennes + 6 mensuelles ».
+- Administration nominative testée par nouvelles connexions avant/après désactivation de bootstrap ; état conservé après redémarrage.
+- Alertes Maison panne puis rétablissement réellement reçues à 09 h 27. Surveillance toutes les cinq minutes, deux observations pour confirmer les transitions ; plusieurs déclenchements automatiques réussis, dont 10:50:02–10:50:03. Elle tourne sur Nexus et ne prouve pas une alerte lors de la perte totale de Nexus ou de Telegram. La surveillance n8n/Restic existante est distincte et inchangée.
+- Copies privées de retour arrière et anciennes images conservées. Repli avant bascule éprouvé ; retour après usage de la nouvelle version et reprise complète sur une autre machine non éprouvés. **T08 reste En cours**.
+
+### État du projet et dépôt
+
+T01/T02/T03/T04a/T04b terminés dans leur périmètre accepté ; T06 à vérifier avec Belinda. T07 reste à faire, explicitement hors pilote. T09 non lancé : aucune journée J1 acquise ; le 5 octobre est une cible conditionnelle. Guide T10 préparé, limites 9–10 et dettes résiduelles du point 11 à traiter explicitement avant J1.
+
+PR 2, 8, 9 et 10 ouvertes en brouillon, aucune fusion. Ordre 8 → 9 → 10 après validations et accord d'Antoine ; PR 2 indépendante. Les commits documentaires de clôture peuvent être plus récents que 5bb65aa sans être installés sur Nexus. La branche main reçoit uniquement la continuité documentaire, pas les intégrations encore en PR.
+
+### Prochaines actions (à la reprise, sans suivi automatique)
+
+1. Configurer le téléphone de Belinda et consigner les tests Google/Telegram à deux, notamment les urgences et les réglages personnels.
+2. Observer les envois de 17 h 20 / contrôle de 17 h 30 et les rappels agenda, puis vérifier le premier déclenchement nocturne du 4 octobre avec son résultat et l'état des services.
+3. Finaliser les preuves de reprise et les limites restantes avant de fixer J1 ; conduire ensuite le pilote et revoir les PR sans fusion anticipée.
+
+## Historique des sessions — les prochaines actions anciennes ne sont plus la consigne courante
 
 ## Point de reprise — 3 octobre 2026 : repli T05 réussi, correction des permissions des images
 

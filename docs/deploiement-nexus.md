@@ -1,6 +1,6 @@
 # Déploiement sur Nexus — PR 10 (T05) puis T08 (sauvegarde chiffrée, restauration, alerte)
 
-Rédigé le 29 septembre 2026, en session cloud **sans accès à Nexus**. Rien de ce document n’a été exécuté sur Nexus. Chaque commande indique son **implication de sécurité**, sa **sauvegarde préalable** et son **retour arrière**. « À vérifier sur place » : l’état réel de Nexus prime sur ce document. Périmètre : `famille.estarellas.online` uniquement. Aucun port publié, aucune modification de Traefik global, Nextcloud, Léo ni de ses sondes.
+Mis à jour à la clôture du 3 octobre 2026. T05 est installé à `5bb65aa` ; sauvegarde hors site, administration nominative et alertes Maison sont installées et partiellement éprouvées. Voir `docs/PROJECT-STATE.md` pour les preuves exactes et leurs limites. Les commandes ci-dessous sont une procédure à adapter à l’état présent, pas une instruction de rejouer l’installation. Périmètre : Maison uniquement ; conserver les autres services Nexus.
 
 Décisions d’Antoine (29/09) : **D2** perte maximale 24 h (sauvegarde nocturne), reprise 4 h sur Nexus, 24 h sur une autre machine. **D3** archive chiffrée avec age, clé publique seule sur Nexus, envoi vers un compartiment dédié du stockage objet S3 Contabo existant, clé d’accès limitée à ce compartiment **en écriture seule, sans suppression** ; rotation distante depuis le PC d’Antoine (clé de rotation uniquement sur le PC) ; clé privée sur clé USB chez Antoine + copie papier ailleurs, jamais sur Nexus ni dans un coffre hébergé sur Nexus.
 
@@ -17,29 +17,28 @@ Durée estimée totale : partie A ≈ 45 min, partie B ≈ 1 h 15 (dont 30 min c
 
 ## A. Installer la PR 10 (T05 courses Telegram)
 
-Révision à installer : tête de la PR 10 au moment de l’installation, CI « test » verte (relever le SHA exact sur GitHub). Révision de retour arrière : `fb9aedf92f270affda33ebc97dc75309d0cd3063`.
+Révision installée : `5bb65aaa11bbaa07873e80cc22fc9266a51e59ae`, contrôles test, image-permissions et GitGuardian réussis. Pour une intervention future, choisir un SHA relu avec ses contrôles réussis, sans prendre automatiquement la tête mouvante de la PR. Révision de retour arrière : `fb9aedf92f270affda33ebc97dc75309d0cd3063`.
 
 | # | Commande | Sécurité | Sauvegarde préalable | Retour arrière |
 |---|---|---|---|---|
 | A1 | `git rev-parse HEAD ; dc ps ; dc images` — **à vérifier sur place** : HEAD = fb9aedf, sept services sains, overlays Google et Telegram actifs ; sinon s’arrêter | Lecture seule. | — | — |
 | A2 | `deploy/nexus/backup.sh /<dossier sauvegardes>/avant-pr10-$(date +%F)` puis `deploy/nexus/restore-check.sh <ce dossier> <POSTGRES_IMAGE épinglée>` | Arrêt bref des services applicatifs Maison ; dossier 700 contenant des secrets. | C’est la sauvegarde. | Les services redémarrent seuls ; sinon `dc up -d --no-build`. |
 | A3 | `cp -p .private/nexus/telegram.env .private/nexus/telegram.env.fb9aedf` et `docker image tag commandement-api:fb9aedf… commandement-api:rollback-fb9aedf` (idem web) | Copie privée 600. | — | Sert au retour arrière. |
-| A4 | `git fetch origin claude/eager-galileo-ezltlj && git checkout --detach <SHA PR 10>` | Code seulement ; aucun secret dans le dépôt. | A2 | `git checkout --detach fb9aedf…` |
+| A4 | `git fetch origin claude/eager-galileo-ezltlj && git checkout --detach <SHA PR 10>` | Code seulement ; aucun secret dans le dépôt. | A2 | Conserver le checkout contenant T08 ; restaurer les configurations/images selon « Retour arrière A ». |
 | A5 | Éditer `.private/nexus/telegram.env` : `TELEGRAM_RELEASE=<SHA PR 10>` et **ajouter** `TELEGRAM_ALERT_USER=<UUID du compte Maison d’Antoine>` (UUID relevé dans Keycloak, pas un identifiant Telegram) | Fichier privé 600, jamais publié. | A3 | Recopier `telegram.env.fb9aedf`. |
 | A6 | `dc config --quiet && dc build api web` | `config` sans `--quiet` affiche des secrets : ne pas l’utiliser. | — | Images fb9aedf conservées (A3). |
 | A7 | `dc run --rm migrate` (aucune migration nouvelle en T05, contrôle de cohérence) puis `dc up -d --no-build --wait --wait-timeout 300 api web telegram` | Aucun port, aucun webhook ; polling sortant. | A2 | Voir « Retour arrière A ». |
 | A8 | `dc ps` ; `curl -fsS https://famille.estarellas.online/` (200) ; routes privées anonymes 401 | Lecture seule. | — | — |
 | A9 | Antoine : dans Maison, vérifier la liaison Telegram, ajouter « test pr10 » par Telegram, cliquer ✅ ; attendre 17 h 20 / 17 h 30 du jour | Messages réels à Antoine uniquement. | — | — |
 
-**Retour arrière A** (≈ 10 min) : `git checkout --detach fb9aedf…` ; `cp .private/nexus/telegram.env.fb9aedf .private/nexus/telegram.env` ; `dc up -d --no-build --wait api web telegram` (images fb9aedf). Pas de restauration de base : T05 n’a pas de migration ; les courses ajoutées par Telegram restent. Détails : `docs/TELEGRAM-RAPPELS.md`, section Installation.
-
+**Retour arrière A** : conserver le code et les scripts T08 dans le checkout ; ne pas revenir globalement à fb9aedf, qui ferait disparaître ces scripts. Restaurer les copies privées vérifiées de `production.env` et `telegram.env`, puis recharger `common.sh` dans un nouveau processus afin de reprendre les anciennes valeurs d’image. Contrôler la configuration sans afficher les secrets, puis `dc up -d --no-deps --no-build --wait --wait-timeout 300 api web telegram`. Vérifier les images fb9aedf réellement utilisées et leur santé. Pas de restauration de base pour T05 seul : les courses déjà ajoutées restent. Ce repli a réussi lors de l’échec avant bascule du 3 octobre ; une annulation après usage de T05 n’a pas été éprouvée. Détails : `docs/TELEGRAM-RAPPELS.md`.
 ---
 
 ## B. T08 — sauvegarde chiffrée hors Nexus
 
 ### B0. Côté PC et panneau Contabo (Antoine, avant toute commande sur Nexus)
 
-**État au 2 octobre :** clé age USB + copie papier déjà préparées ; compartiment et compte dédiés créés ; Object Lock par défaut **GOVERNANCE 30 jours** activé. Ne pas recréer la clé. Le test S3 porte sur un petit fichier technique, pas encore sur une archive chiffrée représentative. Aucun de ces changements n'est installé sur Nexus.
+**État au 3 octobre :** clé age USB + copie papier préparées, compte dédié et stockage versionné en service ; ne pas les recréer. Sauvegardes réelles envoyées depuis Nexus. Archive de 08 h 30 récupérée par versions exactes, empreintes et déchiffrement intégral conformes ; GOVERNANCE 30 jours vérifié pour l’archive et son SHA-256. Restauration isolée API/Keycloak réalisée avec l’archive du 2 octobre. La sauvegarde post-T05 de 10 h 54 est envoyée mais n’a pas fait l’objet de ces essais de récupération/restauration.
 
 1. **Clé privée age uniquement sur le PC/USB et papier ailleurs.** Relever la clé publique existante `age1…` pour Nexus. Quiconque détient la clé privée peut lire les archives ; sa perte les rend illisibles.
 2. **Compartiment dédié**, distinct de la sauvegarde NAS, versionné avec rétention par défaut GOVERNANCE 30 jours. Une nouvelle écriture sous le même nom **peut réussir** : elle crée une nouvelle version. La protection porte sur les versions conservées. `If-None-Match: *` n'a pas empêché deux envois lors du test Contabo ; le script ne l'utilise plus.
@@ -89,7 +88,7 @@ Cette politique est attachée **au compartiment Maison**. Le refus de liste expl
    - Envoi avec le compte dédié réussi ; lecture, suppression simple, suppression d'une version avec demande de bypass GOVERNANCE et réécriture à l'identique de la politique refusées (`AccessDenied`). Les autres droits administratifs ne sont pas tous testés individuellement.
    - Liste Maison refusée avant le remplacement des autres règles, refus explicite conservé ensuite ; refaire ce contrôle avec la politique finale. Liste du compartiment NAS refusée ; aucun objet NAS manipulé ni sauvegarde NAS retestée.
    - Rétention 30 jours constatée sur les versions administrateur et dédiée ; suppression administrateur sans bypass refusée ; première version du fichier technique restaurée après les écritures suivantes, SHA-256 conforme.
-   - **Encore à valider** : archive représentative avec l'image CLI épinglée, déchiffrement USB/papier (B3), restauration complète (B4), 2FA effectivement utilisée, coût et quota de toutes les versions. La rétention n'empêche pas un compte d'envoi compromis d'ajouter des données.
+   - **Preuves et suites** : image CLI épinglée qualifiée par plusieurs envois, archive représentative récupérée et déchiffrée ; le déchiffrement USB puis papier est consigné pour le 2 octobre ; la 2FA du panneau Contabo a été confirmée par Antoine le 2 octobre à 09 h 56 pour une connexion en navigation privée. Reprise complète sur autre machine à éprouver. Inventaire des versions réalisé ; capacité/coût non bloquants selon Antoine. La rétention n'empêche pas un compte d'envoi compromis d'ajouter des données.
 5. **Clé d'administration/rotation uniquement sur le PC**, jamais sur Nexus ni dans le dépôt. GOVERNANCE peut être contourné par un administrateur disposant du droit de bypass ; le compte d'envoi doit rester privé de ce droit.
 
 **Repli si les prérequis ne sont pas réunis** : `backup-offsite.sh --no-upload` crée l'archive et son `.sha256` localement. Le PC les tire par SSH (compte à clé limité en lecture à `outbox`) ; aucun identifiant externe requis sur Nexus. Cette option ne crée aucun reçu S3 et ne met pas à jour `last-offsite-success` ; elle nécessite un suivi adapté et son RPO dépend du PC allumé.
@@ -102,7 +101,7 @@ Cette politique est attachée **au compartiment Maison**. Le refus de liste expl
 | Créer `.private/nexus/offsite-s3.env` (600) : `AWS_ACCESS_KEY_ID=…`, `AWS_SECRET_ACCESS_KEY=…`, `AWS_DEFAULT_REGION=default` | Identifiants de l’utilisateur **dédié écriture seule** ; lisibles par root sur Nexus et visibles par `docker inspect` le temps de l’envoi. | — | Révoquer la clé dans Contabo. |
 | `docker pull amazon/aws-cli:<version>` puis `docker image inspect --format '{{index .RepoDigests 0}}' amazon/aws-cli:<version>` | Image officielle épinglée par digest ; à vérifier sur place (version acceptant `--content-md5` ; relever sa version et qualifier son envoi réel). | — | `docker image rm`. |
 
-Prérequis locaux : Bash, Docker, age, tar, sha256sum et **OpenSSL**. Pour chaque PutObject, le script fournit un Content-MD5 calculé sur les octets envoyés (archive **et** fichier SHA-256), avec les checksums automatiques AWS réglés sur `when_required`. L'image CLI retenue reste à tester réellement sur Contabo. Aucun multipart n'est implémenté : vérifier que la taille réelle reste compatible avec un PutObject simple.
+Prérequis locaux : Bash, Docker, age, tar, sha256sum et **OpenSSL**. Pour chaque PutObject, le script fournit un Content-MD5 calculé sur les octets envoyés (archive **et** fichier SHA-256), avec les checksums automatiques AWS réglés sur `when_required`. L’image CLI épinglée a réussi les envois réels du 3 octobre. Aucun multipart n'est implémenté : vérifier que la taille réelle reste compatible avec un PutObject simple.
 
 Les anciens réglages `OFFSITE_CHECK=list` ou `OFFSITE_IF_NONE_MATCH=true` sont refusés avant l'export des bases. Les nombres de jeux conservés localement doivent être des entiers strictement positifs.
 
@@ -212,6 +211,8 @@ ssh nexus 'bash /<racine>/deploy/nexus/restore-service.sh --production --confirm
 
 ### B6. Minuteurs systemd (sauvegarde 3 h 30 Paris, hors 7 h, 9 h et 17 h 15–17 h 30)
 
+Installé et testé le 3 octobre : service exécuté manuellement avec succès, timer enabled/active/waiting ; premier déclenchement automatique attendu le 4 octobre. Exemple de structure ci-dessous : les fichiers service et timer sont distincts ; utiliser le compte du dépôt ayant accès à Docker, UMask=0077 et l’unité réellement vérifiée sur Nexus.
+
 `/etc/systemd/system/maison-backup-offsite.service` + `.timer` :
 
 ```ini
@@ -226,11 +227,11 @@ Persistent=true
 WantedBy=timers.target
 ```
 
-- **Sécurité** : root (accès Docker) ; aucune exposition. **Retour arrière** : `systemctl disable --now maison-backup-offsite.timer`. **À vérifier sur place** : fuseau et `systemctl list-timers`.
+- **Sécurité** : compte du dépôt disposant de l’accès Docker ; aucune exposition. **Retour arrière** : `systemctl disable --now maison-backup-offsite.timer`. **À vérifier sur place** : fuseau et `systemctl list-timers`.
 
 ### B7. Rotation distante depuis le PC (clé de rotation)
 
-**Calendrier et nombre d'archives à conserver encore à décider avec Antoine**, après mesure de l'espace utilisé. Les 30 jours de verrouillage ne sont pas une suppression automatique. Toutes les versions, même non courantes, consomment du quota ; un nouvel envoi ne remplace pas leur stockage.
+**Décision du 3 octobre : conserver les versions distantes sans purge automatique.** Antoine confirme que capacité et coût disposent d’une marge suffisante. Rotation locale maintenue à 3 jeux en clair et 7 archives chiffrées. Les 30 jours de verrouillage ne sont pas une suppression automatique. Toutes les versions, même non courantes, consomment du quota ; un nouvel envoi ne remplace pas leur stockage.
 
 Aucune purge distante automatique n'est installée. Depuis le PC, inventorier les versions (`list-object-versions`), rapprocher archives et SHA-256 avec les reçus conservés, puis contrôler la rétention de chaque version envisagée. Faire approuver la sélection avant suppression. Ne supprimer que les versions expirées et devenues inutiles, avec leur **VersionId explicite** (`delete-object --version-id …`), sans bypass GOVERNANCE. Une suppression sans VersionId peut seulement ajouter un marqueur de suppression et ne constitue pas une purge des anciennes versions. Conserver les paires nécessaires aux restaurations et tester leur lecture avant toute rotation. Jamais de clé de rotation sur Nexus.
 
@@ -238,18 +239,20 @@ Aucune purge distante automatique n'est installée. Depuis le PC, inventorier le
 
 ## C. Alerte Maison (`monitor.sh`)
 
-Contrôle toutes les 5 minutes des seuls conteneurs Maison (postgres, keycloak-db, keycloak, api, web, + alexa/telegram si actifs) et de la fraîcheur de la dernière sauvegarde hors site (> 26 h). Alerte Telegram au seul compte `TELEGRAM_ALERT_USER` (conversation liée dans Maison, mise en cache), **uniquement** au changement (panne, rétablissement), après deux passages identiques (anti-rebond) ; silence pendant la fenêtre de sauvegarde (≤ 45 min). Ne vérifie pas la joignabilité de Nexus (la sonde externe existante le fait) ; ne touche ni Léo ni ses sondes ; ne restaure jamais rien.
+Installée le 3 octobre : panne et rétablissement réellement reçus à 09 h 27, puis exécutions automatiques confirmées jusqu’à 10 h 50. Ce contrôle n’a pas déclenché de message répété à l’état sain.
+
+Contrôle toutes les 5 minutes des seuls conteneurs Maison (postgres, keycloak-db, keycloak, api, web, + alexa/telegram si actifs) et de la fraîcheur de la dernière sauvegarde hors site (> 26 h). Alerte Telegram au seul compte `TELEGRAM_ALERT_USER` (conversation liée dans Maison, mise en cache), **uniquement** au changement (panne, rétablissement), après deux passages identiques (anti-rebond) ; silence pendant la fenêtre de sauvegarde (≤ 45 min). Ne vérifie pas la joignabilité de Nexus (la couverture indépendante existante n’a pas été éprouvée dans cette session) ; ne touche ni Léo ni ses sondes ; ne restaure jamais rien.
 
 | Commande | Sécurité | Retour arrière |
 |---|---|---|
 | Prérequis : A5 fait (`TELEGRAM_ALERT_USER`), liaison Telegram d’Antoine active, `curl` présent (à vérifier sur place). | Jeton lu dans `.private/nexus/telegram-token`, passé à curl par l’entrée standard (absent de la liste des processus). | — |
 | `deploy/nexus/monitor.sh; echo $?` deux fois | Lecture Docker + un message au plus. | — |
-| Service/timer `maison-monitor` : `ExecStart=<racine>/deploy/nexus/monitor.sh`, `OnCalendar=*:0/5` | root (Docker). | `systemctl disable --now maison-monitor.timer` ; état dans `.private/nexus/monitor/`. |
+| Service/timer `maison-monitor` : `ExecStart=<racine>/deploy/nexus/monitor.sh`, `OnCalendar=*:0/5` | Compte du dépôt, accès Docker, UMask=0077. | `systemctl disable --now maison-monitor.timer` ; état dans `.private/nexus/monitor/`. |
 | Essai : `dc stop web` puis attendre 10 min → une alerte « panne » ; `dc start web` → une alerte « rétabli » | Coupure volontaire du portail ≈ 10 min : choisir un créneau calme. | `dc start web`. |
 
 ---
 
-## Preuves obtenues dans la session cloud du 29/09 (Docker local, données fictives)
+## Historique — preuves obtenues dans la session cloud du 29/09 (Docker local, données fictives)
 
 - Pile fictive (PostgreSQL 16 épinglé par digest, deux bases avec tables fictives : 1 foyer, 2 membres, 42 articles, 97 historiques, 13 demandes ; 2 realms, 3 utilisateurs, 2 identifiants).
 - `backup-offsite.sh --no-upload` : `backup.sh` réel, archive `commandement-20260929T223725Z-de11d3c2.tar.age` + `.sha256`, aucun mot de passe fictif lisible dans l’archive.
@@ -260,14 +263,14 @@ Contrôle toutes les 5 minutes des seuls conteneurs Maison (postgres, keycloak-d
 - **Non vérifié** : envoi S3 réel vers Contabo, `If-None-Match` chez Contabo, `--with-services` (images API/Keycloak absentes de la session), `--production`, minuteurs systemd, réception Telegram réelle de l’alerte.
 
 
-## Qualification complémentaire du 2 octobre 2026
+## Historique — qualification complémentaire du 2 octobre 2026
 
 Les observations Contabo sur PC sont détaillées en B0 et dans `docs/PROJECT-STATE.md` : protection et restauration d'une version d'un fichier technique confirmées, pas encore d'archive réelle envoyée depuis Nexus.
 
 Les tests automatisés `deploy/nexus/test/backup-offsite.test.mjs` exécutent le vrai script Bash, tar et OpenSSL ; export des bases, age et Docker/S3 sont simulés. Ils vérifient les Content-MD5 des deux fichiers, les reçus de versions, le SHA-256 de l'archive envoyée, les échecs d'envoi/checksum/chiffrement/réponse sans version, le refus des anciennes options, `--no-upload` et la rotation locale sans suppression distante. Ils ne remplacent ni l'intégration avec l'image CLI retenue ni B3/B4.
 
 
-## Qualification réelle du 2 octobre — PC et Nexus, avant installation
+## Historique — qualification réelle du 2 octobre — PC et Nexus, avant installation
 
 Antoine a exécuté une sauvegarde réelle avec le script déjà installé à fb9aedf, puis le chiffrement age 1.3.2 avec la clé publique existante, dans une préparation temporaire séparée. Après l'arrêt cohérent/reprise, les sept services Maison étaient sains. Archive récupérée sur le PC via SCP historique (`scp -O`, sous-système SFTP indisponible dans l'essai) et empreinte conforme.
 

@@ -1,6 +1,6 @@
 # Maison — guide d’utilisation pour la famille (T10)
 
-Version du 29 septembre 2026, pour le pilote. Maison, c’est notre liste de courses et notre agenda communs, sur `https://famille.estarellas.online` (icône **Maison** sur le téléphone). Chacun a son propre compte ; ce que l’un fait, l’autre le voit.
+Version mise à jour le 3 octobre 2026, pour le pilote. Maison, c’est notre liste de courses et notre agenda communs, sur `https://famille.estarellas.online` (icône **Maison** sur le téléphone). Chacun a son propre compte ; ce que l’un fait, l’autre le voit.
 
 ## Au quotidien
 
@@ -39,15 +39,13 @@ Proposées à l’acceptation pour le pilote (**non encore acceptées**, à conf
 
 9. Courses Telegram : pas de quantité, unité ni rayon par Telegram (à compléter dans Maison) ; pas de message vocal ; 10 articles par message ; récapitulatif limité à 30 lignes et 12 lignes de boutons.
 10. Pas de récapitulatif ni de sonde si le service est arrêté de 17 h 20 à 17 h 45 ; un membre relié entre 17 h 20 et 17 h 30 peut déclencher une alerte sans objet.
-11. Exploitation : T08 est écrit et testé localement (sauvegarde chiffrée vers Contabo, restauration, alerte Maison, administration nominative documentée) mais **pas installé** sur Nexus. Tant qu’il ne l’est pas : pas de copie hors Nexus, restauration du service complet jamais éprouvée en production, pas d’alerte propre à Maison, Keycloak administré par le compte d’amorçage. Ce sont des **dettes**, pas des choix : à lever par l’installation T08 (`docs/deploiement-nexus.md`) ou à accepter explicitement avant J1.
+11. Exploitation : sauvegardes hors site, administration nominative et alertes Maison sont installées. Réception panne/rétablissement et restauration isolée API/Keycloak sur données sauvegardées éprouvées. Restent la première exécution nocturne, la qualification de la reprise complète sur une autre machine et les preuves restantes avant J1. La surveillance locale ne couvre pas seule une panne totale de Nexus/Telegram. Ces dettes résiduelles restent à lever ou à accepter explicitement ; elles ne sont pas réputées acceptées.
 
-## Relecture des PR ouvertes (29 septembre 2026, aucune fusion)
+## Relecture des PR ouvertes — clôture du 3 octobre 2026
 
-| PR | Tête | État technique | Verdict |
-| --- | --- | --- | --- |
-| [2 — Contrat V1](https://github.com/AntoBel4/Commandement-Center/pull/2) | 4303eda | Brouillon, fusionnable sans conflit (un fichier, `docs/V1-DELIVERY.md`), aucun contrôle CI attaché, aucun fil de revue. | **Pas prête** : contenu arrêté au 18 septembre (« raccorder maintenant les fonctions réelles »), antérieur à Google, Telegram et T05 ; à réaligner sur l’état réel avant fusion. Documentation seule, sans risque technique. |
-| [8 — Google Agenda](https://github.com/AntoBel4/Commandement-Center/pull/8) | 348dd38 | Brouillon vers main, fusion sans conflit avec main, CI « test » et GitGuardian verts, aucun fil de revue. Code installé sur Nexus (selon la fiche d’état). | **Techniquement prête, validation métier incomplète** : critère « Google sur le téléphone de Belinda » (T06) non vérifié. Prête à fusionner dès ce critère observé (procédure Belinda, A6). |
-| [9 — Rappels Telegram](https://github.com/AntoBel4/Commandement-Center/pull/9) | fb9aedf | Brouillon vers `feat/google-calendar`, CI et GitGuardian verts, aucun fil de revue. Installée sur Nexus (selon la fiche d’état). | **Pas prête** : liaison et réception de Belinda non vérifiées, premiers rappels réels non observés. Dépend de la PR 8. |
-| [10 — T05 et documents pilote](https://github.com/AntoBel4/Commandement-Center/pull/10) | (cette branche) | Brouillon vers `feat/telegram-reminders`, CI verte sur f30a8e6. | **Pas prête** : non installée ; recette Telegram réelle et pilote à faire. |
+- PR 2 : contrat documentaire réaligné sur l’état réel lors de cette clôture ; indépendante, laissée en brouillon.
+- PR 8 : Google installé ; recette Google sur le téléphone de Belinda encore ouverte.
+- PR 9 : rappels installés ; liaison/réception de Belinda et envois aux horaires réels encore ouverts.
+- PR 10 : T05 et T08 installés à 5bb65aa, CI réussie ; tests manuels Antoine réussis. Tests à deux, envois programmés, preuves de reprise restantes et pilote non achevés.
 
-Ordre de fusion quand chaque PR est prête : 8 → 9 → 10, chacune avec l’accord d’Antoine. La PR 2 est indépendante.
+Aucune fusion. Ordre 8 → 9 → 10 lorsque les critères sont remplis, chacune avec l’accord d’Antoine. La tête documentaire d’une PR ne désigne pas automatiquement la version en production.
