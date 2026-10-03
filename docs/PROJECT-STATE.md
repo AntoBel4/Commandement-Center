@@ -1,6 +1,17 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 3 octobre 2026, 08 h 32 (Europe/Paris), premier envoi du script hors site confirmé ; branche PR 10.
+Dernière mise à jour : 3 octobre 2026, 08 h 55 (Europe/Paris), sauvegarde systemd éprouvée et minuteur activé ; branche PR 10.
+
+## Point de reprise — 3 octobre 2026, 08 h 55 : sauvegarde quotidienne activée
+
+Ce point prévaut sur les statuts historiques ci-dessous. Résultats transmis par Antoine ; preuves et références privées dans T08 Notion.
+
+- Nouveau jeu du premier envoi Nexus : reçu et empreinte conservés sur PC, deux versions exactes récupérées, SHA-256 conforme et déchiffrement USB intégral réussi. Rétention GOVERNANCE de 30 jours confirmée pour l'archive et son SHA-256. La répétition API/Keycloak validée reste celle du jeu du 2 octobre.
+- Unités systemd préparées et vérifiées, puis installées. Service oneshot exécuté comme utilisateur propriétaire du dépôt (accès Docker déjà opérationnel), UMask=0077, PATH explicite incluant age, StandardInput=null, délais de démarrage/arrêt 45 min et 5 min. Aucun identifiant ajouté aux unités ; configuration privée conservée hors Git.
+- Test réel via systemctl start à 08:54:02–08:54:46 Paris : Result=success, ExecMainStatus=0, nouveau jeu chiffré envoyé et sept services healthy ensuite. Aucune nouvelle restauration de ce second jeu déduite.
+- Minuteur maison-backup-offsite.timer activé : loaded / active / waiting / enabled. OnCalendar=*-*-* 03:30:00 Europe/Paris, Persistent=true, AccuracySec=1min. Prochaine échéance dimanche 4 octobre 03:30 CEST ; premier déclenchement nocturne encore à constater.
+- Retour arrière du minuteur : `sudo systemctl disable --now maison-backup-offsite.timer` ; ne supprime aucune archive et n'interrompt pas un service déjà lancé.
+- Conservation locale configurée : 3 jeux en clair et 7 archives chiffrées. Aucune purge distante automatique. Suite : inventaire des versions et du volume Maison depuis le PC, coût/rotation, administration nominative et alertes. T08 En cours, production fb9aedf, T05 non déployé, PR 10 non fusionnée. Préserver l'ajout indexé backup-offsite.sh et le changement local de mode de backup.sh.
 
 ## Point de reprise — 3 octobre 2026, première sauvegarde hors site depuis Nexus
 
