@@ -27,11 +27,7 @@ if [[ -n "$workdir" ]]; then
   if ! test -f "$last" || (( $(date +%s) - $(date -d "$(cat "$last")" +%s) > 26*3600 )); then problems+=('sauvegarde hors site > 26 h'); fi
 fi
 current=$(printf '%s\n' "${problems[@]}")
-previous=$(cat "$state_dir/state" 2>/dev/null || true)
-[[ "$current" != "$previous" ]] || { rm -f -- "$state_dir/pending"; exit 0; }
-# Debounce: a change must be seen on two consecutive runs (avoids alerts on "starting").
-if [[ "$current" != "$(cat "$state_dir/pending" 2>/dev/null || true)" ]]; then printf '%s' "$current" > "$state_dir/pending"; exit 0; fi
-
+# Resolve and cache the recipient even while healthy, before the database can fail.
 user=$(envfile_value "$private/telegram.env" TELEGRAM_ALERT_USER)
 [[ "$user" =~ ^[0-9a-fA-F-]{36}$ ]] || { echo 'TELEGRAM_ALERT_USER not configured; state change not sent.' >&2; exit 1; }
 # psql interpolates :'u' (safely quoted) only in scripts read from stdin, not with -c.
@@ -39,6 +35,14 @@ chat=$(echo "select data->'links'->:'u'->>'chat' from telegram_state limit 1;" |
   dc exec -T postgres psql -U commandement -d commandement -At -v ON_ERROR_STOP=1 -v u="${user,,}" 2>/dev/null || true)
 if [[ "$chat" =~ ^-?[0-9]+$ ]]; then echo "$chat" > "$state_dir/alert-chat"; else chat=$(cat "$state_dir/alert-chat" 2>/dev/null || true); fi
 [[ "$chat" =~ ^-?[0-9]+$ ]] || { echo 'Alert chat unknown (Telegram not linked or database down, no cache).' >&2; exit 1; }
+previous=$(cat "$state_dir/state" 2>/dev/null || true)
+[[ "$current" != "$previous" ]] || { rm -f -- "$state_dir/pending"; exit 0; }
+# An empty pending file means a first healthy observation, not a missing file.
+# Both failure and recovery must be seen on two consecutive runs.
+if ! test -f "$state_dir/pending" || [[ "$current" != "$(cat "$state_dir/pending")" ]]; then
+  printf '%s' "$current" > "$state_dir/pending"
+  exit 0
+fi
 if ((${#problems[@]})); then
   text="Maison — panne : $(IFS=', '; echo "${problems[*]}")"
 elif [[ -n "$previous" ]]; then
@@ -54,3 +58,4 @@ if [[ -n "$text" ]]; then
 fi
 # Only record the new state once the alert was accepted: no repetition, but a retry if sending failed.
 printf '%s' "$current" > "$state_dir/state"
+rm -f -- "$state_dir/pending"
