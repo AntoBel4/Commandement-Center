@@ -12,4 +12,7 @@ COPY apps/web/src /usr/share/nginx/html/src
 COPY --from=assets /app/node_modules/keycloak-js/lib/keycloak.js /usr/share/nginx/html/vendor/keycloak.js
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Nginx workers must read assets even when the source checkout uses umask 077.
+RUN chmod -R a+rX /usr/share/nginx/html \
+    && chmod a+r /etc/nginx/conf.d/default.conf
 EXPOSE 80

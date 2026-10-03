@@ -18,8 +18,8 @@ export class TelegramClient {
     if([400,401,403].includes(data.error_code))throw new TelegramError('TELEGRAM_REJECTED');
     throw new TelegramError('TELEGRAM_UNKNOWN');
   }
-  async send(chatId,text) {
-    const message=await this.call('sendMessage',{chat_id:chatId,text,link_preview_options:{is_disabled:true}});
+  async send(chatId,text,markup) {
+    const message=await this.call('sendMessage',{chat_id:chatId,text,link_preview_options:{is_disabled:true},...(markup?{reply_markup:markup}:{})});
     if(!Number.isSafeInteger(message?.message_id))throw new TelegramError('TELEGRAM_UNKNOWN');
     return message.message_id;
   }

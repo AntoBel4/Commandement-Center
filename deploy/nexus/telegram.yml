@@ -28,6 +28,7 @@ services:
       GOOGLE_CALENDAR_FAMILY_ID: ${FAMILY_ID:?}
       TELEGRAM_TOKEN_FILE: /run/secrets/telegram-token
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:?}
+      TELEGRAM_ALERT_USER: ${TELEGRAM_ALERT_USER:-}
       PORTAL_URL: https://${PORTAL_HOST:?}/
     volumes:
       - type: bind
