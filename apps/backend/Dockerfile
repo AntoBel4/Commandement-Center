@@ -11,6 +11,10 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY apps/backend apps/backend
 COPY supabase/migrations supabase/migrations
 
+# Local checkouts may use umask 077. Runtime code must remain readable by node.
+# Only application files and dependencies are copied into /app, never secrets.
+RUN chmod -R a+rX /app
+
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 EXPOSE 3000

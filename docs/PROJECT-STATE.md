@@ -1,6 +1,19 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 3 octobre 2026, 09 h 42 (Europe/Paris), surveillance installée et administrateur nominatif éprouvé ; branche PR 10.
+Dernière mise à jour : 3 octobre 2026, après l'échec de déploiement de 10 h 10 (Europe/Paris) ; branche PR 10.
+
+## Point de reprise — 3 octobre 2026 : repli T05 réussi, correction des permissions des images
+
+Ce point prévaut sur les prochaines actions historiques ci-dessous. Résultats Nexus transmis par Antoine ; références privées dans Notion.
+
+- Administration nominative vérifiée par nouvelle connexion avant et après désactivation du compte bootstrap. Après le redémarrage de sauvegarde, compte nominatif actif et bootstrap désactivé confirmés.
+- Surveillance automatique réellement observée à 09 h 35, 09 h 40 et 09 h 45 : services systemd terminés avec succès. Les alertes réelles panne/rétablissement de 09 h 27 restent acquises.
+- Copies privées des configurations et scripts T08, empreintes et anciennes images API/web conservées pour le retour arrière. Sauvegarde complète avant T05 avec administration nominative envoyée hors site à 09 h 56 ; sept services healthy ensuite.
+- Checkout Nexus passé à `91b4a1a`, propre et scripts T08 conservés. Images API/web construites pour cette révision, anciennes images conservées.
+- Tentative de déploiement interrompue pendant le contrôle des migrations : `EACCES` sur `/app/supabase/migrations/005_calendar_proposals.sql` sous l'utilisateur non privilégié de l'image. Aucune bascule des services vers T05 effectuée. Le repli a restauré l'ancienne configuration et relancé API/web/Telegram, tous trois healthy. Cette preuve couvre le chemin d'échec avant bascule, pas une restauration complète sur autre machine.
+- Correctif préparé dans les Dockerfiles : lecture/traversée des seuls fichiers intégrés aux images, sans changement des secrets ni exécution de l'API en root. Nouveau contrôle CI construisant depuis un contexte aux fichiers 600 et dossiers 700, puis lisant les migrations/code comme utilisateur API et les ressources web comme nginx. Les sept tests de surveillance existants sont également ajoutés à la commande CI explicite.
+- **Suite immédiate :** obtenir le résultat CI de ce correctif, reconstruire des images à sa révision exacte sur Nexus et vérifier leur lisibilité avant une nouvelle tentative. À ce point, correctif non installé, T05 non déployé et recette des deux conversations encore ouverte.
+- T08 reste En cours : premier déclenchement nocturne de sauvegarde à constater le 4 octobre, procédure de reprise complète sur autre machine à finaliser. Conservation distante sans purge automatique retenue ; coût/capacité non bloquants selon Antoine. PR 10 non fusionnée ; ordre de fusion 8 → 9 → 10 avec accord explicite conservé.
 
 ## Point de reprise — 3 octobre 2026, 09 h 42 : alertes éprouvées et administrateur nominatif créé
 
