@@ -1,10 +1,8 @@
 # V1 — Contrat d'architecture et de livraison
 
-Statut : contrat V1 et état partiel de livraison ; ce document ne décrit pas un service déjà déployé.
+État mis à jour le 3 octobre 2026. Contrat et limites de livraison, distincts des preuves de production : Maison est en service ; API/web/Telegram déployés à 5bb65aa depuis la PR 10. Les PR 8, 9 et 10 restent ouvertes, non fusionnées. Tests courses Telegram Antoine réussis ; Belinda, envois aux horaires réels et pilote restent ouverts. T07 rendez-vous vocaux hors pilote, encore à faire. T08 installé avec preuves partielles ; reprise complète sur autre machine non éprouvée.
 
-Point au 18 septembre 2026 : T01 inventorié, maquette Maison validée (14 essais) et fusionnée en PR 3. Hébergement intégral Docker confirmé, nouvelle base vide. Le socle API T02 est préparé et testé localement en [PR 4](https://github.com/AntoBel4/Commandement-Center/pull/4) : courses persistantes, historique, concurrence et comptes autorisés. La connexion de production, le raccordement du portail et les intégrations restent à réaliser.
-Point de départ audité : commit 03cf35c05a16714bf49958d191dc092980124b00.
-Les décisions personnelles, les horaires réels, les identifiants de comptes et les détails d'infrastructure restent hors de ce dépôt public.
+La [fiche d’état actuelle](https://github.com/AntoBel4/Commandement-Center/blob/main/docs/PROJECT-STATE.md) et Notion portent les preuves datées. Les sections ci-dessous décrivent le périmètre cible et les choix, sans valoir validation de chaque critère.
 
 ## Objectif
 
@@ -15,20 +13,20 @@ Une application familiale auto-hébergée sous Docker, utilisable sur Android, a
 Le site web privé est une interface centrale du produit, en complément de Telegram et Alexa.
 Il est hébergé dans la stack Docker derrière Traefik. Le domaine réel est configuré au déploiement.
 
-Pages à livrer :
+Pages du portail (livrées ; recette globale et intégrations suivies séparément) :
 - Accueil : aperçu de la journée, prochains rendez-vous, courses ouvertes, urgences et ajout rapide.
 - Courses : liste commune, quantités, ajout/modification, achat, report et urgence.
 - Agenda : jour/semaine, création et lecture des événements du fournisseur, indication des demandes en attente.
 - Réglages : préférences utilisateur et notifications ; configuration technique réservée à l'administrateur.
 
-La maquette navigable avec données fictives est validée et conservée dans prototype/index.html. Raccorder maintenant les fonctions réelles sans présenter les données fictives comme connectées.
+La maquette navigable avec données fictives est validée et conservée dans prototype/index.html. Le portail réel est raccordé ; la maquette ne représente pas ses données courantes.
 Direction visuelle proposée : claire, chaleureuse, lisible et adaptée au tactile.
 Livrer des mises en page téléphone, ordinateur et tablette, ainsi qu'un raccourci Android.
 Les modules futurs pourront enrichir la navigation ; aucun bouton de module inachevé présenté comme opérationnel.
 
-Critères de livraison : revue visuelle, parcours complets sur deux téléphones, absence de débordement horizontal, états de chargement/erreur explicites, accès HTTPS extérieur et refus des données aux visiteurs non connectés.
+Critères de livraison : revue visuelle, recette comptes/courses sur le téléphone d’Antoine (second appareil dispensé pour T04b), puis recette des intégrations sur les deux comptes, absence de débordement horizontal, états de chargement/erreur explicites, accès HTTPS extérieur et refus des données aux visiteurs non connectés.
 
-## Architecture proposée
+## Architecture retenue
 
 Conserver Fastify et PostgreSQL ; améliorer progressivement le code existant.
 Livrer un seul projet Docker Compose, avec application web/API, traitement des tâches et base séparés si nécessaire.
@@ -54,33 +52,33 @@ L'action Acheter est explicite et idempotente. Un ancien bouton Telegram relit l
 Les regroupements respectent article, unité et quantité ; ne pas additionner des unités incompatibles.
 Le dédoublonnage des requêtes utilise l'identifiant du message ou de la requête source, pas uniquement le nom de l'article.
 Les modifications concurrentes des deux utilisateurs doivent être couvertes. Le socle T02 utilise une version d’article pour refuser une écriture obsolète, une clé de reprise par envoi et un historique transactionnel. L’auteur est déduit de l’identité autorisée. La suppression visible annule la demande sans effacer son historique.
-Le bouton « Je m’en occupe » reste à raccorder dans le portail ; les champs d’attribution API ne prouvent pas que ce parcours utilisateur est livré.
+Le parcours « Je m’en occupe » fait partie de la recette comptes/courses acceptée ; distinguer cette validation des nouvelles fonctions Telegram.
 
 ### Récapitulatifs
 
-Heure de coupure, heure d'envoi, jours actifs et destinataires sont configurables dans le fuseau du foyer.
-La coupure sélectionne les demandes reçues au plus tard à l'heure limite. Les ajouts ultérieurs restent immédiatement visibles et deviennent éligibles au récapitulatif suivant. Les paramètres réels sont conservés dans la configuration privée.
+V1 : horaires fixes Europe/Paris, coupure 17 h 15, récapitulatif quotidien 17 h 20 et sonde d’acceptation 17 h 30 pour les membres attendus. Aucun écran de configuration de ces horaires n’est promis.
+La coupure sélectionne les demandes reçues au plus tard à l'heure limite. Les ajouts ultérieurs restent immédiatement visibles et deviennent éligibles au récapitulatif suivant. Pendant le pilote, un récapitulatif vide affiche « Rien à acheter aujourd’hui » (D1).
 Inclure les demandes ouvertes devenues éligibles, y compris celles reportées des jours précédents.
-Conserver un instantané et un historique par destinataire. Traiter les changements entre sélection et envoi.
-Persister les envois dans une outbox transactionnelle ; reprise après redémarrage, essais bornés et alerte finale.
+Conserver des reçus par destinataire sans texte familial. Les messages envoyés ne sont pas modifiés lorsque la liste change ; Maison fait foi.
+Persister les réservations et réponses ; reprises bornées dans les fenêtres documentées. Envoi ambigu : pas de renvoi automatique arbitraire. La sonde contrôle l’acceptation, pas la lecture.
 Telegram ne garantit pas l'exactement-une-fois après un résultat réseau ambigu : tracer cet état et éviter de promettre zéro doublon.
 Un acquittement de Telegram prouve l'acceptation par le service, pas la lecture sur le téléphone.
-Une action Urgent explicite déclenche une notification immédiate aux destinataires autorisés.
+Une action Urgent explicite notifie l’autre membre relié, même en journée tranquille, mais pas s’il est suspendu (D5). Réception croisée encore à éprouver.
 
 ### Agenda
 
 Créer un agenda Google familial partagé, puis le sélectionner explicitement.
-Les suggestions de créneaux communs, retenues pour le portail, nécessitent la validation des deux personnes avant création du rendez-vous.
+Les créneaux sont saisis manuellement (1 à 5), sans calcul automatique des disponibilités ; les deux personnes doivent valider le même créneau avant création.
 Les créations par le Centre sont envoyées au fournisseur ; un échec est présenté comme attente ou erreur, jamais comme événement synchronisé.
 Lire les modifications faites depuis Google, les annulations et les occurrences récurrentes.
 Gérer dates sans heure, fuseaux, heure d'été/hiver et identifiants fournisseur.
 Un récapitulatif le jour J et un rappel avant chaque rendez-vous sont requis. Le second rappel est prévu une heure avant le rendez-vous. Ils ont leur propre calendrier, indépendant de la coupure courses.
 Une resynchronisation doit remplacer le cache du fournisseur, sans effacer les demandes locales non encore confirmées.
-Tester le renouvellement des autorisations et le mode de publication OAuth adapté avant de déclarer la connexion durable.
+L’intégration installée utilise un compte de service Google dédié et le partage explicite de l’agenda ; vérifier la continuité de cet accès, sans imposer une publication OAuth d’utilisateur qui ne correspond pas au connecteur retenu.
 
 ### Alexa
 
-Objectif V1 : ajout de courses et événements depuis une skill française sur les enceintes du foyer.
+Courses acceptées depuis l’application Alexa du téléphone ; essais supplémentaires sur Echo dispensés, sans preuve sur enceintes affirmée. Rendez-vous vocaux T07 encore à réaliser, hors pilote.
 Valider d'abord la phrase d'invocation et un ajout réel sur appareil.
 Hébergement recommandé du service de skill dans la stack Docker, via HTTPS derrière Traefik, pour éviter une dépendance Lambda additionnelle.
 Valider signature, chaîne de certificat, horodatage, skill ID et liaison du compte Amazon au foyer avec les bibliothèques adaptées.
@@ -93,13 +91,13 @@ Le mode développement/pilote et la distribution durable sont des étapes distin
 ### Authentification
 
 Accès web HTTPS sans VPN obligatoire pour les usages quotidiens ; administration restreinte.
-Aucun fournisseur d'identité n'a été identifié dans l'inventaire des conteneurs actifs. Recommandation : conserver l'intégration Keycloak existante, après vérification de la capacité de l'hôte et préparation d'une configuration de production.
+Keycloak est installé en production ; administration nominative vérifiée et compte bootstrap désactivé le 3 octobre, état conservé après redémarrage.
 Deux utilisateurs autorisés, inscriptions publiques désactivées, sessions révocables.
 Aucune exposition de production avec AUTH_ENABLED=false. Le socle T02 refuse ce démarrage ; le client navigateur et l’API ont des audiences distinctes et PKCE S256 est requis. Les tests Keycloak locaux utilisent des comptes fictifs ; ils ne remplacent pas la configuration et la recette des comptes réels.
 Contrôles côté API sur chaque ressource et chaque action ; identifiants de famille imposés par l'identité autorisée.
 Pour les sessions par cookies : Secure, HttpOnly, SameSite adapté et protection CSRF.
 Pour Telegram : vérifier expéditeur, conversation autorisée et validité des callbacks. Authentifier aussi les appels n8n.
-Utiliser deux bots distincts : le bot familial pour la capture et les actions, le bot technique existant exclusivement pour les alertes de l'administrateur. Ne pas modifier le webhook du bot technique. Le bot familial possède son propre point d'entrée.
+Léo et la surveillance existante restent inchangés. Le bot Maison, en interrogation sortante sans webhook public, porte les fonctions familiales et les alertes Maison au seul administrateur configuré.
 Secrets hors Git, logs sans contenu familial complet, accès des intégrations limité au strict nécessaire.
 
 ## Exploitation
@@ -111,7 +109,7 @@ Secrets hors Git, logs sans contenu familial complet, accès des intégrations l
 - Export PostgreSQL cohérent avant sauvegarde chiffrée hors machine. Restaurer dans un environnement séparé et vérifier les données.
 - Versionner les migrations ; les scripts d'initialisation Docker ne suffisent pas pour une base déjà créée.
 - Images de livraison identifiées, mise à jour planifiée et retour arrière documenté, y compris compatibilité du schéma.
-- Les objectifs de perte de données et de temps de restauration restent à convenir.
+- Objectifs retenus : perte maximale 24 h ; reprise 4 h sur Nexus, 24 h ailleurs. Ce sont des objectifs, pas des délais de reprise mesurés. Sauvegarde nocturne chiffrée hors site ; clé privée USB/papier hors Nexus, compte d’envoi sans lecture/suppression, versions GOVERNANCE 30 jours minimum et conservation distante sans purge.
 
 ## Lots et preuves attendues
 
@@ -119,7 +117,7 @@ Secrets hors Git, logs sans contenu familial complet, accès des intégrations l
 2. Socle courses : ajout depuis deux sessions, achat, report, redémarrage, concurrence et contrôle d'accès testés sur PostgreSQL.
 3. Telegram : capture et boutons ; limites de coupure, fuseau, redémarrage et échec d'envoi testés avec horloge contrôlée.
 4. Agenda : création, modification externe, annulation, récurrence et rappel vérifiés.
-5. Alexa : preuve précoce sur un Echo, puis ajout course/événement depuis les deux appareils et rejet des requêtes non autorisées.
+5. Alexa : parcours courses accepté sur téléphone, dispense des essais Echo conservée ; T07 rendez-vous vocaux à traiter après le pilote, rejet des requêtes non autorisées à maintenir.
 6. Portail : maquette examinée, quatre pages raccordées et essais sur téléphone/ordinateur ; mise en ligne HTTPS via Traefik, authentification, sauvegarde/restauration, alerte réelle et retour arrière validés.
 7. Pilote : une semaine d'usage réel, incidents corrigés et guide d'exploitation remis.
 
