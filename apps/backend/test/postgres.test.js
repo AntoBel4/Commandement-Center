@@ -8,6 +8,7 @@ import { bootstrapFamily } from '../scripts/bootstrap-family.js';
 import { PostgresStore } from '../src/services/store.js';
 import { fixture, family, otherFamily, alice, bob, outsider, create, headers, call } from './fixtures.js';
 import { groceryContract } from './grocery-contract.js';
+import { proposalContract } from './proposals-contract.js';
 
 const databaseUrl=process.env.TEST_DATABASE_URL;
 test('PostgreSQL integration', {skip:!databaseUrl}, async(t)=>{
@@ -27,6 +28,7 @@ test('PostgreSQL integration', {skip:!databaseUrl}, async(t)=>{
     userIds:[outsider,'dddddddd-dddd-4ddd-8ddd-dddddddddddd']});
   const makeApp=()=>fixture(new PostgresStore(url));
   await groceryContract(t,makeApp);
+  await t.test('calendar proposals persist and serialize',async sub=>proposalContract(sub,()=>new PostgresStore(url)));
 
   await t.test('membership provisioning is repeatable and refuses unintended replacement',async()=>{
     const db=new pg.Client({connectionString:url});await db.connect();

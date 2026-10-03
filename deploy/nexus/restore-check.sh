@@ -16,7 +16,9 @@ docker run -d --name "$drill" --label commandement.restore-check=true --network 
 created=true
 ready=false
 for ((attempt=0;attempt<60;attempt++)); do
-  if docker exec "$drill" pg_isready -U postgres >/dev/null 2>&1; then ready=true; break; fi
+  # The image starts a temporary server during initialization. Wait for the
+  # entrypoint to exec the final postgres process before accepting readiness.
+  if docker exec "$drill" sh -c 'test "$(cat /proc/1/comm)" = postgres && pg_isready -U postgres' >/dev/null 2>&1; then ready=true; break; fi
   sleep 1
 done
 [[ "$ready" = true ]] || { echo 'Restore database did not start.' >&2; exit 1; }

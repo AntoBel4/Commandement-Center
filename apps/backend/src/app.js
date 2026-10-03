@@ -6,8 +6,10 @@ import syncRoutes from './routes/sync.js';
 import webhookRoutes from './routes/webhooks.js';
 import { createStore } from './services/store.js';
 import { registerAuth } from './utils/auth.js';
+import calendarRoutes from './routes/calendar.js';
+import { calendarFromEnvironment } from './services/google-calendar.js';
 
-export async function buildApp({ store = createStore(), auth, logger } = {}) {
+export async function buildApp({ store = createStore(), auth, logger, calendar = calendarFromEnvironment() } = {}) {
   if (process.env.NODE_ENV === 'production' && store.constructor.name === 'InMemoryStore') {
     throw new Error('Production requires persistent storage');
   }
@@ -31,6 +33,7 @@ export async function buildApp({ store = createStore(), auth, logger } = {}) {
   });
 
   app.decorate('store', store);
+  app.decorate('calendar', calendar);
   registerAuth(app, auth);
   app.addHook('onClose', async () => {
     if (typeof store.close === 'function') await store.close();
@@ -46,6 +49,7 @@ export async function buildApp({ store = createStore(), auth, logger } = {}) {
     }
   });
   app.register(eventRoutes);
+  app.register(calendarRoutes);
   app.register(groceryRoutes);
   app.register(syncRoutes);
   app.register(webhookRoutes);

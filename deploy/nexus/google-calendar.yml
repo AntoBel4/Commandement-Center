@@ -1,0 +1,28 @@
+# Enabled only by the private google-calendar.env file; no host ports.
+services:
+  migrate:
+    image: commandement-api:${GOOGLE_RELEASE:?}
+  api:
+    image: commandement-api:${GOOGLE_RELEASE:?}
+    environment:
+      GOOGLE_CALENDAR_CREDENTIALS_FILE: /run/secrets/google-calendar.json
+      GOOGLE_CALENDAR_ID: ${GOOGLE_CALENDAR_ID:?}
+      GOOGLE_CALENDAR_FAMILY_ID: ${FAMILY_ID:?}
+    volumes:
+      - type: bind
+        source: ../../.private/nexus/google-calendar.json
+        target: /run/secrets/google-calendar.json
+        read_only: true
+        bind: {create_host_path: false}
+    networks: [internal, google_egress]
+  web:
+    image: commandement-web:${GOOGLE_WEB_RELEASE:-${GOOGLE_RELEASE:?}}
+    volumes:
+      - type: bind
+        source: ./google-calendar-nginx.conf
+        target: /etc/nginx/family-integrations/google-calendar.conf
+        read_only: true
+        bind: {create_host_path: false}
+networks:
+  google_egress:
+    driver: bridge

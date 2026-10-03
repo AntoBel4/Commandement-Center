@@ -9,5 +9,8 @@ dc() {
   if test -f "$NEXUS_ROOT/.private/nexus/alexa.env"; then
     args+=(--env-file "$NEXUS_ROOT/.private/nexus/alexa.env" -f "$NEXUS_ROOT/deploy/nexus/alexa.yml")
   fi
+  if test -f "$NEXUS_ROOT/.private/nexus/google-calendar.env"; then
+    args+=(--env-file "$NEXUS_ROOT/.private/nexus/google-calendar.env" -f "$NEXUS_ROOT/deploy/nexus/google-calendar.yml")
+  fi
   docker compose "${args[@]}" "$@"
 }

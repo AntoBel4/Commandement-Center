@@ -16,6 +16,27 @@ export class InMemoryStore {
     this.groceryHistory = [];
     this.groceryRequests = new Map();
     this.members = new Map();
+    this.calendarProposals = new Map();
+    this.calendarLocks = new Map();
+  }
+
+  listCalendarProposals(familyId) {
+    return structuredClone([...this.calendarProposals.values()].filter(p=>p.familyId===familyId).map(p=>p.data));
+  }
+
+  async calendarProposalTransaction(familyId, id, action) {
+    const key=familyId+':'+id;
+    const before=this.calendarLocks.get(key) ?? Promise.resolve();
+    let release;
+    const lock=new Promise(resolve=>{release=resolve;});
+    this.calendarLocks.set(key,lock);
+    await before;
+    try {
+      const current=structuredClone(this.calendarProposals.get(key)?.data ?? null);
+      const next=await action(current,[...(this.members.get(familyId) ?? [])]);
+      this.calendarProposals.set(key,{familyId,data:structuredClone(next)});
+      return structuredClone(next);
+    } finally { release(); if(this.calendarLocks.get(key)===lock) this.calendarLocks.delete(key); }
   }
 
   createEvent(payload, familyId = null) {
@@ -195,8 +216,27 @@ export class PostgresStore {
     await this.pool.end();
   }
 
+  async listCalendarProposals(familyId) {
+    const {rows}=await this.pool.query('select data from calendar_proposals where family_id=$1 order by created_at,id',[familyId]);
+    return rows.map(row=>row.data);
+  }
+
+  async calendarProposalTransaction(familyId,id,action) {
+    return this.transaction(async client=>{
+      // Also serialize creation, when there is no row to lock yet.
+      await client.query('select pg_advisory_xact_lock(hashtextextended($1,0))',['calendar-proposal:'+id]);
+      const {rows}=await client.query('select data from calendar_proposals where family_id=$1 and id=$2 for update',[familyId,id]);
+      const members=await client.query('select user_id from family_members where family_id=$1 order by user_id for share',[familyId]);
+      const next=await action(rows[0]?.data ?? null,members.rows.map(row=>row.user_id));
+      if(rows.length) await client.query('update calendar_proposals set data=$3 where family_id=$1 and id=$2',[familyId,id,next]);
+      else await client.query('insert into calendar_proposals(family_id,id,data) values($1,$2,$3)',[familyId,id,next]);
+      return next;
+    });
+  }
+
   async checkReady() {
     await this.pool.query('select 1 from grocery_history limit 0');
+    await this.pool.query('select 1 from calendar_proposals limit 0');
   }
 
   async createEvent(payload, familyId = null) {
