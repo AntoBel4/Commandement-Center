@@ -1,9 +1,203 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 22 septembre 2026 (Europe/Paris).
+Dernière mise à jour : clôture du 3 octobre 2026 (Europe/Paris).
+
+## Clôture de session — 3 octobre 2026, après le contrôle de 10 h 55 (Europe/Paris)
+
+La séance technique du matin est terminée. Le projet et le pilote ne sont pas déclarés terminés. Preuves : sorties Nexus et retours d'usage transmis par Antoine ; les contrôles GitHub ont été relus lors de cette clôture. Aucun nouveau déploiement n'est déclenché par cette mise à jour documentaire.
+
+### Version en service et recette T05
+
+- API, web et Telegram utilisent `5bb65aaa11bbaa07873e80cc22fc9266a51e59ae`. Sept services sains après déploiement puis après sauvegarde. Alexa, Keycloak et les bases conservent leurs images précédentes.
+- Échec initial à 10 h 10 : fichiers de migration illisibles dans l'image sous l'utilisateur non privilégié. Repli automatique vers les anciennes images réussi avant la bascule. Correctif de permissions 5bb65aa, lectures comme node/nginx vérifiées sur Nexus, migrations exécutées sans erreur, nouvelle mise en service réussie vers 10 h 35.
+- CI de 5bb65aa : test, image-permissions et GitGuardian réussis ([exécution](https://github.com/AntoBel4/Commandement-Center/actions/runs/37109336087)). Ces contrôles ne remplacent pas une recette des deux conversations.
+- Antoine confirme : ajouts simples et multiples, boutons acheté/demain/urgent/annuler et résultats visibles dans le web ; anciens boutons répondant « déjà retiré » ou « déjà acheté ». Tous les articles d'essai annulés à la fin.
+- **T05 reste En cours** : téléphone de Belinda à configurer plus tard le 3 octobre selon Antoine ; réception croisée d'urgence, récapitulatif réel de 17 h 20 et contrôle de 17 h 30 non observés. Rappels agenda 7 h / 9 h / H-1 et comportements de pause sur les deux comptes restent à éprouver.
+
+### Sauvegarde, administration et alertes T08
+
+- Sauvegarde après installation T05 : service lancé à **10:54:19**, terminé à **10:55:05**, Result=success et ExecMainStatus=0 ; archive `commandement-20261003T085419Z-26343773.tar.age` envoyée hors site. Sept services healthy ensuite, aucun marqueur de maintenance. Cette archive précise n'a pas encore été récupérée, déchiffrée ou restaurée.
+- Preuves distinctes acquises : archive du 2 octobre restaurée en environnement isolé (deux bases, nombres d'enregistrements conformes, API et Keycloak prêts, nettoyage effectué) ; archive du 3 octobre à 08 h 30 récupérée par versions exactes, SHA-256 conforme et déchiffrement intégral réussi. Ne pas attribuer ces essais à la sauvegarde de 10 h 54.
+- Sauvegarde quotidienne programmée à **03 h 30 Europe/Paris** : timer enabled/active/waiting. Premier déclenchement par le timer attendu **le 4 octobre** ; pas encore observé. Les exécutions précédentes ont lancé manuellement le service systemd.
+- Conservation distante **sans purge automatique**, capacité et coût jugés suffisants par Antoine ; GOVERNANCE 30 jours minimum vérifié sur les deux versions de l'archive de 08 h 30. Rotation locale : 3 jeux en clair et 7 archives chiffrées. Ne pas imposer une conservation « 30 quotidiennes + 6 mensuelles ».
+- Administration nominative testée par nouvelles connexions avant/après désactivation de bootstrap ; état conservé après redémarrage.
+- Alertes Maison panne puis rétablissement réellement reçues à 09 h 27. Surveillance toutes les cinq minutes, deux observations pour confirmer les transitions ; plusieurs déclenchements automatiques réussis, dont 10:50:02–10:50:03. Elle tourne sur Nexus et ne prouve pas une alerte lors de la perte totale de Nexus ou de Telegram. La surveillance n8n/Restic existante est distincte et inchangée.
+- Copies privées de retour arrière et anciennes images conservées. Repli avant bascule éprouvé ; retour après usage de la nouvelle version et reprise complète sur une autre machine non éprouvés. **T08 reste En cours**.
+
+### État du projet et dépôt
+
+T01/T02/T03/T04a/T04b terminés dans leur périmètre accepté ; T06 à vérifier avec Belinda. T07 reste à faire, explicitement hors pilote. T09 non lancé : aucune journée J1 acquise ; le 5 octobre est une cible conditionnelle. Guide T10 préparé, limites 9–10 et dettes résiduelles du point 11 à traiter explicitement avant J1.
+
+PR 2, 8, 9 et 10 ouvertes en brouillon, aucune fusion. Ordre 8 → 9 → 10 après validations et accord d'Antoine ; PR 2 indépendante. Les commits documentaires de clôture peuvent être plus récents que 5bb65aa sans être installés sur Nexus. La branche main reçoit uniquement la continuité documentaire, pas les intégrations encore en PR.
+
+### Prochaines actions (à la reprise, sans suivi automatique)
+
+1. Configurer le téléphone de Belinda et consigner les tests Google/Telegram à deux, notamment les urgences et les réglages personnels.
+2. Observer les envois de 17 h 20 / contrôle de 17 h 30 et les rappels agenda, puis vérifier le premier déclenchement nocturne du 4 octobre avec son résultat et l'état des services.
+3. Finaliser les preuves de reprise et les limites restantes avant de fixer J1 ; conduire ensuite le pilote et revoir les PR sans fusion anticipée.
+
+## Historique des sessions — les prochaines actions anciennes ne sont plus la consigne courante
+
+## Point de reprise — 3 octobre 2026 : repli T05 réussi, correction des permissions des images
+
+Ce point prévaut sur les prochaines actions historiques ci-dessous. Résultats Nexus transmis par Antoine ; références privées dans Notion.
+
+- Administration nominative vérifiée par nouvelle connexion avant et après désactivation du compte bootstrap. Après le redémarrage de sauvegarde, compte nominatif actif et bootstrap désactivé confirmés.
+- Surveillance automatique réellement observée à 09 h 35, 09 h 40 et 09 h 45 : services systemd terminés avec succès. Les alertes réelles panne/rétablissement de 09 h 27 restent acquises.
+- Copies privées des configurations et scripts T08, empreintes et anciennes images API/web conservées pour le retour arrière. Sauvegarde complète avant T05 avec administration nominative envoyée hors site à 09 h 56 ; sept services healthy ensuite.
+- Checkout Nexus passé à `91b4a1a`, propre et scripts T08 conservés. Images API/web construites pour cette révision, anciennes images conservées.
+- Tentative de déploiement interrompue pendant le contrôle des migrations : `EACCES` sur `/app/supabase/migrations/005_calendar_proposals.sql` sous l'utilisateur non privilégié de l'image. Aucune bascule des services vers T05 effectuée. Le repli a restauré l'ancienne configuration et relancé API/web/Telegram, tous trois healthy. Cette preuve couvre le chemin d'échec avant bascule, pas une restauration complète sur autre machine.
+- Correctif préparé dans les Dockerfiles : lecture/traversée des seuls fichiers intégrés aux images, sans changement des secrets ni exécution de l'API en root. Nouveau contrôle CI construisant depuis un contexte aux fichiers 600 et dossiers 700, puis lisant les migrations/code comme utilisateur API et les ressources web comme nginx. Les sept tests de surveillance existants sont également ajoutés à la commande CI explicite.
+- **Suite immédiate :** obtenir le résultat CI de ce correctif, reconstruire des images à sa révision exacte sur Nexus et vérifier leur lisibilité avant une nouvelle tentative. À ce point, correctif non installé, T05 non déployé et recette des deux conversations encore ouverte.
+- T08 reste En cours : premier déclenchement nocturne de sauvegarde à constater le 4 octobre, procédure de reprise complète sur autre machine à finaliser. Conservation distante sans purge automatique retenue ; coût/capacité non bloquants selon Antoine. PR 10 non fusionnée ; ordre de fusion 8 → 9 → 10 avec accord explicite conservé.
+
+## Point de reprise — 3 octobre 2026, 09 h 42 : alertes éprouvées et administrateur nominatif créé
+
+Ce point prévaut sur les prochaines actions historiques ci-dessous. Résultats exécutés sur Nexus par Antoine et transmis dans la conversation ; références privées dans T08 Notion.
+
+- Inventaire complet du compartiment Maison réalisé depuis le PC, versions incluses. Antoine confirme que le coût et la capacité disponibles ne sont pas un obstacle ; aucune demande de facture à poursuivre. Conservation distante sans purge automatique pour le moment ; seuil de rétention GOVERNANCE 30 jours et rotation locale 3 jeux en clair / 7 archives chiffrées conservés.
+- Surveillance existante identifiée : workflow n8n avec mesures Prometheus et sauvegarde Restic distincte. Son code de bilan ne mémorise pas les transitions et ne contrôle pas explicitement Maison. Workflow laissé inchangé.
+- Destinataire des alertes Maison configuré dans telegram.env après copie privée de retour arrière ; liaison Telegram et présence du jeton séparé vérifiées sans exposer ce dernier.
+- [Correctif 5d38878](https://github.com/AntoBel4/Commandement-Center/commit/5d38878dae293b2c05ec9400af61d534e8edf51f) : initialisation du cache de conversation même à l'état sain ; deux observations exigées aussi pour le rétablissement. Sept tests ciblés avec Bash réel et Docker/PostgreSQL/Telegram simulés passent ; syntaxe vérifiée ; [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/37106116208).
+- Seul monitor.sh de ce correctif installé dans le checkout de production, ajout indexé volontaire. Premier contrôle réel sain, cache privé initialisé. Vers 09 h 27, arrêt contrôlé du portail web puis reprise : deux alertes réelles reçues (panne, rétablissement), aucun doublon signalé après passages supplémentaires ; sept services healthy et bloc terminé sans erreur. Ces observations ont été lancées manuellement, sans attendre la cadence de cinq minutes.
+- Unités maison-monitor.service/.timer installées et testées sous systemd (Result=success, ExecMainStatus=0), puis timer enabled/active/waiting à 09 h 30. Utilisateur du dépôt, UMask=0077, StandardInput=null, délai 2 min, OnCalendar=*:0/5, AccuracySec=15s, Persistent=false. Première échéance affichée 09 h 35 ; déclenchement automatique encore à constater. Retour arrière : `sudo systemctl disable --now maison-monitor.timer`.
+- Keycloak 26.7.0 confirmé. Lecture initiale : seul administrateur bootstrap dans master. Accès administratif et rôle admin vérifiés par kcadm ; mot de passe nominatif enregistré par Antoine dans son gestionnaire.
+- Sauvegarde préalable via systemd à 09:37:05–09:37:50 : export/chiffrement/envoi réussis et sept services healthy. Création du compte nominatif dans master, mot de passe saisi sans affichage, rôle admin attribué, activation puis connexion nominative et lecture du realm Maison réussies. Fichier de session bootstrap temporaire supprimé ; aucun secret publié.
+- **Suite immédiate :** désactiver bootstrap-admin avec une nouvelle authentification nominative et vérifier le résultat. À 09 h 42, bootstrap reste actif. Puis constater les déclenchements automatiques, finaliser le retour arrière applicatif et l'installation/recette T05.
+- Production applicative toujours fb9aedf ; préserver les ajouts indexés backup-offsite.sh et monitor.sh ainsi que le changement local de mode backup.sh. T08 En cours, PR 10 non fusionnée et T05 non déployé. Premier déclenchement nocturne de sauvegarde à constater le 4 octobre ; reprise complète sur autre machine encore à détailler.
+
+## Point de reprise — 3 octobre 2026, 08 h 55 : sauvegarde quotidienne activée
+
+Ce point prévaut sur les statuts historiques ci-dessous. Résultats transmis par Antoine ; preuves et références privées dans T08 Notion.
+
+- Nouveau jeu du premier envoi Nexus : reçu et empreinte conservés sur PC, deux versions exactes récupérées, SHA-256 conforme et déchiffrement USB intégral réussi. Rétention GOVERNANCE de 30 jours confirmée pour l'archive et son SHA-256. La répétition API/Keycloak validée reste celle du jeu du 2 octobre.
+- Unités systemd préparées et vérifiées, puis installées. Service oneshot exécuté comme utilisateur propriétaire du dépôt (accès Docker déjà opérationnel), UMask=0077, PATH explicite incluant age, StandardInput=null, délais de démarrage/arrêt 45 min et 5 min. Aucun identifiant ajouté aux unités ; configuration privée conservée hors Git.
+- Test réel via systemctl start à 08:54:02–08:54:46 Paris : Result=success, ExecMainStatus=0, nouveau jeu chiffré envoyé et sept services healthy ensuite. Aucune nouvelle restauration de ce second jeu déduite.
+- Minuteur maison-backup-offsite.timer activé : loaded / active / waiting / enabled. OnCalendar=*-*-* 03:30:00 Europe/Paris, Persistent=true, AccuracySec=1min. Prochaine échéance dimanche 4 octobre 03:30 CEST ; premier déclenchement nocturne encore à constater.
+- Retour arrière du minuteur : `sudo systemctl disable --now maison-backup-offsite.timer` ; ne supprime aucune archive et n'interrompt pas un service déjà lancé.
+- Conservation locale configurée : 3 jeux en clair et 7 archives chiffrées. Aucune purge distante automatique. Suite : inventaire des versions et du volume Maison depuis le PC, coût/rotation, administration nominative et alertes. T08 En cours, production fb9aedf, T05 non déployé, PR 10 non fusionnée. Préserver l'ajout indexé backup-offsite.sh et le changement local de mode de backup.sh.
+
+## Point de reprise — 3 octobre 2026, première sauvegarde hors site depuis Nexus
+
+Ce point prévaut sur les statuts historiques ci-dessous. Résultats exécutés par Antoine et transmis dans la conversation ; preuves privées dans T08 Notion.
+
+- Résultat de la répétition du 2 octobre récupéré sur le PC : transfert complet, SHA-256 du flux et manifeste conformes, comptages des deux bases identiques, API `/ready 200`, Keycloak ready 200, message de réussite des services isolés et code SSH 0. B4 validé pour le démarrage de l'identité et de l'API sur les données restaurées à `fb9aedf`. Nettoyage déjà contrôlé séparément ; aucune restauration de production ni recette du portail et des intégrations déduite.
+- Le contenu du compartiment Contabo est accessible dans la session PC actuelle. Archive, fichier SHA-256 et petit fichier technique affichés avec accès public inactif. Cause du blocage précédent inconnue ; occupation de toutes les versions, coût et rotation encore à finaliser.
+- Contrôle Nexus : dépôt initialement propre à `fb9aedf`, sept services sains. age 1.3.2 installé durablement ; configuration hors site et identifiants du seul compte d'envoi préparés avec permissions privées. Clé privée age et identifiants administrateur S3 restent hors Nexus.
+- Installation **partielle T08** : seul `backup-offsite.sh` de `2127cd3` ajouté volontairement à l'index du checkout de production, puis image AWS CLI officielle 2.37.8 au digest déjà qualifié préparée. Aucune mise à jour applicative T05 ; HEAD de production reste `fb9aedf`.
+- Premier lancement arrêté avec code 126 avant export/envoi : `backup.sh` n'avait pas le droit d'exécution (mode Git 100644). Correction locale du droit propriétaire et syntaxe vérifiées. [Correctif 46b306e](https://github.com/AntoBel4/Commandement-Center/commit/46b306eeac2dd10bf0a313f8ada7ae4649aad52d) publié : mode Git 100755 uniquement, contenu inchangé ; [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/37103184422). La modification locale de mode est volontaire et doit être préservée jusqu'à l'installation de cette révision ou d'une descendante.
+- Relance réussie : sauvegarde cohérente, chiffrement et envois de l'archive et de son SHA-256 par le **script complet exécuté sur Nexus**. Reçu avec deux VersionId confirmé ; marqueur de succès mis à jour. Contrôle indépendant à 08 h 32 : empreinte locale conforme, sept services healthy et marqueur de maintenance retiré. Les sorties de contrôle du premier bloc n'avaient pas été affichées ; ne pas attribuer à ce bloc les preuves du contrôle indépendant.
+- **Suite immédiate :** conserver sur PC le reçu et l'empreinte de référence, puis récupérer les deux versions exactes du nouveau jeu, vérifier leurs rétentions et le déchiffrement. Cette qualification du nouveau jeu reste ouverte ; le résultat B4 du jeu précédent reste acquis.
+- Aucun minuteur activé. Administration nominative, surveillance Maison et alertes réelles, préparation du retour arrière applicatif, coût/rotation et recette T05 restent ouverts. PR 10 toujours brouillon/non fusionnée ; T08 En cours. Ordre de fusion 8 → 9 → 10 avec accord explicite conservé.
+
+## Point de reprise — 2 octobre 2026, clôture depuis téléphone
+
+Cette note prévaut sur les prochaines actions historiques ci-dessous. Consignation des résultats transmis par Antoine ; aucun nouveau test serveur effectué pendant cette clôture.
+
+- Répétition complète `--with-services` lancée depuis le PC avec les fichiers de `a1941b5`, mais résultat non récupéré. B4 reste partiel : restauration réelle des deux bases déjà validée, succès API/Keycloak non établi. Aucun événement exploitable dans l'historique Docker interrogé.
+- Contrôles ultérieurs depuis téléphone : aucun conteneur ni processus de répétition ; aucun volume/réseau portant le préfixe du test et aucun dossier de restauration de l'utilisateur dans /tmp. Nettoyage confirmé dans ces emplacements uniquement. Sept services Maison healthy au dernier contrôle.
+- Prérequis contrôlés : horloge Europe/Paris et NTP synchronisé ; aucune unité installée ni minuteur système chargé aux noms maison-* ou commandement-* (sans conclusion sur cron, autres noms ou unités utilisateur). Checkout de production propre à `fb9aedf92f270affda33ebc97dc75309d0cd3063`, images API/web correspondantes présentes. Permissions privées conformes ; configurations hors site absentes. Sauvegarde préalable et copies de retour arrière restent à préparer.
+- Connexion au panneau Contabo avec second facteur demandé et validé confirmée. L'onglet Buckets affiche un refus d'accès persistant, y compris après actualisation, alors qu'Antoine indique utiliser son compte administrateur et que Storage Settings reste accessible. Cause inconnue ; cela ne prouve pas la disparition des compartiments ni un échec S3. Les téléchargements antérieurs par VersionId restent validés dans leur portée. Aucun droit ni politique modifié.
+- Capacité et occupation globales relevées dans le panneau ; détails chiffrés privés dans T08 Notion. Occupation par compartiment, prise en compte des versions, tarif, dépassement et rotation restent à déterminer.
+- Antoine est sur téléphone via Termux/SSH et WireGuard, sans accès au PC Windows. Ne pas lui redemander cet accès pendant cette pause. Les identifiants administrateur et la clé privée age restent hors Nexus.
+- **Reprise au retour sur PC :** 1) récupérer uniquement le résultat filtré conservé dans la session PowerShell de la répétition API/Keycloak, si elle existe encore ; sinon maintenir le résultat inconnu ; 2) effectuer une requête S3 en lecture seule avec le profil administrateur existant pour comparer avec le panneau ; 3) traiter les critères encore ouverts avant installation (script hors site réel sur Nexus, sauvegarde/retour arrière, minuteurs/alertes, coût/rotation).
+- T08 reste En cours. PR 10 ouverte, brouillon, non fusionnée et non installée en production. Cette clôture modifie seulement la documentation et le suivi ; aucune fusion, installation, modification de droits ni nouvelle opération sur Nexus. La note de reprise reste sur la branche de PR 10 ; main n'est pas actualisée.
+
+## Historique — points précédents
+
+## Point de reprise — 2 octobre 2026, 07 h 42 Paris : nettoyage constaté, production saine
+
+- Contrôle indépendant exécuté par Antoine après la répétition réelle des bases : aucun conteneur, volume, réseau ni dossier temporaire du projet testé ne subsiste. Les sept services Maison sont healthy ; les anciens provision/migrate restent terminés avec code 0. Le tampon PC avait déjà été vidé à la fin du test.
+- Restauration des deux bases et transport Windows validés à `cefb430` ; API et Keycloak n'ont pas encore été démarrés sur les données restaurées. Avant ce test, correction limitée à `rehearsal.yml` : plafonds mémoire de 2 Gio pour Keycloak et 512 Mio pour chacun des trois autres conteneurs, sans swap supplémentaire. Plafonds cumulés 3,5 Gio ; aucun réglage de production modifié.
+- Le contrôle local du YAML vérifie ces plafonds et l'isolation ; les 17 tests de restauration existants passent avec Docker simulé. L'application réelle des limites et le démarrage des services plafonnés restent à éprouver sur Nexus. Ne pas déduire une validation Docker réelle de ces contrôles locaux.
+- **Prochaine opération :** préparer cette configuration de répétition à un commit exact dans un nouveau sous-dossier, valider Compose sans démarrer de conteneur et relire la mémoire disponible. Puis répéter avec `--with-services` depuis l'archive récupérée, en gardant la clé privée sur PC. PR 10 toujours brouillon et non fusionnée ; aucun déploiement applicatif. Les autres critères T08 restent ouverts.
+
+## Point de reprise — 2 octobre 2026, 04 h 08 Paris : bases restaurées depuis l'archive récupérée
+
+Résultats exécutés par Antoine et transmis dans la conversation. Cette note prévaut sur les limites historiques ci-dessous désormais levées ; détails privés et reçus dans T08 Notion.
+
+- Prérequis Nexus vérifiés : mémoire disponible, Docker Compose v2.39.4 et trois images locales présentes. Les seuls fichiers de répétition `restore-service.sh` et `rehearsal.yml` de `cefb430255f1d0ba7259dd20e8e89d67c0a4040e` ont été copiés dans un dossier privé distinct, avec empreintes et syntaxe Bash conformes. Préparation temporaire, aucun déploiement applicatif.
+- Archive récupérée par VersionId déchiffrée sur le PC avec la clé USB : code age 0. Tar conservé dans un MemoryStream .NET, empreinte calculée puis revérifiée avant transfert binaire SSH. Aucun fichier déchiffré écrit par ce bloc sur le PC ; clé privée jamais transmise à Nexus.
+- Exécution réelle `--rehearse --decrypted-stdin --tar-sha256` sur Nexus : empreinte du flux complet conforme, contenu et manifeste SHA256SUMS vérifiés, deux bases PostgreSQL restaurées dans un projet isolé et comptages identiques à la sauvegarde. Code SSH 0. Le script a annoncé son nettoyage et s'est terminé sans erreur ; tampon PC vidé. Contrôle indépendant des ressources restantes et de la santé de production à faire ensuite.
+- **Portée : restauration réelle des deux bases et transport Windows validés.** L'image API retenue est bien `fb9aedf`, mais le test sans `--with-services` n'a démarré ni l'API ni Keycloak. Leur démarrage sur les données restaurées reste à éprouver avant de considérer B4 complet.
+- Code fonctionnel utilisé : `cefb430`, 35 tests locaux de préparation et [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/36952982155). Ces tests simulés restent distincts de la preuve réelle des bases ci-dessus. PR 10 toujours brouillon, non fusionnée ; checkout et installation applicative Nexus restent à `fb9aedf` selon le dernier contrôle de production.
+- **Suite :** vérifier nettoyage et santé de production, répéter avec API/Keycloak isolés, puis préparer installation et retour arrière. Script hors site complet sur Nexus, minuteurs/alertes, coût/quota/rotation, 2FA effective et droits encore non testés restent ouverts. Ordre de fusion 8 → 9 → 10 avec accord explicite inchangé.
+
+## Point de reprise — 2 octobre 2026 : images et disponibilité pour B4
+
+- Références non secrètes lues par Antoine dans la sauvegarde Nexus : base `f74f1a76b0af34d1f7e1ff0011d45f6e4caa0ad5`, Google `348dd38802ff58f2578d753a46c747d08be063ab`, Telegram `fb9aedf92f270affda33ebc97dc75309d0cd3063`. L'ordre des overlays retient donc l'image API `fb9aedf`, cohérente avec le conteneur de production observé. Les images PostgreSQL et Keycloak sont référencées par digest dans la sauvegarde ; leur présence locale reste à contrôler.
+- Correctif de répétition : respecte cet ordre sans importer les variables Google/Telegram dans les services isolés ; refuse une référence invalide avant Docker. Ajout des contrôles de santé API et Keycloak à `rehearsal.yml`, pour que `up --wait` attende leur disponibilité réelle.
+- Vérification locale : 35 tests de préparation réussis au total, dont 17 pour la restauration (4 nouveaux pour le choix de l'image). Bash/tar/empreintes réels, Docker simulé ; ces tests ne prouvent pas la restauration des bases réelles ni la disponibilité réelle de Keycloak. CI du précédent correctif `47b02e7` réussie ; CI de ce complément à vérifier après publication.
+- Prochaine opération : contrôler mémoire disponible, version Compose et présence des images sur Nexus, puis préparer les seuls fichiers de répétition dans un dossier distinct et exécuter B4 depuis l'archive récupérée, déchiffrée sur PC. Clé privée toujours hors Nexus. PR 10 non fusionnée/non installée ; checkout de production inchangé. Les prérequis T08 encore ouverts ci-dessous le restent.
+
+## Point de reprise — 2 octobre 2026, 03 h 30 Paris : archive réelle et clés USB/papier
+
+Résultats exécutés par Antoine sur PC/Nexus et transmis dans la conversation ; reçus et chemins privés dans T08 Notion.
+
+- Nexus contrôlé à `fb9aedf92f270affda33ebc97dc75309d0cd3063`, checkout propre, sept services sains. Préparation temporaire age 1.3.2, sauvegarde réelle avec le script de cette révision, chiffrement avec la clé publique existante ; services redevenus sains après sauvegarde. Aucun code PR 10 installé.
+- Archive chiffrée transférée vers PC par `scp -O` (SFTP a échoué), empreinte conforme. Deux envois réels via AWS CLI 2.37.8 Linux/AMD64 épinglée : `amazon/aws-cli@sha256:420ab345e847291b541b45d989535f55bcff957c27fa1100fae4aa233e86398c`. Content-MD5 pour archive et SHA-256, profil dédié, sans liste ni If-None-Match. Reçu des deux VersionId conservé sur PC.
+- Rétentions des deux versions GOVERNANCE 30 jours vérifiées, récupération des versions exactes confirmée, SHA-256 conforme à la paire récupérée et à l'empreinte avant envoi.
+- Déchiffrement complet de l'archive récupérée avec USB : code 0. Test indépendant de la copie papier, ressaisie masquée sur PC et stdin age local : code 0. Sortie vers NUL, pas de copie en clair sur PC par ces tests. Clé privée jamais transmise à Nexus. Ces preuves ne valent pas encore examen du contenu/restauration.
+- Refus de liste Maison avec la politique finale enfin retesté : code 255, AccessDenied. Les autres droits administratifs non testés individuellement restent ouverts.
+- Correctif B4 préparé : `--decrypted-stdin --tar-sha256` reçoit seulement le tar déchiffré sur PC par SSH, vérifie le flux intégral avant Docker, refuse chemins/liens dangereux, vérifie le manifeste, nettoie les ressources isolées. Le mode historique transmettant une identité age reste compatible mais n'est pas autorisé par la consigne actuelle ; ne pas l'utiliser.
+- Vérification locale : 31 tests de préparation réussis, dont 13 nouveaux pour ce correctif ; Bash/tar/sha256sum réels et Docker simulé. Aucune preuve Docker réelle déduite de ces tests. Transport Windows et B4 avec les vrais services restent à éprouver.
+- **Prochaines actions :** préparer uniquement les scripts de répétition à une révision exacte dans un dossier séparé ; vérifier l'image API effective (les overlays peuvent remplacer RELEASE), répéter sur le contenu récupéré sans clé sur Nexus ; préparer ensuite l'installation et le retour arrière. Coût/quota, rotation distante, 2FA effective, minuteurs, alertes et autres prérequis T08 restent ouverts. Fusions 8 → 9 → 10 avec accord explicite, PR 10 toujours brouillon.
+
+## Point de reprise — 2 octobre 2026 : script adapté dans PR 10
+
+**Cette mise à jour complète les tests PC ci-dessous. T08 reste en cours ; aucune fusion ni installation sur Nexus.**
+
+- `backup-offsite.sh` fournit le Content-MD5 de l'archive et de son fichier SHA-256. Il utilise exclusivement PutObject, sans liste ni If-None-Match ; les anciens réglages incompatibles sont refusés avant l'export.
+- Chaque réponse doit fournir un VersionId exploitable. Un reçu local `.tar.age.versions.tsv` conserve la paire de versions ; le marqueur de succès hors site est remplacé seulement après les deux envois confirmés. En cas d'échec, l'ancien marqueur et le reçu partiel sont conservés. La rotation locale traite les reçus avec leurs archives ; aucun effacement distant.
+- Guide B0–B3/B7 actualisé : versionnage + GOVERNANCE 30 jours, refus explicites, rétention à vérifier depuis le PC, restauration de la paire par VersionId, copie des reçus hors Nexus, rotation distante encore à décider sans bypass. Clé age déjà préparée : ne pas la recréer.
+- **Vérification locale :** syntaxe de tous les scripts valide ; 18 tests de préparation réussis, dont 15 nouveaux tests d'orchestration hors site (MD5 réels, réponses partielles/invalides, échecs, anciennes options, mode local, rotation). Bash, tar et OpenSSL réels ; export, age et Docker/S3 simulés. Ces tests sont ajoutés à la CI ; ils ne prouvent pas l'envoi réel d'une archive ni son déchiffrement.
+- **Prochaine action :** qualifier une archive chiffrée représentative avec l'image AWS CLI épinglée, vérifier les deux rétentions et restituer les deux versions ; B3 USB/papier et B4 restent nécessaires avant programmation. Installation prévue le 3 octobre sous réserve des prérequis. Coût/rotation, 2FA et refus de liste avec politique finale restent à finaliser.
+
+## Point de reprise — 2 octobre 2026 : qualification S3 depuis le PC
+
+**Cette note prévaut sur les états historiques T08 ci-dessous. T08 reste en cours ; aucune installation sur Nexus n'a été effectuée dans cette séance.** Tests exécutés par l'utilisateur dans PowerShell, résultats transmis dans la conversation ; paramètres privés et preuves détaillées dans la carte T08 Notion.
+
+- **Décision confirmée : versions protégées, GOVERNANCE 30 jours, compte d'envoi sans liste.** La réutilisation d'un nom peut créer une nouvelle version ; l'exigence précédente de refus absolu d'écrasement par `If-None-Match` est remplacée par ce modèle. Les noms uniques restent nécessaires au fonctionnement normal.
+- Deux envois administrateur avec `If-None-Match: *` sous le même nom ont réussi ; deux versions distinctes ont été listées. Ne pas présenter cet en-tête comme une protection effective sur cette cible.
+- La politique initiale avec `NotAction` n'avait pas empêché la liste (cause exacte non établie). Un refus explicite de liste a été ajouté et testé. Les conditions d'envoi ont ensuite été remplacées par une autorisation PutObject et des refus explicites de lecture, liste, suppression et administration, avec maintien du refus de liste déjà testé.
+- **Observé avec le compte dédié :** envoi réussi ; lecture de sa version courante, suppression simple, suppression de version avec demande de bypass GOVERNANCE et réécriture à l'identique de la politique refusées (AccessDenied). Liste du compartiment de sauvegarde NAS distinct refusée ; aucun objet NAS manipulé, fonctionnement de la sauvegarde NAS non retesté. Liste Maison refusée avant le remplacement des autres règles, règle conservée ensuite.
+- **Rétention observée :** première version protégée 30 jours, suppression administrateur sans bypass refusée ; version envoyée par le compte dédié également protégée 30 jours.
+- **Restauration observée :** première version du fichier technique de 21 octets téléchargée par l'administrateur après les envois successifs ; SHA-256 conforme au contenu attendu, code 0. Ce résultat ne valide pas encore une archive age réelle, un déchiffrement USB/papier ou une restauration complète du service.
+- AWS CLI 2.37.8 peut masquer certaines réponses S3 par une erreur Python NoneType : diagnostic capturé localement en mémoire, seuls code de sortie et code XML S3 communiqués. Aucun journal de débogage, identifiant d'accès ni secret publié.
+- **Dépôt vérifié :** PR 10 ouverte, brouillon, non fusionnée, tête applicative observée `a6bbc68bc9cda512bd5b9a41711867ed4b6a83d3` avant cette mise à jour documentaire. PR 2/8/9 également ouvertes. Aucun code fonctionnel, fusion ou déploiement modifié par cette note.
+- **Prochaine action technique :** aligner `deploy/nexus/backup-offsite.sh` et `docs/deploiement-nexus.md` de PR 10 avec `OFFSITE_CHECK=none`, `OFFSITE_IF_NONE_MATCH=false`, la rétention des versions et leur restauration par VersionId. Les PutObject réussis sur PC utilisaient Content-MD5 ; le script ne le fournit pas et règle les checksums automatiques sur when_required. Cet écart Object Lock doit être corrigé ou validé explicitement avec l'image CLI retenue avant installation.
+- **Toujours ouverts :** qualification d'une archive chiffrée représentative, première sauvegarde réelle depuis Nexus, B3 USB/papier, B4 restauration complète isolée, coût/rotation distante, 2FA effectivement utilisée, minuteurs et alertes réelles. Les autres droits administratifs (dont modification de rétention) n'ont pas été testés individuellement. Clé age et copie papier déjà préparées selon Notion ; ne pas les recréer. Installation prévue le 3 octobre sous réserve des prérequis, pas une preuve d'installation.
+
+## État précédent conservé pour historique
+
+Dernière mise à jour : 1er octobre 2026 (Europe/Paris), correction de cohérence après vérification de la branche — séance cloud sans accès à Nexus ni à Notion. **Cette version vit sur la branche `claude/eager-galileo-ezltlj` (PR 10), pas sur main.**
 T01 terminé : inventaire daté de la cible et des accès consigné dans Notion. T02 terminé pour le socle technique : courses persistantes et accès privés intégrés en PR 4, sans déploiement. Maquette validée : 14 essais réussis selon l’utilisateur, T04a terminé et PR 3 fusionnée. T04b terminé pour les comptes privés et courses : recette PC/Android validée et PR 5 fusionnée. Aucun travail différé ni surveillance programmée.
-T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur toujours différée.
+T08 : services comptes/courses installés sur Nexus ; publication de famille.estarellas.online réalisée après reprise explicitement autorisée le 18 septembre. DNS propre vers Nexus et HTTPS strict vérifiés. Le 18 septembre, Antoine confirme les mots de passe et informations des deux comptes modifiés, les deux espaces accessibles, puis l’essai Android en 4G/5G sans USB réussi (connexion, ajout d’une course, rechargement, déconnexion). Les huit tests finaux T1 à T8 sont également confirmés réussis par Antoine. Phase actuelle : Alexa courses acceptée depuis l’application Alexa du téléphone ; essais supplémentaires sur les Echo dispensés explicitement. T03 terminé et PR 7 fusionnée. T06 Google Agenda démarré ; propriétaire choisi : compte Google d’Antoine. Destination hors serveur décidée le 29 septembre (D2/D3 ci-dessous), non installée.
 Cette fiche est un point de reprise : vérifier GitHub et Notion en direct avant de reprendre.
+
+## Séance cloud du 29 septembre (soir) — T08 exploitation côté dépôt
+
+Session cloud d'une heure (22:17–23:05 UTC), sans accès à Nexus, Notion ni aux comptes ; **rien d'installé sur Nexus**. Travail ajouté à la PR 10 (même branche, pas de push forcé).
+
+- **Décisions d'Antoine** : D2 perte maximale 24 h (nocturne), reprise 4 h sur Nexus, 24 h ailleurs. D3 archive chiffrée age, clé publique seule sur Nexus, S3 Contabo compartiment dédié, utilisateur limité au compartiment **en écriture seule sans suppression**, rotation distante depuis le PC (clé de rotation seulement sur le PC), clé privée USB + papier hors Nexus ; repli SSH (PC tire) documenté. Exigences : noms uniques jamais réécrits, refus d'écraser ; checklist panneau Contabo (politique, pas de suppression, versionnage/verrouillage, coût).
+- **Code** : `deploy/nexus/backup-offsite.sh` (907fd02), `restore-service.sh` + `rehearsal.yml` (c4594e3), `monitor.sh` (2e3a3ab) ; docs `docs/deploiement-nexus.md` (87c2c18) et `docs/EXPLOITATION.md` (7727f2a, brouillon non vérifié).
+- **Preuve locale (Docker, données fictives)** : sauvegarde réelle via `backup.sh` → chiffrement age → déchiffrement avec la clé sur l'entrée standard → empreintes → restauration des deux bases dans un projet isolé ; comptes identiques (1|2|42|97|13 et 2|3|2) ; aucun reste. Refus vérifiés : archive altérée, mauvaise clé, interruption, production sans confirmation. `monitor.sh` testé avec curl simulé (panne, anti-rebond, sans répétition, maintenance, rétablissement).
+- **Non vérifié** : envoi S3 réel, `If-None-Match` chez Contabo, politique Contabo en écriture seule, `--with-services`, `--production`, minuteurs systemd, alerte Telegram réelle, procédure Keycloak nominative.
+- **CI** : échec de « test » sur 75dd3aa après minuit Paris — deux tests T05 dépendaient de l'horloge réelle (date du jour posée par le magasin). Test corrigé (date simulée), pas le code ; en production l'horloge réelle est cohérente.
+- **Limite** : une clé en écriture seule ne peut pas vérifier l'existence d'un objet ; vérification seulement si `s3:ListBucket` est accordé (`OFFSITE_CHECK=list`), sinon noms uniques + `If-None-Match`.
+
+## Séance cloud du 29 septembre — préparation du pilote (dépôt uniquement)
+
+Session cloud sans accès à Nexus, Notion ni aux comptes : rien n’a été installé, déployé ni vérifié sur le serveur ; aucune recette avec Belinda. La configuration de Belinda envisagée le 23 septembre n’est pas consignée : considérée **non faite**.
+
+- **Empilement** : `main ← PR 8 (feat/google-calendar, 348dd38) ← PR 9 (feat/telegram-reminders, fb9aedf) ← [PR 10](https://github.com/AntoBel4/Commandement-Center/pull/10) (claude/eager-galileo-ezltlj)`, brouillon. PR 10 contient une fusion de `feat/telegram-reminders` (pas de réécriture) et cette fiche. Ordre de fusion : 8 → 9 → 10, chacune sur accord d’Antoine.
+- **T05 courses Telegram — code écrit et testé, non installé** (commit f30a8e6) : capture un article par ligne confirmée après enregistrement durable (clé `telegram:<update_id>`), boutons acheté/demain/urgent/annuler, récapitulatif 17 h 20 aux deux membres des demandes reçues jusqu’à 17 h 15 (reports et anciennes demandes compris), urgences immédiates, reçus, sonde 17 h 30 d’acceptation Telegram avec alerte à Antoine seul (`TELEGRAM_ALERT_USER`). Aucune migration, aucun port. Guide : `docs/TELEGRAM-RAPPELS.md`.
+- **Décisions d’Antoine le 29 septembre** : D1 « Rien à acheter aujourd’hui » envoyé pendant le pilote, à réévaluer à sa fin. D5 : une urgence est envoyée même en journée tranquille ; rien en suspension ; pas de récapitulatif en journée tranquille ; la sonde n’attend pas les membres suspendus ou en journée tranquille. Règles validées du parcours courses appliquées telles quelles. Belinda : téléphone Android. Pas de Google Drive pour les sauvegardes. Une sonde externe surveille déjà Nexus : ne pas la dupliquer, ne pas toucher Léo.
+- **Validation** : 100 tests applicatifs réussis localement avec PostgreSQL 16 réel, 2 options non exécutées (Keycloak réel, redémarrage PostgreSQL), 3 tests de préparation, `bash -n` des scripts. CI « test » et GitGuardian verts sur f30a8e6. Non vérifié : affichage navigateur des Réglages, réception Telegram réelle.
+- **Documents** : `docs/procedure-belinda.md` + `docs/procedure-belinda-imprimable.html` (une page A4 vérifiée en PDF) ; `docs/pilote-7-jours.md` (T09, pilote **sans T07**, non lancé) ; `docs/guide-famille.md` (T10 : guide, limites acceptées ou proposées, relecture PR 2/8/9).
+- **Relecture des PR** : PR 2 pas prête (contenu du 18 septembre à réaligner) ; PR 8 techniquement prête, critère Google chez Belinda manquant ; PR 9 pas prête (Belinda, premiers rappels réels) ; PR 10 pas prête (non installée).
+- **T08** : *mention initiale « non fait, D2/D3 à trancher » remplacée le 1er octobre.* D2 et D3 ont été tranchées par Antoine le soir même et T08 a été réalisé côté dépôt (voir la section précédente : scripts, `docs/deploiement-nexus.md`, preuve locale). Rien n’est installé sur Nexus. T07 non fait (hors pilote).
+- Statuts proposés à reporter dans Notion par Antoine (corrigés le 1er octobre) : T05 À vérifier ; T08 À vérifier (code et procédure écrits, preuve locale, rien installé) ; T09 À vérifier (cadre écrit, pilote non lancé) ; T10 À vérifier ; T07 À faire.
 
 ## Reprise du 22 septembre — documentation et pilote préparé
 
@@ -169,9 +363,9 @@ La maquette est désormais dans prototype/index.html sur main après fusion de l
 
 ## Prochaines actions
 
-1. Terminer la configuration Google/Telegram de Belinda (envisagée le 23 septembre), puis recueillir son résultat réel et celui des rappels automatiques. T06 À vérifier ; réception du test Antoine déjà acceptée.
-2. Finir T05 courses Telegram, T07 rendez-vous vocaux et T08 exploitation/reprise/alertes. Respecter la destination hors serveur différée et les essais dispensés. Aucun changement hors du périmètre Maison.
-3. Fixer J1 quand les prérequis sont prêts, renseigner le [suivi de sept jours](https://app.notion.com/p/3e3f514ea66d81509fabea37d514fce6), corriger/retester les incidents puis terminer T10 et revoir les PR 2/8/9. Le support de suivi ne vaut pas pilote effectué.
+1. Préparer hors Nexus (clé age sur USB + papier, compartiment et utilisateur Contabo écriture seule, checklist B0), puis dérouler `docs/deploiement-nexus.md` A (PR 10) et B–C (T08) sur Nexus ; test de déchiffrement depuis le PC.
+2. Dérouler `docs/procedure-belinda.md` avec Belinda (A1–A9).
+3. Réunir les prérequis de `docs/pilote-7-jours.md`, fixer J1 et tenir le suivi Notion ; ne pas lancer le pilote avant.
 
 ## Socle T02 — preuves du 18 septembre
 

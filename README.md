@@ -1,6 +1,7 @@
 # Centre de Commandement Familial
 
-Portail familial en préparation : courses partagées, agenda et capture vocale.
+Portail Maison en service sur Nexus : courses partagées, agenda et capture Alexa.
+État au 3 octobre 2026 : API/web/Telegram déployés à `5bb65aa` (PR 10), recette courses réussie pour Antoine ; Belinda, envois programmés et pilote restent à vérifier. La branche main ne contient pas encore toutes les intégrations déployées : consulter la fiche d’état avant toute installation.
 La maquette Maison validée est dans prototype/index.html ; elle reste autonome.
 Le socle API T02 est décrit dans [docs/T02-COURSES.md](docs/T02-COURSES.md).
 Le portail connecté et sa recette sont décrits dans [docs/T04B-PORTAL.md](docs/T04B-PORTAL.md).
@@ -9,8 +10,8 @@ L’état vérifié et la prochaine action figurent dans [docs/PROJECT-STATE.md]
 ## Structure
 
 - apps/backend : API Fastify, stockage PostgreSQL, migrations et tests.
-- apps/web : portail Maison, connexion personnelle et courses persistantes (T04b, recette ordinateur et Android validée ; intégrations et déploiement à préparer).
-- apps/alexa : code de départ de la future intégration, pas une preuve de service connecté.
+- apps/web : portail Maison, connexion personnelle et courses persistantes (T04b, recette ordinateur et Android validée ; intégrations déployées depuis les branches de PR, recette à deux encore ouverte).
+- apps/alexa : intégration courses acceptée dans l’application Alexa du téléphone ; rendez-vous vocaux T07 encore à faire, hors pilote.
 - supabase/migrations : migrations PostgreSQL standard.
 - deploy/keycloak : realm de préparation locale, inscriptions fermées et PKCE.
 
@@ -33,7 +34,7 @@ Ce mode n’est pas utilisable en production. L’API refuse le stockage mémoir
 
 ## Préparation Docker locale
 
-Le Compose existant sert à la préparation locale. Les ports du fichier override sont limités à 127.0.0.1. Ce fichier n’est pas une configuration de mise en ligne Nexus ; le raccordement Traefik et l’identité de production restent à préparer.
+Le Compose existant sert à la préparation locale. Les ports du fichier override sont limités à 127.0.0.1. Ce fichier n’est pas une configuration de mise en ligne Nexus ; la production utilise la configuration Nexus dédiée, décrite sur la branche de livraison et dans la fiche d’état.
 
 Renseigner POSTGRES_PASSWORD, KEYCLOAK_DB_PASSWORD, KEYCLOAK_ADMIN_PASSWORD et AUTH_ISSUER_URL dans .env. AUTH_AUDIENCE vaut commandement-api. Puis :
 
@@ -57,4 +58,4 @@ Le portail exige un fichier public `config.json` avec le foyer provisionné et l
 
 ## Livraison
 
-Tout le Centre est destiné à Docker derrière le Traefik existant, avec configuration privée externe. Aucun déploiement sur Nexus, DNS, intégration Google/Telegram/Alexa ou notification réelle n’est déclenché par ce dépôt ou ces tests.
+Le Centre fonctionne sous Docker derrière le Traefik existant, avec configuration privée externe. Les procédures d’exploitation, de pilote et de reprise sont sur la [branche PR 10](https://github.com/AntoBel4/Commandement-Center/tree/claude/eager-galileo-ezltlj/docs). Aucun déploiement sur Nexus, DNS, intégration Google/Telegram/Alexa ou notification réelle n’est déclenché par ce dépôt ou ces tests.
