@@ -1,6 +1,19 @@
 # État courant — Centre familial
 
-Dernière mise à jour : 2 octobre 2026 (Europe/Paris), clôture et blocage du panneau Contabo ; branche PR 10.
+Dernière mise à jour : 3 octobre 2026, 08 h 32 (Europe/Paris), premier envoi du script hors site confirmé ; branche PR 10.
+
+## Point de reprise — 3 octobre 2026, première sauvegarde hors site depuis Nexus
+
+Ce point prévaut sur les statuts historiques ci-dessous. Résultats exécutés par Antoine et transmis dans la conversation ; preuves privées dans T08 Notion.
+
+- Résultat de la répétition du 2 octobre récupéré sur le PC : transfert complet, SHA-256 du flux et manifeste conformes, comptages des deux bases identiques, API `/ready 200`, Keycloak ready 200, message de réussite des services isolés et code SSH 0. B4 validé pour le démarrage de l'identité et de l'API sur les données restaurées à `fb9aedf`. Nettoyage déjà contrôlé séparément ; aucune restauration de production ni recette du portail et des intégrations déduite.
+- Le contenu du compartiment Contabo est accessible dans la session PC actuelle. Archive, fichier SHA-256 et petit fichier technique affichés avec accès public inactif. Cause du blocage précédent inconnue ; occupation de toutes les versions, coût et rotation encore à finaliser.
+- Contrôle Nexus : dépôt initialement propre à `fb9aedf`, sept services sains. age 1.3.2 installé durablement ; configuration hors site et identifiants du seul compte d'envoi préparés avec permissions privées. Clé privée age et identifiants administrateur S3 restent hors Nexus.
+- Installation **partielle T08** : seul `backup-offsite.sh` de `2127cd3` ajouté volontairement à l'index du checkout de production, puis image AWS CLI officielle 2.37.8 au digest déjà qualifié préparée. Aucune mise à jour applicative T05 ; HEAD de production reste `fb9aedf`.
+- Premier lancement arrêté avec code 126 avant export/envoi : `backup.sh` n'avait pas le droit d'exécution (mode Git 100644). Correction locale du droit propriétaire et syntaxe vérifiées. [Correctif 46b306e](https://github.com/AntoBel4/Commandement-Center/commit/46b306eeac2dd10bf0a313f8ada7ae4649aad52d) publié : mode Git 100755 uniquement, contenu inchangé ; [CI API/PostgreSQL réussie](https://github.com/AntoBel4/Commandement-Center/actions/runs/37103184422). La modification locale de mode est volontaire et doit être préservée jusqu'à l'installation de cette révision ou d'une descendante.
+- Relance réussie : sauvegarde cohérente, chiffrement et envois de l'archive et de son SHA-256 par le **script complet exécuté sur Nexus**. Reçu avec deux VersionId confirmé ; marqueur de succès mis à jour. Contrôle indépendant à 08 h 32 : empreinte locale conforme, sept services healthy et marqueur de maintenance retiré. Les sorties de contrôle du premier bloc n'avaient pas été affichées ; ne pas attribuer à ce bloc les preuves du contrôle indépendant.
+- **Suite immédiate :** conserver sur PC le reçu et l'empreinte de référence, puis récupérer les deux versions exactes du nouveau jeu, vérifier leurs rétentions et le déchiffrement. Cette qualification du nouveau jeu reste ouverte ; le résultat B4 du jeu précédent reste acquis.
+- Aucun minuteur activé. Administration nominative, surveillance Maison et alertes réelles, préparation du retour arrière applicatif, coût/rotation et recette T05 restent ouverts. PR 10 toujours brouillon/non fusionnée ; T08 En cours. Ordre de fusion 8 → 9 → 10 avec accord explicite conservé.
 
 ## Point de reprise — 2 octobre 2026, clôture depuis téléphone
 
